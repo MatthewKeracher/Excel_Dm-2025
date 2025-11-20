@@ -1,236 +1,257 @@
 @font-face {
-  font-family: "Soutane";
-  src: url("fonts/Soutane.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+font-family: "Soutane";
+src: url("fonts/Soutane.ttf") format("truetype");
+font-weight: normal;
+font-style: normal;
 }
 
 @font-face {
-  font-family: "SoutaneBlack";
-  src: url("fonts/SoutaneBlack.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+font-family: "SoutaneBlack";
+src: url("fonts/SoutaneBlack.ttf") format("truetype");
+font-weight: normal;
+font-style: normal;
 }
 
 html, body {
-  height: 100%;
-  margin: 0;
+height: 100%;
+margin: 0;
 }
 
 body {
-  display: flex;
-  flex-direction: column;
-  font-family: "Soutane", sans-serif;
+display: flex;
+flex-direction: column;
+font-family: "Soutane", sans-serif;
 }
 
 header {
-  padding: 0;
+padding: 0;
 }
 
 .header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #333;
-  color: #fff;
-  padding: 10px 20px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+background: #333;
+color: #fff;
+padding: 10px 20px;
 }
 
 .header-left,
 .header-center,
 .header-right {
-  flex: 0 0 auto;
-  min-width: 80px;
+flex: 0 0 auto;
+min-width: 80px;
 }
 
 .header-left {
-  font-family: "SoutaneBlack", sans-serif;
-  font-weight: bold;
-  width: 30%;
-  height: 20px;
-  background: #ded1b0;
-  color: rgb(0, 0, 0);
-  border-radius: 5px;
-  padding: 5px 10px;
-  font-size: 18px;
-  margin-right: 5%;
+font-family: "SoutaneBlack", sans-serif;
+font-weight: bold;
+width: 20%;
+height: 20px;
+background: #ffffff;
+color: rgb(0, 0, 0);
+border-radius: 5px;
+padding: 5px 10px;
+font-size: 18px;
+margin-right: 2%;
 }
 
 .header-center {
-  flex: 1 1 auto;
-  text-align: center;
+text-align: center;
+font-family: "SoutaneBlack", sans-serif;
+font-size: larger;
 }
 
 .middle {
-  flex: 1;
-  display: flex;
-  min-height: 0;
+flex: 1;
+display: flex;
+min-height: 0;
 }
 
 .middle-left {
-  flex: 1;
-  padding: 20px;
-  background: #f0f0f0;
-  max-height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  font-size: 1.1em;
+flex: 1;
+padding: 20px;
+background: #f0f0f0;
+max-height: 100%;
+overflow-y: auto;
+overflow-x: hidden;
+font-size: 1.1em;
 }
 
-            #notecards {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            }
+#notecards {
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
 
-            .notecard {
-            background: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 12px 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            }
+.notecard {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 12px 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative; /* for absolute button positioning */
+  margin-bottom: 10px;
+}
 
-            .notecard-title {
-            font-weight: bold;
-            margin-bottom: 6px;
-            }
+.notecard-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+  max-width: calc(100% - 110px); /* leave space for buttons */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 
-            .notecard-body {
-            max-height: 3.6em; /* truncated height */
-            overflow: hidden;
-            transition: max-height 0.5s ease;
-            }
+.buttons-top-right {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  z-index: 1;
+}
 
-            .notecard:hover .notecard-body {
-            max-height: 100vh; /* expanded height */
-            }
-
-            textarea.notecard-body {
-            width: 100%;
-            box-sizing: border-box; /* include padding/border in width */
-            font-family: inherit;
-            font-size: 1.1em;
-            line-height: 1.4;
-            color: #444;
-            background-color: #ffffff; /* match note card background */
-            border: none; /* match note card border */
-            border-radius: 5px;
-            padding: none;
-            resize: vertical; /* Allow vertical resize but not horizontal */
-            min-height: 50vh;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            }
-
-            textarea.notecard-body:focus {
-            outline: none; /* Remove default outline */
-            border-color: #a3a3a3; /* Slightly darker border for focus */
-            box-shadow: none; 
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
-            }
-
-            .notecard-title.editing {
-            width: 80%;
-            font-size: 1.1em;
-            font-weight: bold;
-            font-family: inherit;
-            padding: 6px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            outline: none;
-            background-color: #fffef0;
-            color: #222;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            }
-
-            .notecard-title.editing:focus {
-            border-color:none;
-            box-shadow: none;
-            background-color: #ffffff;
-            }
+.buttons-top-right button {
+  background: none;
+  border: none;
+  color: #444;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
 
 
+.buttons-top-right button:hover {
+  background-color: #eee;
+}
 
 
-        .edit-btn {
-        position: absolute;
-        top: 6px;
-        right: 6px;
-        background-color: #ccc;
-        border: none;
-        border-radius: 3px;
-        width: 20px;
-        height: 20px;
-        line-height: 18px;
-        text-align: center;
-        font-size: 14px;
-        cursor: pointer;
-        color: #444;
-        padding: 0;
-        user-select: none;
-        transition: background-color 0.2s ease;
-        }
+/* Textarea and input styling etc remain unchanged */
 
-        .edit-btn:hover {
-        background-color: #bbb;
-        }
+
+.notecard-body {
+max-height: 3.6em; /* truncated height */
+line-height: 1.2;
+overflow-y: hidden;
+transition: max-height 0.5s ease;
+margin-top: 8px;
+white-space: pre-wrap; 
+}
+
+.notecard:hover .notecard-body {
+max-height: 100%; /* expanded height */
+}
+
+textarea.notecard-body {
+width: 100%;
+box-sizing: border-box; /* include padding/border in width */
+font-family: inherit;
+font-size: 1em;
+line-height: 1.4;
+color: #444;
+background-color: #ffffff; /* match note card background */
+border: none; /* match note card border */
+border-radius: 5px;
+padding: 0;
+resize: vertical; /* Allow vertical resize but not horizontal */
+min-height: 50vh;
+box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+overflow-y: scroll;
+}
+
+textarea.notecard-body:focus {
+outline: none; /* Remove default outline */
+border-color: #a3a3a3; /* Slightly darker border for focus */
+box-shadow: none;
+transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.notecard-title.editing {
+width: 60%;
+font-size: 1em;
+font-weight: bold;
+font-family: inherit;
+padding: 6px 10px;
+border: 1px solid #ccc;
+border-radius: 5px;
+box-sizing: border-box;
+outline: none;
+background-color: #ffffff;
+color: #222;
+transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.notecard-title.editing:focus {
+border-color: none;
+box-shadow: none;
+background-color: #ffffff;
+}
 
 
 
 .middle-right {
-  flex: 2;
-  padding: 20px;
-  background: #ffffff;
-  border-left: 1px solid #ddd;
-  position: relative; /* needed for absolute canvas children */
-  display: flex;      /* optional, if you want to control layout further */
-  justify-content: center; 
-  align-items: center;
-  overflow: hidden;   /* prevent overflow */
-  /* Set fixed or flexible size, example height */
-  
+flex: 2;
+padding: 20px;
+background: #ffffff;
+border-left: 1px solid #ddd;
+position: relative; /* needed for absolute canvas children */
+display: flex;      /* optional, if you want to control layout further */
+justify-content: center; 
+align-items: center;
+overflow: hidden;   /* prevent overflow */
+/* Set fixed or flexible size, example height */
+
 }
 .middle-right canvas {
-  position: absolute;
-  top: 20px;   /* match padding top */
-  left: 20px;  /* match padding left */
-  width: calc(100% - 40px);  /* full width minus padding */
-  height: calc(100% - 40px); /* full height minus padding */
-  user-select: none;
+position: absolute;
+top: 20px;   /* match padding top */
+left: 20px;  /* match padding left */
+width: calc(100% - 40px);  /* full width minus padding */
+height: calc(100% - 40px); /* full height minus padding */
+user-select: none;
 }
 
 .footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #333;
-  color: #fff;
-  padding: 10px 20px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+background: #333;
+color: #fff;
+padding: 10px 20px;
 }
 
 .footer-left {
-  flex: 1 1 auto;
-  text-align: left;
+flex: 1 1 auto;
+text-align: left;
 }
 
 .footer-right {
-  flex: 0 0 auto;
-  display: flex;
-  gap: 10px;
+display: flex;
+gap: 10px;
 }
 
 .footer-left button {
-  background: #555;
-  color: #fff;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: "Soutane", sans-serif;
-  font-size: 16px;
-  font-weight: bold;
+background: #555;
+color: #fff;
+border: none;
+padding: 6px 14px;
+border-radius: 4px;
+cursor: pointer;
+font-family: "Soutane", sans-serif;
+font-size: 16px;
+font-weight: bold;
 }
 .footer-left button:hover {
-  background: #666;
+background: #666;
 }

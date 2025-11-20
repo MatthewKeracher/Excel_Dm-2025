@@ -33,21 +33,4 @@ window.addEventListener('resize', () => {
 });
 
 
-//Add Note Button
-const addNoteBtn = document.getElementById("add-note-btn");
 
-addNoteBtn.addEventListener("click", () => {
-  // Create a new note with default position and title
-  const newNote = {
-    x: 100,
-    y: 100,
-    title: "New Note"
-  };
-
-  // Add to your notes array (assuming global or imported notes array)
-  notes.push(newNote);
-
-  // Also update the left section UI accordingly
-  renderNotecards(notes);
-  initCanvasNotes('note-layer', notes);
-});
