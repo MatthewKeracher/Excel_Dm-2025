@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excel_DM_26</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <input id="file-name" class="header-left" placeholder="File Name"></input>
+    <div class="footer-left">
+      <button id="btn-new">New</button>
+      <button id="btn-save">Save</button>
+      <button id="btn-load">Load</button>
+    </div>
+  </div>
+</header>
+
+    <div class="middle">
+    <section class="middle-left">
+    <div id="notecards"></div> <!-- Cards will be inserted here -->
+    </section>
+
+
+    <section class="middle-right">
+    <div id="middle-right">
+    <button id="add-note-btn" style="position: absolute; top: 10px; left: 10px; z-index: 10;">+</button>
+    <canvas id="map-layer"></canvas>
+    <canvas id="note-layer"></canvas>
+    </div>
+
+    </section>
+    </div>
+
+<footer>
+  <div class="footer-content">
+    
+    <div class="footer-right">Matthew Keracher 2026</div>
+  </div>
+</footer>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>

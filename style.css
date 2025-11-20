@@ -1,0 +1,236 @@
+@font-face {
+  font-family: "Soutane";
+  src: url("fonts/Soutane.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SoutaneBlack";
+  src: url("fonts/SoutaneBlack.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  font-family: "Soutane", sans-serif;
+}
+
+header {
+  padding: 0;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #333;
+  color: #fff;
+  padding: 10px 20px;
+}
+
+.header-left,
+.header-center,
+.header-right {
+  flex: 0 0 auto;
+  min-width: 80px;
+}
+
+.header-left {
+  font-family: "SoutaneBlack", sans-serif;
+  font-weight: bold;
+  width: 30%;
+  height: 20px;
+  background: #ded1b0;
+  color: rgb(0, 0, 0);
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 18px;
+  margin-right: 5%;
+}
+
+.header-center {
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+.middle {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.middle-left {
+  flex: 1;
+  padding: 20px;
+  background: #f0f0f0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: 1.1em;
+}
+
+            #notecards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            }
+
+            .notecard {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            }
+
+            .notecard-title {
+            font-weight: bold;
+            margin-bottom: 6px;
+            }
+
+            .notecard-body {
+            max-height: 3.6em; /* truncated height */
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            }
+
+            .notecard:hover .notecard-body {
+            max-height: 100vh; /* expanded height */
+            }
+
+            textarea.notecard-body {
+            width: 100%;
+            box-sizing: border-box; /* include padding/border in width */
+            font-family: inherit;
+            font-size: 1.1em;
+            line-height: 1.4;
+            color: #444;
+            background-color: #ffffff; /* match note card background */
+            border: none; /* match note card border */
+            border-radius: 5px;
+            padding: none;
+            resize: vertical; /* Allow vertical resize but not horizontal */
+            min-height: 50vh;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            }
+
+            textarea.notecard-body:focus {
+            outline: none; /* Remove default outline */
+            border-color: #a3a3a3; /* Slightly darker border for focus */
+            box-shadow: none; 
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+            }
+
+            .notecard-title.editing {
+            width: 80%;
+            font-size: 1.1em;
+            font-weight: bold;
+            font-family: inherit;
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            outline: none;
+            background-color: #fffef0;
+            color: #222;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .notecard-title.editing:focus {
+            border-color:none;
+            box-shadow: none;
+            background-color: #ffffff;
+            }
+
+
+
+
+        .edit-btn {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        background-color: #ccc;
+        border: none;
+        border-radius: 3px;
+        width: 20px;
+        height: 20px;
+        line-height: 18px;
+        text-align: center;
+        font-size: 14px;
+        cursor: pointer;
+        color: #444;
+        padding: 0;
+        user-select: none;
+        transition: background-color 0.2s ease;
+        }
+
+        .edit-btn:hover {
+        background-color: #bbb;
+        }
+
+
+
+.middle-right {
+  flex: 2;
+  padding: 20px;
+  background: #ffffff;
+  border-left: 1px solid #ddd;
+  position: relative; /* needed for absolute canvas children */
+  display: flex;      /* optional, if you want to control layout further */
+  justify-content: center; 
+  align-items: center;
+  overflow: hidden;   /* prevent overflow */
+  /* Set fixed or flexible size, example height */
+  
+}
+.middle-right canvas {
+  position: absolute;
+  top: 20px;   /* match padding top */
+  left: 20px;  /* match padding left */
+  width: calc(100% - 40px);  /* full width minus padding */
+  height: calc(100% - 40px); /* full height minus padding */
+  user-select: none;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #333;
+  color: #fff;
+  padding: 10px 20px;
+}
+
+.footer-left {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.footer-right {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 10px;
+}
+
+.footer-left button {
+  background: #555;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: "Soutane", sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+}
+.footer-left button:hover {
+  background: #666;
+}
