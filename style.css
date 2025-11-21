@@ -31,7 +31,7 @@ padding: 0;
 display: flex;
 justify-content: space-between;
 align-items: center;
-background: #333;
+background: #34514e;
 color: #fff;
 padding: 10px 20px;
 }
@@ -77,6 +77,37 @@ overflow-y: auto;
 overflow-x: hidden;
 font-size: 1.1em;
 }
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 10px;
+  
+}
+
+.tab-button {
+  flex: 1;
+  padding: 5px 10px;
+  cursor: pointer;
+  background: #e7c9a9 ;
+  border: none;
+  border-bottom: 3px solid transparent;
+  transition: border-color 0.3s ease;
+  font-weight: bold;
+  font-family: "Soutane", sans-serif;
+  font-size: 1.1em;
+  color: rgb(104, 96, 96);
+}
+
+.tab-button.active {
+  background: #a28e78 ;
+  color:#000000
+}
+
+.tab-panel {
+  background-color: transparent;
+}
+
 
 #notecards {
 display: flex;
@@ -141,7 +172,7 @@ gap: 10px;
 
 
 .notecard-body {
-max-height: 3.6em; /* truncated height */
+max-height: 3.6em; 
 line-height: 1.2;
 overflow-y: hidden;
 transition: max-height 0.5s ease;
@@ -149,9 +180,7 @@ margin-top: 8px;
 white-space: pre-wrap; 
 }
 
-.notecard:hover .notecard-body {
-max-height: 100%; /* expanded height */
-}
+
 
 textarea.notecard-body {
 width: 100%;
@@ -165,7 +194,7 @@ border: none; /* match note card border */
 border-radius: 5px;
 padding: 0;
 resize: vertical; /* Allow vertical resize but not horizontal */
-min-height: 50vh;
+min-height: 80vh;
 box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 overflow-y: scroll;
 }
@@ -198,6 +227,9 @@ box-shadow: none;
 background-color: #ffffff;
 }
 
+.highlight {
+background-color: #ffffcc;
+}
 
 
 .middle-right {
@@ -209,7 +241,7 @@ position: relative; /* needed for absolute canvas children */
 display: flex;      /* optional, if you want to control layout further */
 justify-content: center; 
 align-items: center;
-overflow: hidden;   /* prevent overflow */
+overflow: scroll;   
 /* Set fixed or flexible size, example height */
 
 }
@@ -217,8 +249,6 @@ overflow: hidden;   /* prevent overflow */
 position: absolute;
 top: 20px;   /* match padding top */
 left: 20px;  /* match padding left */
-width: calc(100% - 40px);  /* full width minus padding */
-height: calc(100% - 40px); /* full height minus padding */
 user-select: none;
 }
 
@@ -226,7 +256,7 @@ user-select: none;
 display: flex;
 justify-content: space-between;
 align-items: center;
-background: #333;
+background: #34514e;
 color: #fff;
 padding: 10px 20px;
 }
@@ -245,7 +275,7 @@ gap: 10px;
 background: #555;
 color: #fff;
 border: none;
-padding: 6px 14px;
+padding: none;
 border-radius: 4px;
 cursor: pointer;
 font-family: "Soutane", sans-serif;
