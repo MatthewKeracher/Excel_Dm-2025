@@ -1,4 +1,4 @@
-//Global Variables
+//Global Variables - Test
 let allData = [];
 let notesHistory = [];
 let currentDataView = [];
