@@ -250,6 +250,8 @@ position: absolute;
 top: 20px;   /* match padding top */
 left: 20px;  /* match padding left */
 user-select: none;
+height: 100%;
+width: 100%; 
 }
 
 .footer-content {
