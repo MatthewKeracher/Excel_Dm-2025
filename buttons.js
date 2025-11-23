@@ -1,8 +1,9 @@
-import { current, loc, reCurrent, newCurrent } from "./main.js";
+import { current, excelDM, reCurrent, newCurrent, currentTab } from "./main.js";
 import { Entry, EntryManager } from "./locations.js";
+import { saveData } from "./localStorage.js";
 
 export function newFile() {
-  loc.deleteAll();
+  excelDM.deleteAll();
 }
 
 export function saveFile() {
@@ -18,7 +19,7 @@ export function saveFile() {
     }
 
     // When saving JSON:
-    const jsonString = JSON.stringify(loc, replacer, 2);
+    const jsonString = JSON.stringify(excelDM, replacer, 2);
 
     const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -61,17 +62,17 @@ export function loadFile() {
           let allData = JSON.parse(e.target.result);
 
           // Clear existing entries in manager
-          loc.entries.length = 0;
+          excelDM.entries.length = 0;
 
           // Create Entry instances and add them to manager
           allData.entries.forEach((data) => {
             const entry = new Entry(data);
-            loc.add(entry);
+            excelDM.add(entry);
           });
 
-          loc.findParents(); //Imporant to add circulairty to data!
+          excelDM.findParents(); //Imporant to add circulairty to data!
 
-          newCurrent(loc.entries[0]);
+          newCurrent(excelDM.entries[0]);
 
           const fileNameInput = document.getElementById("file-name");
 
@@ -111,14 +112,16 @@ export function loadFile() {
 }
 
 export function addEntry() {
-  const newName = `${current.title} ${loc.entries.length + 1}`;
+
+  const number = excelDM.entries.filter(entry => entry.type === currentTab)
+  const newName = `${current.title} ${currentTab.toUpperCase()} ${number.length + 1}`;
 
   let newEntry = new Entry({
     title: newName,
   });
 
-  loc.add(newEntry);
-  current.parentOf(loc.n(newName));
+  excelDM.add(newEntry);
+  current.parentOf(excelDM.n(newName));
 
   reCurrent(current);
 }

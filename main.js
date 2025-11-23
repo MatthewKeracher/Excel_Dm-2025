@@ -5,13 +5,15 @@ import { newFile, loadFile, addEntry, saveFile } from "./buttons.js";
 import { saveData, loadData } from "./localStorage.js";
 
 //State
-export let loc = new EntryManager();
+export let excelDM = new EntryManager();
 export let current = [];
+export let currentTab = "locations";
 
 export function reCurrent() {
   //Reload current obj on UI.
   draw(current);
   loadNoteCards(current);
+  saveData();
 }
 
 export function newCurrent(entry) {
@@ -19,7 +21,6 @@ export function newCurrent(entry) {
   current = entry;
   HexToMap(entry);
   reCurrent();
-  saveData();
 
   const currentTitle = document.getElementById("currentTitle");
   currentTitle.innerHTML = current.title;
@@ -60,16 +61,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
       // Optionally load or filter content corresponding to the tab
       if (tab === "locations") {
-        currentTab = "locations";
-        currentData = allData.filter((note) => note.type !== "person");
+        currentTab = "locations"
       } else if (tab === "people") {
-        currentData = allData.filter((note) => note.type === "person");
-        currentTab = "people";
-      } else if (tab === "logs") {
-        currentTab = "logs";
+        
+        currentTab = "people"
+      } else if (tab === "quests") {
+        currentTab = "quests"
       }
 
-      loadNoteCards(currentData);
+      loadNoteCards(current);
+
     });
   });
 
@@ -85,7 +86,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const mouseY = e.clientY - rect.top;
 
     // Create a new note at clicked position
-    const newName = `${current.title} ${loc.entries.length + 1}`;
+    const newName = `${current.title} ${excelDM.entries.length + 1}`;
 
     let newEntry = new Entry({
       title: newName,
@@ -93,8 +94,8 @@ window.addEventListener("DOMContentLoaded", () => {
       y: mouseY,
     });
 
-    loc.add(newEntry);
-    current.parentOf(loc.n(newName));
+    excelDM.add(newEntry);
+    current.parentOf(excelDM.n(newName));
 
     // Redraw all notes (as DOM elements)
     reCurrent(current);
@@ -114,22 +115,22 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // Add some entries, including nested ones as desired
-  loc.add(
+  excelDM.add(
     new Entry({
       title: "Excel_DM",
       body: "A small place with small-minded people.",
     })
   );
 
-  loc.add(
+  excelDM.add(
     new Entry({
       title: "Welcome to Excel_DM!",
       body: "Information about the software.",
     })
   );
 
-  loc.n("Excel_DM").parentOf(loc.n("Welcome to Excel_DM!"));
+  excelDM.n("Excel_DM").parentOf(excelDM.n("Welcome to Excel_DM!"));
 
   loadData();
-  newCurrent(loc.entries[0]);
+  newCurrent(excelDM.entries[0]);
 });

@@ -1,5 +1,5 @@
 export function draw(parent) {
-  const children = parent.children;
+  const children = parent.children.filter(entry => entry.type === "locations");
   const container = document.getElementById("note-layer");
   container.innerHTML = ""; // Clear previous notes
 

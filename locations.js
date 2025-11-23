@@ -1,4 +1,4 @@
-import { reCurrent, newCurrent } from "./main.js";
+import { reCurrent, newCurrent, currentTab, current } from "./main.js";
 
 export class EntryManager {
   constructor() {
@@ -67,6 +67,7 @@ export class EntryManager {
 
 export class Entry {
   title = "";
+  type = ""
   image = "";
   body = "";
   children = [];
@@ -77,6 +78,7 @@ export class Entry {
   constructor(data = {}) {
     // this.id = crypto.randomUUID(); // Generates a UUID
     this.title = data.title || "Untitled Entry";
+    this.type = data.type || currentTab;
     this.image = data.image || "";
     this.body = data.body || "This is an entry.";
     this.children = data.children || [];

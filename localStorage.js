@@ -1,5 +1,5 @@
 import { Entry } from "./locations.js";
-import { loc, newCurrent } from "./main.js";
+import { excelDM, newCurrent } from "./main.js";
 
 //Autosave
 export function saveData() {
@@ -13,7 +13,7 @@ export function saveData() {
       return value;
     }
 
-    const jsonString = JSON.stringify(loc, replacer, 2);
+    const jsonString = JSON.stringify(excelDM, replacer, 2);
     localStorage.setItem("savedData", jsonString);
 
     const fileName = document.getElementById('file-name').value;
@@ -36,16 +36,16 @@ export function loadData() {
     let allData = JSON.parse(jsonString);
 
     // Clear existing entries in manager
-    loc.entries.length = 0;
+    excelDM.entries.length = 0;
 
     // Create Entry instances and add them to manager
     allData.entries.forEach((data) => {
       const entry = new Entry(data);
-      loc.add(entry);
+      excelDM.add(entry);
     });
 
-    loc.findParents(); //Restore Circularity
-    newCurrent(loc.entries[0]);
+    excelDM.findParents(); //Restore Circularity
+    newCurrent(excelDM.entries[0]);
 
   } catch (err) {
     console.error("Error loading data from localStorage", err);

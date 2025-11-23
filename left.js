@@ -1,8 +1,23 @@
-import { Entry, EntryManager } from "./locations.js";
-import { loc, reCurrent, newCurrent } from "./main.js";
+import { Entry } from "./locations.js";
+import { excelDM, reCurrent, newCurrent, currentTab } from "./main.js";
 
 export function loadNoteCards(data) {
-  const entries = data.children;
+  let entries;
+
+  switch (currentTab) {
+    case "locations":
+      entries = data.children.filter((entry) => entry.type === "locations");
+      break;
+    case "people":
+      entries = excelDM.entries.filter((entry) => entry.type === "people");
+      break;
+    case "quests":
+      entries = excelDM.entries.filter((entry) => entry.type === "quests");
+      break;
+    default:
+      entries = [];
+      break;
+  }
 
   const container = document.getElementById("leftPanel");
   container.innerHTML = "";
@@ -53,9 +68,9 @@ function makeNoteCard(entry, index) {
 
     if (label) label.classList.add("highlight");
     if (label) {
-    label.classList.add("highlight");
-    label.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
+      label.classList.add("highlight");
+      label.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   });
   card.addEventListener("mouseleave", () => {
     const label = document.querySelector(
@@ -78,16 +93,36 @@ function makeNoteCard(entry, index) {
   deleteBtn.innerHTML = "❌";
 
   deleteBtn.addEventListener("click", (event) => {
-    if (event.shiftKey) {
-      entry.parent.children.splice(index, 1);
-    } else {
-      if (confirm("Are you sure you want to delete this note?")) {
-        entry.parent.children.splice(index, 1);
-      }
-    }
+  let targetArray;
 
-    reCurrent();
-  });
+  // Switch to select correct array for deletion
+  switch (currentTab) {
+    case "locations":
+      targetArray = entry.parent.children;
+      break;
+    case "people":
+      targetArray = excelDM.entries;
+      break;
+    case "quests":
+      targetArray = excelDM.entries;
+      break;
+    default:
+      targetArray = [];
+      break;
+  }
+
+  // Find the index of the entry to delete
+  const deleteIndex = targetArray.indexOf(entry);
+
+  if (deleteIndex >= 0) {
+    if (event.shiftKey || confirm("Are you sure you want to delete this note?")) {
+      targetArray.splice(deleteIndex, 1);
+    }
+  }
+
+  reCurrent();
+});
+
 
   //EDIT BUTTON
   const editBtn = document.createElement("button");
@@ -149,8 +184,8 @@ function makeNoteCard(entry, index) {
   nextBtn.addEventListener("click", () => {
     if (entry.children.length === 0) {
       let newEntry = new Entry({ title: `Inside ${entry.title}` });
-      loc.add(newEntry);
-      loc.n(entry.title).parentOf(loc.n(`Inside ${entry.title}`));
+      excelDM.add(newEntry);
+      excelDM.n(entry.title).parentOf(excelDM.n(`Inside ${entry.title}`));
     }
 
     newCurrent(entry);
@@ -165,17 +200,20 @@ function makeNoteCard(entry, index) {
   prevbtn.addEventListener("click", () => {
     if (!entry.parent.parent) {
       let newEntry = new Entry({ title: `Outside ${entry.parent.title}` });
-      loc.add(newEntry);
-      loc.n(`Outside ${entry.parent.title}`).parentOf(entry.parent);
+      excelDM.add(newEntry);
+      excelDM.n(`Outside ${entry.parent.title}`).parentOf(entry.parent);
     }
 
     newCurrent(entry.parent.parent);
   });
 
-  buttonsContainer.appendChild(prevbtn);
+  if (entry.type === "locations") {
+    buttonsContainer.appendChild(prevbtn);
+    buttonsContainer.appendChild(nextBtn);
+  }
+
   buttonsContainer.appendChild(deleteBtn);
   buttonsContainer.appendChild(editBtn);
-  buttonsContainer.appendChild(nextBtn);
 
   card.appendChild(buttonsContainer);
 

@@ -16,6 +16,7 @@ html,
 body {
   height: 100%;
   margin: 0;
+  background-color: #1f2230;
 }
 
 body {
@@ -103,8 +104,9 @@ header {
 
 .middle-left {
   flex: 1;
-  padding: 20px;
-  background: #f0f0f0;
+  padding-top: 0;
+  padding: 10px;
+  background: #1f2230;
   max-height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
@@ -115,7 +117,7 @@ header {
 
 .tabs {
   display: flex;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 3px solid #d8d83c;
   margin-bottom: 10px;
 }
 
@@ -123,19 +125,19 @@ header {
   flex: 1;
   padding: 5px 10px;
   cursor: pointer;
-  background: #e7c9a9;
+  background: #34514e;
   border: none;
   border-bottom: 3px solid transparent;
   transition: border-color 0.3s ease;
   font-weight: bold;
   font-family: "Soutane", sans-serif;
   font-size: 1.1em;
-  color: rgb(104, 96, 96);
+  color: #d8d83c;
 }
 
 .tab-button.active {
-  background: #a28e78;
-  color: #000000;
+  background: #518d87;
+  color: #d8d83c;
 }
 
 .tab-panel {
@@ -262,7 +264,7 @@ textarea.notecard-body:focus {
 .middle-right {
   flex: 2;
   padding: 20px;
-  background: #f0f0f0;
+  background: #1f2230;
   border-left: 1px solid #ddd;
   position: relative; /* needed for absolute canvas children */
   display: flex; /* optional, if you want to control layout further */
@@ -273,8 +275,8 @@ textarea.notecard-body:focus {
 }
 .middle-right canvas {
   position: absolute;
-  top: 20px; /* match padding top */
-  left: 20px; /* match padding left */
+  top: 0; /* match padding top */
+  left: 0; /* match padding left */
   user-select: none;
   height: 100vh;
   width: 100vw;
