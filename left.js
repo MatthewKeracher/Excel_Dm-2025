@@ -1,11 +1,10 @@
 import { Entry, EntryManager } from "./class.js";
-import { loc } from "./main.js";
-import { initNotesCanvas, drawNotesCanvas } from "./right.js";
+import { loc, reCurrent, newCurrent } from "./main.js";
+
 
 export function loadNoteCards(data) {
   const entries = data.children;
 
-  console.log("loading Notecards from...", data.title);
   const container = document.getElementById("leftPanel");
   container.innerHTML = "";
 
@@ -62,13 +61,11 @@ function makeNoteCard(entry, index) {
       entry.parent.children.splice(index, 1);
     } else {
       if (confirm("Are you sure you want to delete this note?")) {
-      entry.parent.children.splice(index, 1);
+        entry.parent.children.splice(index, 1);
       }
     }
 
-    loadNoteCards(entry);
-    initNotesCanvas(entry)
-
+    reCurrent();
   });
 
   //EDIT BUTTON
@@ -116,6 +113,7 @@ function makeNoteCard(entry, index) {
 
       editBtn.title = "Edit note";
       editBtn.innerHTML = "🖉";
+      reCurrent();
     }
   });
 
@@ -129,16 +127,11 @@ function makeNoteCard(entry, index) {
     if (entry.children.length === 0) {
       let newEntry = new Entry({ title: `Inside ${entry.title}` });
       loc.add(newEntry);
-      loc.n(entry.title).goIn(loc.n(`Inside ${entry.title}`));
-
-      console.log(loc);
-
-      loadNoteCards(entry);
-    initNotesCanvas(entry)
-    } else {
-      loadNoteCards(entry);
-    initNotesCanvas(entry)
+      loc.n(entry.title).parentOf(loc.n(`Inside ${entry.title}`));
     }
+
+    newCurrent(entry)
+
   });
 
   //PREV BUTTON
@@ -148,19 +141,14 @@ function makeNoteCard(entry, index) {
   prevbtn.innerHTML = "<";
 
   prevbtn.addEventListener("click", () => {
-    if (entry.parent.parent) {
-      loadNoteCards(entry.parent.parent);
-      initNotesCanvas(entry.parent.parent)
-    } else {
+    if (!entry.parent.parent) {
       let newEntry = new Entry({ title: `Outside ${entry.parent.title}` });
       loc.add(newEntry);
-      loc.n(`Outside ${entry.parent.title}`).goIn(entry.parent);
-      loadNoteCards(entry.parent.parent);
-      
-    initNotesCanvas(entry.parent.parent)
+      loc.n(`Outside ${entry.parent.title}`).parentOf(entry.parent);
     }
 
-    //initNotesCanvas(parent.children);
+   newCurrent(entry.parent.parent)
+
   });
 
   buttonsContainer.appendChild(prevbtn);

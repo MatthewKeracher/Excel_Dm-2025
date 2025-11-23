@@ -76,6 +76,8 @@ max-height: 100%;
 overflow-y: auto;
 overflow-x: hidden;
 font-size: 1.1em;
+width: 800px;
+height: 800px;
 }
 
 .tabs {
@@ -250,8 +252,9 @@ position: absolute;
 top: 20px;   /* match padding top */
 left: 20px;  /* match padding left */
 user-select: none;
-height: 100%;
-width: 100%; 
+height: 100vh;
+width: 100vw;
+
 }
 
 .footer-content {

@@ -1,3 +1,6 @@
+import { reCurrent, newCurrent } from "./main.js";
+
+
 export class EntryManager {
   constructor() {
     this.entries = [];
@@ -22,12 +25,43 @@ export class EntryManager {
 
   erase(entry) {
     this.entries = this.entries.filter((e) => e !== entry);
-    console.log(`Erased entry: ${entry.title}`);
     return this.entries; //Ex. of use: entries = loc.erase(loc.n("Hommlet"));
   }
+
+  findParents() {
+    this.entries.forEach((entry) => {
+      entry.children = entry.children.map((child) => {
+        const childEntry = this.n(child.title); // Lookup full child Entry by title
+        if (childEntry) {
+          childEntry.parent = entry; // Set parent reference on child
+          return childEntry; // Replace shallow child with full Entry object
+        }
+        return child; // Return original if no full object found
+      });
+    });
+  }
+
+  deleteAll() {
+    this.entries.splice(0, this.entries.length);
+
+    this.add(
+      new Entry({
+        title: "New World",
+      })
+    );
+
+    let newEntry = new Entry({
+      title: `Fresh Start`,
+      body: "A bit... empty, looking?",
+    });
+    this.add(newEntry);
+    this.n("New World").parentOf(this.n(`Fresh Start`));
+
+    newCurrent(this.entries[0])
+
+    return this.entries;
+  }
 }
-
-
 
 export class Entry {
   title = "";
@@ -39,6 +73,7 @@ export class Entry {
   y = 0;
 
   constructor(data = {}) {
+    // this.id = crypto.randomUUID(); // Generates a UUID
     this.title = data.title || "Untitled Entry";
     this.image = data.image || "";
     this.body = data.body || "This is an entry.";
@@ -53,8 +88,7 @@ export class Entry {
     this.body = body;
   }
 
-  goIn(entry) {
-    console.log(entry)
+  parentOf(entry) {
     // Add Location inside this Location
     const alreadyChildren = this.children.includes(entry);
     const isTheirChildren = entry.children.includes(this);
@@ -78,7 +112,4 @@ export class Entry {
       return `${this.title} has no parent location!`;
     }
   }
-
-  
 }
-

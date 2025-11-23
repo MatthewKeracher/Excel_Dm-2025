@@ -1,8 +1,17 @@
 export function initNotesCanvas(parent) {
-  const children = parent.children
-  console.log(parent, children)
+  const children = parent.children;
   const canvas = document.getElementById("note-layer");
   const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  canvas.style.width = rect.width + "px";
+  canvas.style.height = rect.height + "px";
+
+  ctx.scale(dpr, dpr);
+
 
   // Track dragging state
   let dragIndex = null;
@@ -10,7 +19,7 @@ export function initNotesCanvas(parent) {
   let dragOffsetY = 0;
 
   let lastHoverIndex = -1;
-  let hoverIndex = -1; // current hover index
+  let hoverIndex = -1;
 
   function hitTest(x, y) {
     for (let i = children.length - 1; i >= 0; i--) {
@@ -91,7 +100,7 @@ export function initNotesCanvas(parent) {
     if (dragIndex !== null) {
       children[dragIndex].x = mouseX - dragOffsetX;
       children[dragIndex].y = mouseY - dragOffsetY;
-      drawNotesCanvas(parent);
+      draw(parent);
       return;
     }
 
@@ -100,7 +109,7 @@ export function initNotesCanvas(parent) {
     if (hoverIndex !== lastHoverIndex) {
       lastHoverIndex = hoverIndex;
       updateHighlight();
-      drawNotesCanvas(parent);
+      draw(parent);
     }
   });
 
@@ -111,46 +120,79 @@ export function initNotesCanvas(parent) {
   canvas.addEventListener("mouseleave", () => {
     dragIndex = null;
   });
+
 }
 
-export function drawNotesCanvas(parent) {
-  const children = parent.children
+export function draw(parent) {
+  const children = parent.children;
   const canvas = document.getElementById("note-layer");
   const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "bold 1.1em Soutane";
+  ctx.globalAlpha = 0.7;
 
-  // Scale canvas to same size as map.
-  const mapCanvas = document.getElementById("map-layer");
+  children.forEach((child, i) => {
+    // Draw label background
+    ctx.fillStyle = "#fffbe6"; // match note card background
+    const padding = 6;
+    const rectHeight = 20;
+    const textWidth = ctx.measureText(child.title).width;
+    const rectWidth = textWidth + padding * 2;
 
-  canvas.width = mapCanvas.clientWidth;
-  canvas.height = mapCanvas.clientHeight;
+    // Draw rectangle
+    const rectX = child.x;
+    const rectY = child.y - rectHeight / 2;
+    ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
 
+    // Draw label text
+    ctx.fillStyle = "black";
+    ctx.textBaseline = "middle"; // vertically center text
+    ctx.fillText(child.title, rectX + padding, child.y);
+  });
+}
 
-  function draw(children) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = "bold 1.1em Soutane";
-    ctx.globalAlpha = 0.7;
-    children.forEach((child, i) => {
-      // Draw label background
-      ctx.fillStyle = "#fffbe6"; // match note card background
-      const padding = 6;
-      const rectHeight = 20;
-      const textWidth = ctx.measureText(child.title).width;
-      const rectWidth = textWidth + padding * 2;
+export function HexToMap(parent) {
+  return new Promise((resolve, reject) => {
+    const hexString = parent?.image;
+    const mapCanvas = document.getElementById("map-layer");
+    const notesCanvas = document.getElementById("note-layer");
+    const ctx = mapCanvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
 
-      // Draw rectangle
-      // Adjust rectY so rect aligns with note.y at vertical center
-      const rectX = child.x;
-      const rectY = child.y - rectHeight / 2;
+    ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
 
-      ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
+    if (!hexString) {
+      resolve(); // No image, resolve immediately
+      return;
+    }
 
-      // Draw label text
-      ctx.fillStyle = "black";
-      ctx.textBaseline = "middle"; // vertically center text
-      ctx.fillText(child.title, rectX + padding, child.y);
-    });
-  }
+    const bytes = [];
+    for (let i = 0; i < hexString.length; i += 2) {
+      bytes.push(parseInt(hexString.slice(i, i + 2), 16));
+    }
+    const uint8arr = new Uint8Array(bytes);
 
-  // Initial draw
-  draw(children);
+    const blob = new Blob([uint8arr], { type: "image/png" });
+    const url = URL.createObjectURL(blob);
+
+    const img = new Image();
+    img.onload = () => {
+      mapCanvas.width = img.naturalWidth * dpr;
+      mapCanvas.height = img.naturalHeight * dpr;
+      mapCanvas.style.width = img.naturalWidth + "px";
+      mapCanvas.style.height = img.naturalHeight + "px";
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.drawImage(img, 0, 0);
+
+      URL.revokeObjectURL(url);
+      resolve(); // Resolve the promise when done
+    };
+
+    img.onerror = (error) => {
+      reject(error); // Reject if loading fails
+    };
+
+    img.src = url;
+  });
 }
