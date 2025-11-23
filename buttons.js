@@ -1,5 +1,5 @@
 import { current, loc, reCurrent, newCurrent } from "./main.js";
-import { Entry, EntryManager } from "./class.js";
+import { Entry, EntryManager } from "./locations.js";
 
 export function newFile() {
   loc.deleteAll();
@@ -50,11 +50,7 @@ export function loadFile() {
     const fileNameWithoutExt =
       fileName.substring(0, fileName.lastIndexOf(".")) || fileName;
     const fileType = file.type; // e.g. "application/json" or "image/png"
-    const fileNameInput = document.getElementById("file-name");
 
-    if (fileNameInput) {
-      fileNameInput.value = fileNameWithoutExt;
-    }
     const ext = fileName.split(".").pop().toLowerCase();
 
     if (fileType === "application/json" || ext === "json") {
@@ -76,6 +72,12 @@ export function loadFile() {
           loc.findParents(); //Imporant to add circulairty to data!
 
           newCurrent(loc.entries[0]);
+
+          const fileNameInput = document.getElementById("file-name");
+
+          if (fileNameInput) {
+            fileNameInput.value = fileNameWithoutExt;
+          }
         } catch (err) {
           console.error("Invalid JSON:", err);
         }
@@ -109,8 +111,7 @@ export function loadFile() {
 }
 
 export function addEntry() {
-
-  const newName = `${current.title} ${loc.entries.length + 1}`
+  const newName = `${current.title} ${loc.entries.length + 1}`;
 
   let newEntry = new Entry({
     title: newName,

@@ -1,6 +1,5 @@
-import { Entry, EntryManager } from "./class.js";
+import { Entry, EntryManager } from "./locations.js";
 import { loc, reCurrent, newCurrent } from "./main.js";
-
 
 export function loadNoteCards(data) {
   const entries = data.children;
@@ -16,6 +15,7 @@ export function loadNoteCards(data) {
 
 function makeNoteCard(entry, index) {
   const card = document.createElement("div");
+  card.dataset.entryTitle = entry.title;
   card.className = "notecard";
 
   // Title container for title and delete button aligned horizontally
@@ -39,11 +39,32 @@ function makeNoteCard(entry, index) {
   card.addEventListener("click", () => {
     if (body.style.maxHeight === "100%") {
       body.style.maxHeight = "3.6em";
-      card.style.backgroundColor = "#ffffffff";
     } else {
       body.style.maxHeight = "100%";
-      card.style.backgroundColor = "#fffbe6";
     }
+  });
+
+  card.addEventListener("mouseenter", () => {
+    const label = document.querySelector(
+      `.label[data-entry-title="${CSS.escape(entry.title)}"]`
+    );
+
+    card.classList.add("highlight");
+
+    if (label) label.classList.add("highlight");
+    if (label) {
+    label.classList.add("highlight");
+    label.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  });
+  card.addEventListener("mouseleave", () => {
+    const label = document.querySelector(
+      `.label[data-entry-title="${CSS.escape(entry.title)}"]`
+    );
+
+    card.classList.remove("highlight");
+
+    if (label) label.classList.remove("highlight");
   });
 
   //BUTTONS CONTAINER
@@ -92,9 +113,11 @@ function makeNoteCard(entry, index) {
 
       card.replaceChild(textarea, body);
       card.replaceChild(titleInput, title);
+      card.classList.remove("highlight");
 
       editBtn.title = "Save note";
       editBtn.innerHTML = "💾";
+      titleInput.focus();
     } else {
       isEditing = false;
       const newText = textarea.value.trim();
@@ -130,8 +153,7 @@ function makeNoteCard(entry, index) {
       loc.n(entry.title).parentOf(loc.n(`Inside ${entry.title}`));
     }
 
-    newCurrent(entry)
-
+    newCurrent(entry);
   });
 
   //PREV BUTTON
@@ -147,8 +169,7 @@ function makeNoteCard(entry, index) {
       loc.n(`Outside ${entry.parent.title}`).parentOf(entry.parent);
     }
 
-   newCurrent(entry.parent.parent)
-
+    newCurrent(entry.parent.parent);
   });
 
   buttonsContainer.appendChild(prevbtn);

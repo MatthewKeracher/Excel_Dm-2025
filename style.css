@@ -1,97 +1,129 @@
 @font-face {
-font-family: "Soutane";
-src: url("fonts/Soutane.ttf") format("truetype");
-font-weight: normal;
-font-style: normal;
+  font-family: "Soutane";
+  src: url("fonts/Soutane.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }
 
 @font-face {
-font-family: "SoutaneBlack";
-src: url("fonts/SoutaneBlack.ttf") format("truetype");
-font-weight: normal;
-font-style: normal;
+  font-family: "SoutaneBlack";
+  src: url("fonts/SoutaneBlack.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }
 
-html, body {
-height: 100%;
-margin: 0;
+html,
+body {
+  height: 100%;
+  margin: 0;
 }
 
 body {
-display: flex;
-flex-direction: column;
-font-family: "Soutane", sans-serif;
+  display: flex;
+  flex-direction: column;
+  font-family: "Soutane", sans-serif;
 }
 
 header {
-padding: 0;
+  padding: 0;
 }
 
 .header-content {
-display: flex;
-justify-content: space-between;
-align-items: center;
-background: #34514e;
-color: #fff;
-padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #34514e;
+  color: #fff;
+  padding: 10px 20px;
 }
 
 .header-left,
 .header-center,
 .header-right {
-flex: 0 0 auto;
-min-width: 80px;
+  flex: 0 0 auto;
+  min-width: 80px;
 }
 
 .header-left {
-font-family: "SoutaneBlack", sans-serif;
-font-weight: bold;
-width: 20%;
-height: 20px;
-background: #ffffff;
-color: rgb(0, 0, 0);
-border-radius: 5px;
-padding: 5px 10px;
-font-size: 18px;
-margin-right: 2%;
+  font-family: "Soutane", sans-serif;
+  font-weight: bold;
+  width: 20%;
+  height: 20px;
+  background: #ffffff;
+  color: rgb(0, 0, 0);
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 18px;
+  margin-right: 2%;
 }
 
+.header-btns {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-left: 16px;
+}
+
+.header-btns button {
+  background: #f2f2f2;
+  color: #212121;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1em;
+  padding: 6px 16px;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.04);
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.header-btns button:hover,
+.header-btns button:focus {
+  background: #e4e8e4;
+  box-shadow: 0 2px 6px 0 rgba(0,0,0,0.07);
+  outline: none;
+}
+
+.header-btns button:active {
+  background: #d6dbd6;
+}
+
+
 .header-center {
-text-align: center;
-font-family: "SoutaneBlack", sans-serif;
-font-size: larger;
+  text-align: center;
+  font-family: "SoutaneBlack", sans-serif;
+  font-size: larger;
 }
 
 .middle {
-flex: 1;
-display: flex;
-min-height: 0;
+  flex: 1;
+  display: flex;
+  min-height: 0;
 }
 
 .middle-left {
-flex: 1;
-padding: 20px;
-background: #f0f0f0;
-max-height: 100%;
-overflow-y: auto;
-overflow-x: hidden;
-font-size: 1.1em;
-width: 800px;
-height: 800px;
+  flex: 1;
+  padding: 20px;
+  background: #f0f0f0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: 1.1em;
+  width: 20vw;
+  height: 90vh;
 }
 
 .tabs {
   display: flex;
   border-bottom: 1px solid #ccc;
   margin-bottom: 10px;
-  
 }
 
 .tab-button {
   flex: 1;
   padding: 5px 10px;
   cursor: pointer;
-  background: #e7c9a9 ;
+  background: #e7c9a9;
   border: none;
   border-bottom: 3px solid transparent;
   transition: border-color 0.3s ease;
@@ -102,19 +134,18 @@ height: 800px;
 }
 
 .tab-button.active {
-  background: #a28e78 ;
-  color:#000000
+  background: #a28e78;
+  color: #000000;
 }
 
 .tab-panel {
   background-color: transparent;
 }
 
-
 #notecards {
-display: flex;
-flex-direction: column;
-gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .notecard {
@@ -164,129 +195,120 @@ gap: 10px;
   transition: background 0.15s;
 }
 
-
 .buttons-top-right button:hover {
   background-color: #eee;
 }
 
-
 /* Textarea and input styling etc remain unchanged */
 
-
 .notecard-body {
-max-height: 3.6em; 
-line-height: 1.2;
-overflow-y: hidden;
-transition: max-height 0.5s ease;
-margin-top: 8px;
-white-space: pre-wrap; 
+  max-height: 3.6em;
+  line-height: 1.2;
+  overflow-y: hidden;
+  transition: max-height 0.5s ease;
+  margin-top: 8px;
+  white-space: pre-wrap;
 }
 
-
-
 textarea.notecard-body {
-width: 100%;
-box-sizing: border-box; /* include padding/border in width */
-font-family: inherit;
-font-size: 1em;
-line-height: 1.4;
-color: #444;
-background-color: #ffffff; /* match note card background */
-border: none; /* match note card border */
-border-radius: 5px;
-padding: 0;
-resize: vertical; /* Allow vertical resize but not horizontal */
-min-height: 80vh;
-box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-overflow-y: scroll;
+  width: 100%;
+  box-sizing: border-box; /* include padding/border in width */
+  font-family: inherit;
+  font-size: 1em;
+  line-height: 1.4;
+  color: #000000;
+  background-color: #ffffff; /* match note card background */
+  border: none; /* match note card border */
+  border-radius: 5px;
+  padding: 0;
+  resize: vertical; /* Allow vertical resize but not horizontal */
+  min-height: 80vh;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow-y: scroll;
 }
 
 textarea.notecard-body:focus {
-outline: none; /* Remove default outline */
-border-color: #a3a3a3; /* Slightly darker border for focus */
-box-shadow: none;
-transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  outline: none; /* Remove default outline */
+  border-color: #a3a3a3; /* Slightly darker border for focus */
+  box-shadow: none;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .notecard-title.editing {
-width: 60%;
-font-size: 1em;
-font-weight: bold;
-font-family: inherit;
-padding: 6px 10px;
-border: 1px solid #ccc;
-border-radius: 5px;
-box-sizing: border-box;
-outline: none;
-background-color: #ffffff;
-color: #222;
-transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  width: 60%;
+  font-size: 1em;
+  font-weight: bold;
+  font-family: inherit;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  outline: none;
+  background-color: #ffffff;
+  color: #000000;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .notecard-title.editing:focus {
-border-color: none;
-box-shadow: none;
-background-color: #ffffff;
+  border-color: none;
+  box-shadow: none;
+  background-color: #ffffff;
 }
 
 .highlight {
-background-color: #ffffcc;
+  background: #d8d83c;
 }
-
 
 .middle-right {
-flex: 2;
-padding: 20px;
-background: #ffffff;
-border-left: 1px solid #ddd;
-position: relative; /* needed for absolute canvas children */
-display: flex;      /* optional, if you want to control layout further */
-justify-content: center; 
-align-items: center;
-overflow: scroll;   
-/* Set fixed or flexible size, example height */
-
+  flex: 2;
+  padding: 20px;
+  background: #f0f0f0;
+  border-left: 1px solid #ddd;
+  position: relative; /* needed for absolute canvas children */
+  display: flex; /* optional, if you want to control layout further */
+  justify-content: center;
+  align-items: center;
+  overflow: scroll;
+  /* Set fixed or flexible size, example height */
 }
 .middle-right canvas {
-position: absolute;
-top: 20px;   /* match padding top */
-left: 20px;  /* match padding left */
-user-select: none;
-height: 100vh;
-width: 100vw;
-
+  position: absolute;
+  top: 20px; /* match padding top */
+  left: 20px; /* match padding left */
+  user-select: none;
+  height: 100vh;
+  width: 100vw;
 }
 
-.footer-content {
-display: flex;
-justify-content: space-between;
-align-items: center;
-background: #34514e;
-color: #fff;
-padding: 10px 20px;
+.label-layer {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
-.footer-left {
-flex: 1 1 auto;
-text-align: left;
+.label {
+  position: absolute;
+  width: auto;
+  height: 20px;
+  background: #fffbe6;
+  color: #212121;
+  padding: 2px 6px;
+  font-weight: bold;
+  font-size: 1.1em;
+  font-family: 'Soutane', sans-serif;
+  opacity: 0.7;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: box-shadow 0.13s, background 0.13s;
+  z-index: 1;
+}
+.label.highlight {
+  box-shadow: 0 0 0 3px #34514e;
+  background: #d8d83c;
+}
+.label.dragging {
+  opacity: 0.5;
 }
 
-.footer-right {
-display: flex;
-gap: 10px;
-}
 
-.footer-left button {
-background: #555;
-color: #fff;
-border: none;
-padding: none;
-border-radius: 4px;
-cursor: pointer;
-font-family: "Soutane", sans-serif;
-font-size: 16px;
-font-weight: bold;
-}
-.footer-left button:hover {
-background: #666;
-}
+

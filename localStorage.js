@@ -1,7 +1,8 @@
-import { Entry } from "./class.js";
+import { Entry } from "./locations.js";
+import { loc, newCurrent } from "./main.js";
 
 //Autosave
-function saveData() {
+export function saveData() {
   try {
     
     
@@ -14,14 +15,23 @@ function saveData() {
 
     const jsonString = JSON.stringify(loc, replacer, 2);
     localStorage.setItem("savedData", jsonString);
+
+    const fileName = document.getElementById('file-name').value;
+    localStorage.setItem("fileName", fileName)
+
   } catch (err) {
     console.error("Error saving data to localStorage", err);
   }
 }
 
-function loadData() {
+export function loadData() {
   try {
     const jsonString = localStorage.getItem("savedData");
+
+    //Update fileName
+    let fileName = localStorage.getItem("fileName");
+    let nameInput = document.getElementById('file-name');
+    nameInput.value = fileName;
 
     let allData = JSON.parse(jsonString);
 
@@ -35,8 +45,8 @@ function loadData() {
     });
 
     loc.findParents(); //Restore Circularity
-    current = loc.entries[0];
-    reCurrent();
+    newCurrent(loc.entries[0]);
+
   } catch (err) {
     console.error("Error loading data from localStorage", err);
   }

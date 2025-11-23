@@ -1,6 +1,5 @@
 import { reCurrent, newCurrent } from "./main.js";
 
-
 export class EntryManager {
   constructor() {
     this.entries = [];
@@ -43,21 +42,24 @@ export class EntryManager {
 
   deleteAll() {
     this.entries.splice(0, this.entries.length);
-
+    // Add some entries, including nested ones as desired
     this.add(
       new Entry({
-        title: "New World",
+        title: "Excel_DM",
+        body: "A small place with small-minded people.",
       })
     );
 
-    let newEntry = new Entry({
-      title: `Fresh Start`,
-      body: "A bit... empty, looking?",
-    });
-    this.add(newEntry);
-    this.n("New World").parentOf(this.n(`Fresh Start`));
+    this.add(
+      new Entry({
+        title: "Welcome to Excel_DM!",
+        body: "Information about the software.",
+      })
+    );
 
-    newCurrent(this.entries[0])
+    this.n("Excel_DM").parentOf(this.n("Welcome to Excel_DM!"));
+
+    newCurrent(this.entries[0]);
 
     return this.entries;
   }

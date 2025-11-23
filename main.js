@@ -1,7 +1,8 @@
-import { Entry, EntryManager } from "./class.js";
+import { Entry, EntryManager } from "./locations.js";
 import { loadNoteCards } from "./left.js";
-import { initNotesCanvas, draw, HexToMap } from "./right.js";
+import { draw, HexToMap } from "./right.js";
 import { newFile, loadFile, addEntry, saveFile } from "./buttons.js";
+import { saveData, loadData } from "./localStorage.js";
 
 //State
 export let loc = new EntryManager();
@@ -17,8 +18,11 @@ export function newCurrent(entry) {
   //Load new current obj on UI.
   current = entry;
   HexToMap(entry);
-  initNotesCanvas(entry);
   reCurrent();
+  saveData();
+
+  const currentTitle = document.getElementById("currentTitle");
+  currentTitle.innerHTML = current.title;
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -71,12 +75,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
   //LISTENERS
 
-  //Shift Click on Map for new Note
-  const canvas = document.getElementById("note-layer");
-  canvas.addEventListener("click", (e) => {
+  const mapLayer = document.getElementById("map-layer");
+  mapLayer.addEventListener("click", (e) => {
     if (!e.shiftKey) return; // Only proceed if Shift key is held
 
-    const rect = canvas.getBoundingClientRect();
+    console.log('click')
+    const rect = mapLayer.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
@@ -92,7 +96,8 @@ window.addEventListener("DOMContentLoaded", () => {
     loc.add(newEntry);
     current.parentOf(loc.n(newName));
 
-    newCurrent(current);
+    // Redraw all notes (as DOM elements)
+    reCurrent(current);
   });
 
   //Refresh Canvas on Window Resize
@@ -104,35 +109,27 @@ window.addEventListener("DOMContentLoaded", () => {
   const fileNameInput = document.getElementById("file-name");
   if (fileNameInput) {
     fileNameInput.addEventListener("input", () => {
-      parent.title = fileNameInput.value;
+      saveData();
     });
   }
 
   // Add some entries, including nested ones as desired
   loc.add(
     new Entry({
-      title: "Hommlet",
+      title: "Excel_DM",
       body: "A small place with small-minded people.",
     })
   );
 
   loc.add(
     new Entry({
-      title: "Wicked Wench Inn",
-      body: "The only Inn for miles around.",
+      title: "Welcome to Excel_DM!",
+      body: "Information about the software.",
     })
   );
 
-  loc.add(
-    new Entry({
-      title: "Toilet",
-      body: "Give it five minutes.",
-    })
-  );
+  loc.n("Excel_DM").parentOf(loc.n("Welcome to Excel_DM!"));
 
-  loc.n("Hommlet").parentOf(loc.n("Wicked Wench Inn"));
-  loc.n("Wicked Wench Inn").parentOf(loc.n("Toilet"));
-  //loadData();
-
+  loadData();
   newCurrent(loc.entries[0]);
 });
