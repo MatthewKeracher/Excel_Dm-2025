@@ -1,5 +1,5 @@
 import { current, excelDM, reCurrent, newCurrent, currentTab } from "./main.js";
-import { Entry, EntryManager } from "./locations.js";
+import { Entry, EntryManager } from "./classes.js";
 import { saveData } from "./localStorage.js";
 
 export function newFile() {
@@ -115,13 +115,17 @@ export function addEntry() {
 
   const number = excelDM.entries.filter(entry => entry.type === currentTab)
   const newName = `${current.title} ${currentTab.toUpperCase()} ${number.length + 1}`;
+  //Switch to ID system?
 
   let newEntry = new Entry({
     title: newName,
   });
 
   excelDM.add(newEntry);
+
+  if(currentTab === "locations"){
   current.parentOf(excelDM.n(newName));
+  }
 
   reCurrent(current);
 }

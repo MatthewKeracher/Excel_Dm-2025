@@ -1,4 +1,4 @@
-import { Entry, EntryManager } from "./locations.js";
+import { Entry, EntryManager } from "./classes.js";
 import { loadNoteCards } from "./left.js";
 import { draw, HexToMap } from "./right.js";
 import { newFile, loadFile, addEntry, saveFile } from "./buttons.js";
@@ -21,9 +21,34 @@ export function newCurrent(entry) {
   current = entry;
   HexToMap(entry);
   reCurrent();
+  //garbageCollection()
 
   const currentTitle = document.getElementById("currentTitle");
   currentTitle.innerHTML = current.title;
+}
+
+function garbageCollection() {
+  // Create a Set of top-level entry IDs for quick lookup
+  const topLevelIds = new Set(excelDM.entries.map((entry) => entry.title));
+  console.log(topLevelIds);
+
+  function cleanChildren(entries) {
+    for (const entry of entries) {
+      if (entry.children && Array.isArray(entry.children)) {
+        // Filter children to only those also in top level entries
+        console.log(
+          entry.children.filter((child) => topLevelIds.has(child.id))
+        );
+        //entry.children = entry.children.filter(child => topLevelIds.has(child.id));
+
+        // Recursively clean grandchildren
+        cleanChildren(entry.children);
+      }
+    }
+  }
+
+  // Start cleaning from the top-level entries
+  cleanChildren(excelDM.entries);
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -59,24 +84,9 @@ window.addEventListener("DOMContentLoaded", () => {
         panel.style.display = panel.dataset.tab === tab ? "block" : "none";
       });
 
-      if (tab === "locations") {
-        document.documentElement.style.setProperty(
-          "--color-notecard",
-          "rgba(209, 208, 151, 1)"
-        );
-        currentTab = "locations";
-      } else if (tab === "people") {
-        document.documentElement.style.setProperty(
-          "--color-notecard",
-          "rgb(151, 188, 209)"
-        );
-        currentTab = "people";
-      } else if (tab === "quests") {
-        document.documentElement.style.setProperty(
-          "--color-notecard",
-          "rgba(209, 151, 199, 1)"
-        );
-        currentTab = "quests";
+      const validTabs = ["locations", "people", "quests", "monsters", "items"];
+      if (validTabs.includes(tab)) {
+        currentTab = tab;
       }
 
       loadNoteCards(current);
@@ -140,6 +150,34 @@ window.addEventListener("DOMContentLoaded", () => {
 
   excelDM.n("Excel_DM").parentOf(excelDM.n("Welcome to Excel_DM!"));
 
-  loadData();
+  function loadHommlet() {
+  fetch("./Hommlet.json")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json(); // parses JSON automatically
+    })
+    .then((allData) => {
+      // Clear existing entries in manager
+      excelDM.entries.length = 0;
+
+      // Create Entry instances and add them to manager
+      allData.entries.forEach((data) => {
+        const entry = new Entry(data);
+        excelDM.add(entry);
+      });
+
+      excelDM.findParents(); // Restore Circularity
+      newCurrent(excelDM.entries[0]);
+    })
+    .catch((error) => {
+      console.error("Error loading JSON:", error);
+    });
+}
+
+loadHommlet();
+
+  //loadData();
   newCurrent(excelDM.entries[0]);
 });

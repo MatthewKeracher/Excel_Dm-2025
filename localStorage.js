@@ -1,4 +1,4 @@
-import { Entry } from "./locations.js";
+import { Entry } from "./classes.js";
 import { excelDM, newCurrent } from "./main.js";
 
 //Autosave

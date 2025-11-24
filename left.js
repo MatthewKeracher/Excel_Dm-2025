@@ -1,33 +1,36 @@
-import { Entry } from "./locations.js";
-import { excelDM, reCurrent, newCurrent, currentTab } from "./main.js";
+import { Entry } from "./classes.js";
+import { excelDM, reCurrent, newCurrent, currentTab, current } from "./main.js";
 
 export function loadNoteCards(data) {
   let entries;
 
-  switch (currentTab) {
-    case "locations":
-      entries = data.children.filter((entry) => entry.type === "locations");
-      break;
-    case "people":
-      entries = excelDM.entries.filter((entry) => entry.type === "people");
-      break;
-    case "quests":
-      entries = excelDM.entries.filter((entry) => entry.type === "quests");
-      break;
-    default:
-      entries = [];
-      break;
-  }
-
   const container = document.getElementById("leftPanel");
   container.innerHTML = "";
 
-  entries.sort((a, b) =>
-    a.title.localeCompare(b.title, undefined, {
-      numeric: true,
-      sensitivity: "base",
-    })
-  );
+  switch (currentTab) {
+  case "locations":
+    entries = data.children.filter((entry) => entry.type === "locations");
+    entries.sort((a, b) =>
+      a.title.localeCompare(b.title, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      })
+    );
+    break;
+
+  default:
+    entries = excelDM.entries.filter((entry) => entry.type === currentTab);
+    entries.sort((a, b) => {
+      if (a.parent === current && !(b.parent === current)) return -1;
+      if (!(a.parent === current) && b.parent === current) return 1;
+      return a.title.localeCompare(b.title, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+    });
+    break;
+}
+
 
   entries.forEach((entry, index) => {
     let div = makeNoteCard(entry, index);
@@ -58,6 +61,7 @@ function makeNoteCard(entry, index) {
   body.dataset.fullText = entry.body;
   body.textContent = entry.body;
   body.style.marginTop = "8px";
+  body.style.backgroundColor = entry?.color || "";
 
   card.addEventListener("click", () => {
     if (body.style.maxHeight === "100%") {
@@ -112,25 +116,21 @@ function makeNoteCard(entry, index) {
       case "locations":
         targetArray = entry.parent.children;
         break;
-      case "people":
-        targetArray = excelDM.entries;
-        break;
-      case "quests":
-        targetArray = excelDM.entries;
-        break;
       default:
-        targetArray = [];
+        targetArray = excelDM.entries;
         break;
     }
 
     // Find the index of the entry to delete
     const deleteIndex = targetArray.indexOf(entry);
+    //console.log(targetArray[deleteIndex].title, targetArray)
 
     if (deleteIndex >= 0) {
       if (
         event.shiftKey ||
         confirm("Are you sure you want to delete this note?")
       ) {
+        console.log(`Deleting ${targetArray[deleteIndex].title}`);
         targetArray.splice(deleteIndex, 1);
       }
     }
@@ -154,11 +154,13 @@ function makeNoteCard(entry, index) {
       textarea.className = "notecard-body editing";
       textarea.value = body.dataset.fullText;
       textarea.style.width = "100%";
+      textarea.style.backgroundColor = entry?.color || "";
 
       const titleInput = document.createElement("input");
       titleInput.type = "text";
       titleInput.className = "notecard-title editing";
       titleInput.value = title.textContent;
+      titleInput.style.backgroundColor = entry?.color || "";
 
       card.replaceChild(textarea, body);
       card.replaceChild(titleInput, title);
@@ -214,9 +216,15 @@ function makeNoteCard(entry, index) {
 
   prevbtn.addEventListener("click", () => {
     if (!entry.parent.parent) {
-      let newEntry = new Entry({ title: `Outside ${entry.parent.title}` });
-      excelDM.add(newEntry);
-      excelDM.n(`Outside ${entry.parent.title}`).parentOf(entry.parent);
+      // Show confirm dialog with Yes/No buttons
+      const userConfirmed = confirm("Do you want to make a new, outer layer?");
+
+      // If user clicks Yes (OK)
+      if (userConfirmed) {
+        let newEntry = new Entry({ title: `Outside ${entry.parent.title}` });
+        excelDM.add(newEntry);
+        excelDM.n(`Outside ${entry.parent.title}`).parentOf(entry.parent);
+      }
     }
 
     newCurrent(entry.parent.parent);
@@ -226,14 +234,27 @@ function makeNoteCard(entry, index) {
   const lockbtn = document.createElement("button");
   lockbtn.className = "lock-btn";
   lockbtn.title = "Pin";
-  lockbtn.innerHTML = "🔓";
+
+  if (entry.parent === current) {
+    lockbtn.innerHTML = "🔒";
+    lockbtn.style.backgroundColor = "red";
+  } else {
+    lockbtn.innerHTML = "🔓";
+    lockbtn.style.backgroundColor = "transparent";
+  }
 
   lockbtn.addEventListener("click", () => {
     if (lockbtn.innerHTML === "🔓") {
       lockbtn.innerHTML = "🔒";
+      lockbtn.style.backgroundColor = "red";
+      current.parentOf(entry)
     } else {
       lockbtn.innerHTML = "🔓";
+      entry.parent.children = entry.parent.children.filter(e => e !== entry);
+      entry.parent = [];
+      lockbtn.style.backgroundColor = "transparent";
     }
+    reCurrent();
   });
 
   //COLOUR BUTTON
@@ -291,7 +312,7 @@ function makeNoteCard(entry, index) {
     });
 
     // Add the color grid container to the page as needed
-    buttonsContainer.appendChild(colorGridContainer); // Or inside a specific modal/dialog
+    card.appendChild(colorGridContainer); // Or inside a specific modal/dialog
   });
 
   buttonsContainer.appendChild(clrbtn);

@@ -14,6 +14,7 @@
 
 :root {
   --color-notecard: rgba(209, 208, 151, 1);  /* pick your colors */
+  --color-notecard-darker: color-mix(in srgb, var(--color-notecard), black 20%);
 }
 
 html,
@@ -40,6 +41,36 @@ header {
   background: #34514e;
   color: #fff;
   padding: 10px 20px;
+}
+
+.tabs {
+  display: flex;
+  width: 30vw;
+  border-bottom: 3px solid #d8d83c;
+  margin-bottom: 0;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 5px 10px;
+  cursor: pointer;
+  background: #34514e;
+  border: none;
+  border-bottom: 3px solid transparent;
+  transition: border-color 0.3s ease;
+  font-weight: bold;
+  font-family: "Soutane", sans-serif;
+  font-size: 1.1em;
+  color: #d8d83c;
+}
+
+.tab-button.active {
+  background: #518d87;
+  color: #d8d83c;
+}
+
+.tab-panel {
+  background-color: transparent;
 }
 
 .header-left,
@@ -106,6 +137,7 @@ header {
   min-height: 0;
 }
 
+
 .middle-left {
   flex: 1;
   padding-top: 0;
@@ -119,34 +151,7 @@ header {
   height: 90vh;
 }
 
-.tabs {
-  display: flex;
-  border-bottom: 3px solid #d8d83c;
-  margin-bottom: 10px;
-}
 
-.tab-button {
-  flex: 1;
-  padding: 5px 10px;
-  cursor: pointer;
-  background: #34514e;
-  border: none;
-  border-bottom: 3px solid transparent;
-  transition: border-color 0.3s ease;
-  font-weight: bold;
-  font-family: "Soutane", sans-serif;
-  font-size: 1.1em;
-  color: #d8d83c;
-}
-
-.tab-button.active {
-  background: #518d87;
-  color: #d8d83c;
-}
-
-.tab-panel {
-  background-color: transparent;
-}
 
 #notecards {
   display: flex;
@@ -156,10 +161,10 @@ header {
 
 
 .notecard {
-  background: var(--color-notecard);;
+  background: var(--color-notecard);
   border: 1px solid #ddd;
   border-radius: 5px;
-  padding: 12px 18px;
+  padding: 6px 9px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   position: relative; /* for absolute button positioning */
   margin-bottom: 10px;
@@ -168,32 +173,35 @@ header {
 .notecard-title {
   font-weight: bold;
   margin-bottom: 6px;
-  max-width: calc(100% - 110px); /* leave space for buttons */
+  max-width: 100%; /* leave space for buttons */
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  
 }
 
 .color-grid-container {
   position: absolute;
-  top: 100%;       /* Just below buttonsContainer, or adjust as needed */
-  left: 0;
+  top: 0;       /* Just below buttonsContainer, or adjust as needed */
+  left: 60%;
   background: white;
   border: 1px solid #ccc;
-  padding: 10px;
+  padding: 5px;
   box-shadow: 0 0 8px rgba(0,0,0,0.15);
   z-index: 1000;   /* High to appear above other siblings */
 }
 
 .buttons-top-right {
   position: absolute;
-  top: 12px;
-  right: 18px;
+  background-color: #ffffff2d;
+  top: 5px;
+  right: 5px;
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 8px;
   z-index: 1;
+  padding: 2px;
 }
 
 .buttons-top-right button {
@@ -223,7 +231,7 @@ header {
   max-height: 3.6em;
   line-height: 1.2;
   overflow-y: hidden;
-  transition: max-height 0.5s ease;
+  transition: max-height 0s ease;
   margin-top: 8px;
   white-space: pre-wrap;
 }
@@ -235,7 +243,7 @@ textarea.notecard-body {
   font-size: 1em;
   line-height: 1.4;
   color: #000000;
-  background-color: whitesmoke; /* match note card background */
+  background-color: var(--color-notecard); /* match note card background */
   border: none; /* match note card border */
   border-radius: 5px;
   padding: 0;
@@ -258,11 +266,12 @@ textarea.notecard-body:focus {
   font-weight: bold;
   font-family: inherit;
   padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  border: none;
+  border-bottom: 2px #000000;
+  border-radius: 10px;
   box-sizing: border-box;
   outline: none;
-  background-color: whitesmoke;
+  background-color: transparent;
   color: #000000;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -270,7 +279,7 @@ textarea.notecard-body:focus {
 .notecard-title.editing:focus {
   border-color: none;
   box-shadow: none;
-  background-color: whitesmoke;
+  background-color: transparent;
 }
 
 .highlight {
@@ -311,8 +320,6 @@ textarea.notecard-body:focus {
 
 .label {
   position: absolute;
-  min-width: 30px;
-  width: auto;
   height: 20px;
   background: #fffbe6;
   color: #212121;
@@ -325,7 +332,14 @@ textarea.notecard-body:focus {
   cursor: pointer;
   transition: box-shadow 0.13s, background 0.13s;
   z-index: 1;
+
+  min-width: 100px; /* ensures minimum readable width */
+  max-width: 300px; /* optional max width for layout */
+  white-space: nowrap; /* prevent label text wrapping */
+  overflow: hidden; /* hide overflow text */
+  text-overflow: ellipsis; /* show ... if text too long */
 }
+
 .label.highlight {
   box-shadow: 0 0 0 3px #34514e;
   background: #d8d83c;

@@ -18,8 +18,13 @@ export function draw(parent) {
     label.style.left = `${child.x}px`;
     label.style.top = `${child.y}px`;
 
+    // Reset width so it can shrink/grow to content size
+    label.style.width = "auto";
+
     label.addEventListener("mouseenter", (e) => {
-      if (!e.ctrlKey){return}
+      if (!e.ctrlKey) {
+        return;
+      }
       label.classList.add("highlight");
 
       const leftPanelCard = document.querySelector(
