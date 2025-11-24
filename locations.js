@@ -70,6 +70,7 @@ export class Entry {
   type = ""
   image = "";
   body = "";
+  color = "";
   children = [];
   parent = null;
   x = 0;
@@ -81,6 +82,7 @@ export class Entry {
     this.type = data.type || currentTab;
     this.image = data.image || "";
     this.body = data.body || "This is an entry.";
+    this.color = data.color || "";
     this.children = data.children || [];
     this.parent = data.parent || null;
     this.x = data.x || 400;

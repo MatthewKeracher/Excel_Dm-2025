@@ -12,11 +12,15 @@
   font-style: normal;
 }
 
+:root {
+  --color-notecard: rgba(209, 208, 151, 1);  /* pick your colors */
+}
+
 html,
 body {
   height: 100%;
   margin: 0;
-  background-color: #1f2230;
+  background-color: whitesmoke;
 }
 
 body {
@@ -50,7 +54,7 @@ header {
   font-weight: bold;
   width: 20%;
   height: 20px;
-  background: #ffffff;
+  background: whitesmoke;
   color: rgb(0, 0, 0);
   border-radius: 5px;
   padding: 5px 10px;
@@ -106,7 +110,7 @@ header {
   flex: 1;
   padding-top: 0;
   padding: 10px;
-  background: #1f2230;
+  background: whitesmoke;
   max-height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
@@ -150,8 +154,9 @@ header {
   gap: 10px;
 }
 
+
 .notecard {
-  background: #ffffff;
+  background: var(--color-notecard);;
   border: 1px solid #ddd;
   border-radius: 5px;
   padding: 12px 18px;
@@ -167,6 +172,17 @@ header {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.color-grid-container {
+  position: absolute;
+  top: 100%;       /* Just below buttonsContainer, or adjust as needed */
+  left: 0;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
+  z-index: 1000;   /* High to appear above other siblings */
 }
 
 .buttons-top-right {
@@ -219,7 +235,7 @@ textarea.notecard-body {
   font-size: 1em;
   line-height: 1.4;
   color: #000000;
-  background-color: #ffffff; /* match note card background */
+  background-color: whitesmoke; /* match note card background */
   border: none; /* match note card border */
   border-radius: 5px;
   padding: 0;
@@ -246,7 +262,7 @@ textarea.notecard-body:focus {
   border-radius: 5px;
   box-sizing: border-box;
   outline: none;
-  background-color: #ffffff;
+  background-color: whitesmoke;
   color: #000000;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -254,17 +270,22 @@ textarea.notecard-body:focus {
 .notecard-title.editing:focus {
   border-color: none;
   box-shadow: none;
-  background-color: #ffffff;
+  background-color: whitesmoke;
 }
 
 .highlight {
   background: #d8d83c;
 }
 
+.highlight.no-highlight,
+.no-highlight.highlight {
+  background: inherit;  /* or original background color */
+}
+
 .middle-right {
   flex: 2;
   padding: 20px;
-  background: #1f2230;
+  background: whitesmoke;
   border-left: 1px solid #ddd;
   position: relative; /* needed for absolute canvas children */
   display: flex; /* optional, if you want to control layout further */
@@ -290,6 +311,7 @@ textarea.notecard-body:focus {
 
 .label {
   position: absolute;
+  min-width: 30px;
   width: auto;
   height: 20px;
   background: #fffbe6;

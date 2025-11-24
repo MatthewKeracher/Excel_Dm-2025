@@ -1,5 +1,7 @@
 export function draw(parent) {
-  const children = parent.children.filter(entry => entry.type === "locations");
+  const children = parent.children.filter(
+    (entry) => entry.type === "locations"
+  );
   const container = document.getElementById("note-layer");
   container.innerHTML = ""; // Clear previous notes
 
@@ -16,14 +18,18 @@ export function draw(parent) {
     label.style.left = `${child.x}px`;
     label.style.top = `${child.y}px`;
 
-    label.addEventListener("mouseenter", () => {
+    label.addEventListener("mouseenter", (e) => {
+      if (!e.ctrlKey){return}
       label.classList.add("highlight");
 
       const leftPanelCard = document.querySelector(
         `.notecard[data-entry-title="${CSS.escape(child.title)}"]`
       );
-      
-      if (leftPanelCard) leftPanelCard.classList.add("highlight");
+
+      if (leftPanelCard) {
+        leftPanelCard.classList.add("highlight");
+        leftPanelCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     });
     label.addEventListener("mouseleave", () => {
       label.classList.remove("highlight");

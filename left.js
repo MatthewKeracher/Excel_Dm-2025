@@ -22,6 +22,13 @@ export function loadNoteCards(data) {
   const container = document.getElementById("leftPanel");
   container.innerHTML = "";
 
+  entries.sort((a, b) =>
+    a.title.localeCompare(b.title, undefined, {
+      numeric: true,
+      sensitivity: "base",
+    })
+  );
+
   entries.forEach((entry, index) => {
     let div = makeNoteCard(entry, index);
     container.appendChild(div);
@@ -32,6 +39,7 @@ function makeNoteCard(entry, index) {
   const card = document.createElement("div");
   card.dataset.entryTitle = entry.title;
   card.className = "notecard";
+  card.style.backgroundColor = entry?.color || "";
 
   // Title container for title and delete button aligned horizontally
   const titleContainer = document.createElement("div");
@@ -59,10 +67,14 @@ function makeNoteCard(entry, index) {
     }
   });
 
-  card.addEventListener("mouseenter", () => {
+  card.addEventListener("mouseenter", (e) => {
     const label = document.querySelector(
       `.label[data-entry-title="${CSS.escape(entry.title)}"]`
     );
+
+    if (!e.ctrlKey) {
+      return;
+    }
 
     card.classList.add("highlight");
 
@@ -93,36 +105,38 @@ function makeNoteCard(entry, index) {
   deleteBtn.innerHTML = "❌";
 
   deleteBtn.addEventListener("click", (event) => {
-  let targetArray;
+    let targetArray;
 
-  // Switch to select correct array for deletion
-  switch (currentTab) {
-    case "locations":
-      targetArray = entry.parent.children;
-      break;
-    case "people":
-      targetArray = excelDM.entries;
-      break;
-    case "quests":
-      targetArray = excelDM.entries;
-      break;
-    default:
-      targetArray = [];
-      break;
-  }
-
-  // Find the index of the entry to delete
-  const deleteIndex = targetArray.indexOf(entry);
-
-  if (deleteIndex >= 0) {
-    if (event.shiftKey || confirm("Are you sure you want to delete this note?")) {
-      targetArray.splice(deleteIndex, 1);
+    // Switch to select correct array for deletion
+    switch (currentTab) {
+      case "locations":
+        targetArray = entry.parent.children;
+        break;
+      case "people":
+        targetArray = excelDM.entries;
+        break;
+      case "quests":
+        targetArray = excelDM.entries;
+        break;
+      default:
+        targetArray = [];
+        break;
     }
-  }
 
-  reCurrent();
-});
+    // Find the index of the entry to delete
+    const deleteIndex = targetArray.indexOf(entry);
 
+    if (deleteIndex >= 0) {
+      if (
+        event.shiftKey ||
+        confirm("Are you sure you want to delete this note?")
+      ) {
+        targetArray.splice(deleteIndex, 1);
+      }
+    }
+
+    reCurrent();
+  });
 
   //EDIT BUTTON
   const editBtn = document.createElement("button");
@@ -148,7 +162,7 @@ function makeNoteCard(entry, index) {
 
       card.replaceChild(textarea, body);
       card.replaceChild(titleInput, title);
-      card.classList.remove("highlight");
+      card.classList.add("no-highlight");
 
       editBtn.title = "Save note";
       editBtn.innerHTML = "💾";
@@ -168,6 +182,7 @@ function makeNoteCard(entry, index) {
 
       card.replaceChild(body, textarea);
       card.replaceChild(title, card.querySelector(".notecard-title.editing"));
+      card.classList.remove("no-highlight");
 
       editBtn.title = "Edit note";
       editBtn.innerHTML = "🖉";
@@ -207,9 +222,85 @@ function makeNoteCard(entry, index) {
     newCurrent(entry.parent.parent);
   });
 
+  //LOCK BUTTON
+  const lockbtn = document.createElement("button");
+  lockbtn.className = "lock-btn";
+  lockbtn.title = "Pin";
+  lockbtn.innerHTML = "🔓";
+
+  lockbtn.addEventListener("click", () => {
+    if (lockbtn.innerHTML === "🔓") {
+      lockbtn.innerHTML = "🔒";
+    } else {
+      lockbtn.innerHTML = "🔓";
+    }
+  });
+
+  //COLOUR BUTTON
+  const clrbtn = document.createElement("button");
+  clrbtn.className = "clr-btn";
+  clrbtn.title = "Change Colour";
+  clrbtn.innerHTML = "🎨";
+
+  clrbtn.addEventListener("click", () => {
+    // Container for the color grid
+    const colorGridContainer = document.createElement("div");
+    colorGridContainer.style.display = "grid";
+    colorGridContainer.style.gridTemplateColumns = "repeat(3, 40px)";
+    colorGridContainer.style.gridGap = "8px";
+    colorGridContainer.style.padding = "10px";
+    colorGridContainer.classList.add("color-grid-container");
+
+    colorGridContainer.addEventListener("mouseleave", () => {
+      colorGridContainer.style.display = "none";
+    });
+
+    // Generate 9 pastel colors (3x3)
+    const pastelColors = [
+      "rgba(209, 151, 151, 1)",
+      "rgba(209, 208, 151, 1)",
+      "rgba(158, 209, 151, 1)",
+      "rgba(151, 207, 209, 1)",
+      "rgba(151, 186, 209, 1)",
+      "rgba(176, 151, 209, 1)",
+      "rgba(199, 151, 209, 1)",
+      "rgba(155, 155, 155, 1)",
+      "rgba(255, 255, 255, 1)",
+    ];
+
+    // Generate buttons for each color
+    pastelColors.forEach((color) => {
+      const colorBtn = document.createElement("button");
+      colorBtn.style.backgroundColor = color;
+      colorBtn.style.border = "none";
+      colorBtn.style.width = "40px";
+      colorBtn.style.height = "40px";
+      colorBtn.style.cursor = "pointer";
+      colorBtn.title = color;
+
+      // On click, set entry.color
+      colorBtn.addEventListener("click", () => {
+        entry.color = color;
+
+        // Optionally hide or disable picker here
+        colorGridContainer.style.display = "none";
+        reCurrent();
+      });
+
+      colorGridContainer.appendChild(colorBtn);
+    });
+
+    // Add the color grid container to the page as needed
+    buttonsContainer.appendChild(colorGridContainer); // Or inside a specific modal/dialog
+  });
+
+  buttonsContainer.appendChild(clrbtn);
+
   if (entry.type === "locations") {
     buttonsContainer.appendChild(prevbtn);
     buttonsContainer.appendChild(nextBtn);
+  } else {
+    buttonsContainer.appendChild(lockbtn);
   }
 
   buttonsContainer.appendChild(deleteBtn);

@@ -59,18 +59,27 @@ window.addEventListener("DOMContentLoaded", () => {
         panel.style.display = panel.dataset.tab === tab ? "block" : "none";
       });
 
-      // Optionally load or filter content corresponding to the tab
       if (tab === "locations") {
-        currentTab = "locations"
+        document.documentElement.style.setProperty(
+          "--color-notecard",
+          "rgba(209, 208, 151, 1)"
+        );
+        currentTab = "locations";
       } else if (tab === "people") {
-        
-        currentTab = "people"
+        document.documentElement.style.setProperty(
+          "--color-notecard",
+          "rgb(151, 188, 209)"
+        );
+        currentTab = "people";
       } else if (tab === "quests") {
-        currentTab = "quests"
+        document.documentElement.style.setProperty(
+          "--color-notecard",
+          "rgba(209, 151, 199, 1)"
+        );
+        currentTab = "quests";
       }
 
       loadNoteCards(current);
-
     });
   });
 
@@ -80,7 +89,7 @@ window.addEventListener("DOMContentLoaded", () => {
   mapLayer.addEventListener("click", (e) => {
     if (!e.shiftKey) return; // Only proceed if Shift key is held
 
-    console.log('click')
+    console.log("click");
     const rect = mapLayer.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
