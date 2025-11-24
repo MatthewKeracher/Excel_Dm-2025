@@ -35,6 +35,7 @@ window.addEventListener("DOMContentLoaded", () => {
     "btn-donate": donate,
     "btn-load": loadFile,
     "btn-add": addEntry,
+    "btn-demo": loadHommlet,
   };
 
   Object.entries(buttons).forEach(([id, handler]) => {
@@ -203,8 +204,8 @@ window.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  loadHommlet();
 
-  //loadData();
+
+  loadData();
   newCurrent(excelDM.entries[0]);
 });
