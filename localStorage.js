@@ -4,9 +4,8 @@ import { excelDM, newCurrent } from "./main.js";
 //Autosave
 export function saveData() {
   try {
-    
-    
-    function replacer(key, value) { //Flatten Circularity
+    function replacer(key, value) {
+      //Flatten Circularity
       if (key === "parent") {
         return null;
       }
@@ -14,8 +13,15 @@ export function saveData() {
     }
 
     const jsonString = JSON.stringify(excelDM, replacer, 2);
-    localStorage.setItem("savedData", jsonString);
 
+    try {
+      localStorage.setItem("savedData", jsonString);
+    } catch (e) {
+      if (e.name === "QuotaExceededError") {
+        console.warn("LocalStorage quota exceeded");
+        // Optionally clear some stored data or alert the user
+      }
+    }
   } catch (err) {
     console.error("Error saving data to localStorage", err);
   }
@@ -24,7 +30,6 @@ export function saveData() {
 export function loadData() {
   try {
     const jsonString = localStorage.getItem("savedData");
-
 
     let allData = JSON.parse(jsonString);
 
@@ -39,7 +44,6 @@ export function loadData() {
 
     excelDM.findParents(); //Restore Circularity
     newCurrent(excelDM.entries[0]);
-
   } catch (err) {
     console.error("Error loading data from localStorage", err);
   }
