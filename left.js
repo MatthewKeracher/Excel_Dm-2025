@@ -1,42 +1,45 @@
 import { Entry } from "./classes.js";
 import { excelDM, reCurrent, newCurrent, currentTab, current } from "./main.js";
 
-export function loadNoteCards(data) {
+export function loadNoteCards(data, search = "no") {
   let entries;
-
   const container = document.getElementById("leftPanel");
   container.innerHTML = "";
 
-  switch (currentTab) {
-  case "locations":
-    entries = data.children.filter((entry) => entry.type === "locations");
-    entries.sort((a, b) =>
-      a.title.localeCompare(b.title, undefined, {
-        numeric: true,
-        sensitivity: "base",
-      })
-    );
-    break;
+  if (search === "search") {
+    entries = data;
+  } else if (search === "no") {
+    switch (currentTab) {
+      case "locations":
+        entries = data.children.filter((entry) => entry.type === "locations");
+        entries.sort((a, b) =>
+          a.title.localeCompare(b.title, undefined, {
+            numeric: true,
+            sensitivity: "base",
+          })
+        );
+        break;
 
-  default:
-    entries = excelDM.entries.filter((entry) => entry.type === currentTab);
-    entries.sort((a, b) => {
-      if (a.parent === current && !(b.parent === current)) return -1;
-      if (!(a.parent === current) && b.parent === current) return 1;
-      return a.title.localeCompare(b.title, undefined, {
-        numeric: true,
-        sensitivity: "base",
-      });
-    });
-    break;
-}
-
+      default:
+        entries = excelDM.entries.filter((entry) => entry.type === currentTab);
+        entries.sort((a, b) => {
+          if (a.parent === current && !(b.parent === current)) return -1;
+          if (!(a.parent === current) && b.parent === current) return 1;
+          return a.title.localeCompare(b.title, undefined, {
+            numeric: true,
+            sensitivity: "base",
+          });
+        });
+        break;
+    }
+  }
 
   entries.forEach((entry, index) => {
     let div = makeNoteCard(entry, index);
     container.appendChild(div);
   });
 }
+
 
 function makeNoteCard(entry, index) {
   const card = document.createElement("div");
@@ -76,13 +79,7 @@ function makeNoteCard(entry, index) {
       `.label[data-entry-title="${CSS.escape(entry.title)}"]`
     );
 
-    if (!e.ctrlKey) {
-      return;
-    }
-
-    card.classList.add("highlight");
-
-    if (label) label.classList.add("highlight");
+   
     if (label) {
       label.classList.add("highlight");
       label.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -123,14 +120,13 @@ function makeNoteCard(entry, index) {
 
     // Find the index of the entry to delete
     const deleteIndex = targetArray.indexOf(entry);
-    //console.log(targetArray[deleteIndex].title, targetArray)
+
 
     if (deleteIndex >= 0) {
       if (
         event.shiftKey ||
         confirm("Are you sure you want to delete this note?")
       ) {
-        console.log(`Deleting ${targetArray[deleteIndex].title}`);
         targetArray.splice(deleteIndex, 1);
       }
     }

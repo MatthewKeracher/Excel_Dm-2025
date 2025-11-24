@@ -6,6 +6,12 @@ export function newFile() {
   excelDM.deleteAll();
 }
 
+export function donate(){
+  
+  window.open('https://buymeacoffee.com/excel_dm', '_blank');
+
+};
+
 export function saveFile() {
   try {
     function replacer(key, value) {
@@ -24,7 +30,7 @@ export function saveFile() {
     const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
-    const fileName = document.getElementById("file-name")?.value || "data.json";
+    const fileName = document.getElementById("currentTitle")?.innerHTML || "excel_DM.json";
 
     const a = document.createElement("a");
     a.href = url;
@@ -47,9 +53,7 @@ export function loadFile() {
     const file = input.files && input.files[0];
     if (!file) return;
 
-    const fileName = file.name;
-    const fileNameWithoutExt =
-      fileName.substring(0, fileName.lastIndexOf(".")) || fileName;
+    const fileName = file.name;  
     const fileType = file.type; // e.g. "application/json" or "image/png"
 
     const ext = fileName.split(".").pop().toLowerCase();
@@ -74,11 +78,6 @@ export function loadFile() {
 
           newCurrent(excelDM.entries[0]);
 
-          const fileNameInput = document.getElementById("file-name");
-
-          if (fileNameInput) {
-            fileNameInput.value = fileNameWithoutExt;
-          }
         } catch (err) {
           console.error("Invalid JSON:", err);
         }

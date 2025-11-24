@@ -1,7 +1,7 @@
 import { Entry, EntryManager } from "./classes.js";
 import { loadNoteCards } from "./left.js";
 import { draw, HexToMap } from "./right.js";
-import { newFile, loadFile, addEntry, saveFile } from "./buttons.js";
+import { newFile, loadFile, addEntry, saveFile, donate } from "./buttons.js";
 import { saveData, loadData } from "./localStorage.js";
 
 //State
@@ -21,34 +21,9 @@ export function newCurrent(entry) {
   current = entry;
   HexToMap(entry);
   reCurrent();
-  //garbageCollection()
 
   const currentTitle = document.getElementById("currentTitle");
   currentTitle.innerHTML = current.title;
-}
-
-function garbageCollection() {
-  // Create a Set of top-level entry IDs for quick lookup
-  const topLevelIds = new Set(excelDM.entries.map((entry) => entry.title));
-  console.log(topLevelIds);
-
-  function cleanChildren(entries) {
-    for (const entry of entries) {
-      if (entry.children && Array.isArray(entry.children)) {
-        // Filter children to only those also in top level entries
-        console.log(
-          entry.children.filter((child) => topLevelIds.has(child.id))
-        );
-        //entry.children = entry.children.filter(child => topLevelIds.has(child.id));
-
-        // Recursively clean grandchildren
-        cleanChildren(entry.children);
-      }
-    }
-  }
-
-  // Start cleaning from the top-level entries
-  cleanChildren(excelDM.entries);
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -57,6 +32,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const buttons = {
     "btn-new": newFile,
     "btn-save": saveFile,
+    "btn-donate": donate,
     "btn-load": loadFile,
     "btn-add": addEntry,
   };
@@ -99,7 +75,6 @@ window.addEventListener("DOMContentLoaded", () => {
   mapLayer.addEventListener("click", (e) => {
     if (!e.shiftKey) return; // Only proceed if Shift key is held
 
-    console.log("click");
     const rect = mapLayer.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
@@ -125,13 +100,57 @@ window.addEventListener("DOMContentLoaded", () => {
     newCurrent(current);
   });
 
-  //Update Title on Input Change
-  const fileNameInput = document.getElementById("file-name");
-  if (fileNameInput) {
-    fileNameInput.addEventListener("input", () => {
-      saveData();
+  document.addEventListener("keydown", function (event) {
+    if (
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      event.key === "Tab"
+    ) {
+      return; // Ignore event if Ctrl or Shift key is pressed
+    }
+
+    const searchBox = document.getElementById("search-box");
+    const searchBar = document.getElementById("search-bar");
+
+    if (searchBox.style.display === "none" || !searchBox.style.display) {
+      
+      document
+        .querySelectorAll(".tab-button")
+        .forEach((btn) => btn.classList.remove("active"));
+
+      searchBox.style.display = "block";
+      searchBar.focus();
+    }
+
+    searchBar.addEventListener("blur", () => {
+      if (searchBox.style.display === "block") {
+        searchBox.style.display = "none";
+        searchBar.value = ""; // clear input on blur if needed
+      }
     });
-  }
+
+    if (event.key === "Enter" || event.key === "Escape") {
+      // Correct key value for Escape
+
+      if (searchBox.style.display === "block") {
+        searchBox.style.display = "none";
+        searchBar.value = "";
+      }
+    }
+  });
+
+  const searchBox = document.getElementById("search-bar");
+
+  searchBox.addEventListener("input", () => {
+    const query = searchBox.value.toLowerCase();
+
+    const results = excelDM.entries.filter((entry) =>
+      entry.title.toLowerCase().includes(query)
+    );
+
+    loadNoteCards(results, "search");
+  });
 
   // Add some entries, including nested ones as desired
   excelDM.add(
@@ -151,32 +170,32 @@ window.addEventListener("DOMContentLoaded", () => {
   excelDM.n("Excel_DM").parentOf(excelDM.n("Welcome to Excel_DM!"));
 
   function loadHommlet() {
-  fetch("./Hommlet.json")
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json(); // parses JSON automatically
-    })
-    .then((allData) => {
-      // Clear existing entries in manager
-      excelDM.entries.length = 0;
+    fetch("./Hommlet.json")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json(); // parses JSON automatically
+      })
+      .then((allData) => {
+        // Clear existing entries in manager
+        excelDM.entries.length = 0;
 
-      // Create Entry instances and add them to manager
-      allData.entries.forEach((data) => {
-        const entry = new Entry(data);
-        excelDM.add(entry);
+        // Create Entry instances and add them to manager
+        allData.entries.forEach((data) => {
+          const entry = new Entry(data);
+          excelDM.add(entry);
+        });
+
+        excelDM.findParents(); // Restore Circularity
+        newCurrent(excelDM.entries[0]);
+      })
+      .catch((error) => {
+        console.error("Error loading JSON:", error);
       });
+  }
 
-      excelDM.findParents(); // Restore Circularity
-      newCurrent(excelDM.entries[0]);
-    })
-    .catch((error) => {
-      console.error("Error loading JSON:", error);
-    });
-}
-
-loadHommlet();
+  loadHommlet();
 
   //loadData();
   newCurrent(excelDM.entries[0]);

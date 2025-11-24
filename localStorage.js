@@ -16,9 +16,6 @@ export function saveData() {
     const jsonString = JSON.stringify(excelDM, replacer, 2);
     localStorage.setItem("savedData", jsonString);
 
-    const fileName = document.getElementById('file-name').value;
-    localStorage.setItem("fileName", fileName)
-
   } catch (err) {
     console.error("Error saving data to localStorage", err);
   }
@@ -28,10 +25,6 @@ export function loadData() {
   try {
     const jsonString = localStorage.getItem("savedData");
 
-    //Update fileName
-    let fileName = localStorage.getItem("fileName");
-    let nameInput = document.getElementById('file-name');
-    nameInput.value = fileName;
 
     let allData = JSON.parse(jsonString);
 

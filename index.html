@@ -17,20 +17,13 @@
       <button class="tab-button" data-tab="monsters">Monsters</button>
       <button class="tab-button" data-tab="items">Items</button>
       </div>
-
-      <!-- <div id="tab-content">
-      <div class="tab-panel" data-tab="locations"></div>
-      <div class="tab-panel" data-tab="people" style="display:none;"></div>
-      <div class="tab-panel" data-tab="quests" style="display:none;"></div>
-      </div> -->
-
     
     <div id="currentTitle" class="header-center"></div>
 
     
     <div class="header-btns">
-      <input id="file-name" class="header-left" placeholder="File Name"></input>
-      <button title="Add New Note" id="btn-add">[A]dd</button>
+      <button title="Add New Note" id="btn-add">Add</button>
+      <button title="Spare a Coin." id="btn-donate">Donate</button> 
       <button title="Blank File" id="btn-new">New</button>
       <button title="Download File" id="btn-save">Save</button>
       <button title= "Load File or add Map" id="btn-load">Load</button>
@@ -39,6 +32,10 @@
   </div>
  
 </header>
+
+    <div id="search-box">
+     <input id="search-bar" placeholder="Search Entries..."></input>
+    </div>
 
     <div class="middle">
     <section class="middle-left">
@@ -51,12 +48,14 @@
     <div id="middle-right">
     <canvas id="map-layer"></canvas>
     <div id="note-layer" class="note-layer"></div>
-
     </div>
-
     </section>
     </div>
 
+    
+
+
+  
 
 <script type="module" src="./main.js"></script>
 </body>

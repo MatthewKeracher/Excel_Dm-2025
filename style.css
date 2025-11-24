@@ -41,12 +41,12 @@ header {
   background: #34514e;
   color: #fff;
   padding: 10px 20px;
+  border-bottom: 3px solid #d8d83c;
 }
 
 .tabs {
   display: flex;
   width: 30vw;
-  border-bottom: 3px solid #d8d83c;
   margin-bottom: 0;
 }
 
@@ -97,32 +97,38 @@ header {
   display: flex;
   gap: 10px;
   align-items: center;
-  margin-left: 16px;
 }
 
 .header-btns button {
-  background: #f2f2f2;
-  color: #212121;
-  border: 1px solid #aaa;
+  background: #447e78;
+  color: #d8d83c;
+  border: 1px solid #d8d83c;
   border-radius: 4px;
   font-family: inherit;
+  font-weight: bold;
   font-size: 1em;
   padding: 6px 16px;
   box-shadow: 0 1px 2px 0 rgba(0,0,0,0.04);
   cursor: pointer;
-  transition: background 0.15s, box-shadow 0.15s;
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
 }
 
-.header-btns button:hover,
-.header-btns button:focus {
-  background: #e4e8e4;
-  box-shadow: 0 2px 6px 0 rgba(0,0,0,0.07);
-  outline: none;
+/* Hover effect: brighter background, slightly lift */
+.header-btns button:hover {
+  background: #5aa887;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
 }
 
+/* Active/click effect: depress button */
 .header-btns button:active {
-  background: #d6dbd6;
+  background: #3a695f;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  transform: translateY(0);
 }
+
+
+
 
 
 .header-center {
@@ -135,6 +141,7 @@ header {
   flex: 1;
   display: flex;
   min-height: 0;
+  background: #34514e;
 }
 
 
@@ -142,15 +149,38 @@ header {
   flex: 1;
   padding-top: 0;
   padding: 10px;
-  background: whitesmoke;
+  background: #447e78;
+  border-right: 3px solid #d8d83c;
+  border-bottom: 3px solid #d8d83c;
   max-height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   font-size: 1.1em;
-  width: 20vw;
+  /* width: 20vw; */
   height: 90vh;
 }
 
+#search-box {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30vw;         /* or any fixed or relative width */
+  height: auto;        /* or desired height */
+  z-index: 1000;       /* ensure it is above other content */
+}
+
+#search-bar{
+background: #0d0833;  
+border: 3px solid lime;  
+font-size: x-large;
+color: lime;
+font-family: monospace;
+padding: 10px 20px;
+height: 100%;
+width: 100%;
+}
 
 
 #notecards {
@@ -283,7 +313,7 @@ textarea.notecard-body:focus {
 }
 
 .highlight {
-  background: #d8d83c;
+  box-shadow: 0 0 0 4px lime;
 }
 
 .highlight.no-highlight,
@@ -294,7 +324,7 @@ textarea.notecard-body:focus {
 .middle-right {
   flex: 2;
   padding: 20px;
-  background: whitesmoke;
+  background: rgb(145, 148, 102);
   border-left: 1px solid #ddd;
   position: relative; /* needed for absolute canvas children */
   display: flex; /* optional, if you want to control layout further */
@@ -303,6 +333,8 @@ textarea.notecard-body:focus {
   overflow: scroll;
   /* Set fixed or flexible size, example height */
 }
+
+
 .middle-right canvas {
   position: absolute;
   top: 0; /* match padding top */
@@ -321,7 +353,6 @@ textarea.notecard-body:focus {
 .label {
   position: absolute;
   height: 20px;
-  background: #fffbe6;
   color: #212121;
   padding: 2px 6px;
   font-weight: bold;
@@ -341,7 +372,8 @@ textarea.notecard-body:focus {
 }
 
 .label.highlight {
-  box-shadow: 0 0 0 3px #34514e;
+  box-shadow: 0 0 0 3px lime;
+  opacity: 1;
   background: #d8d83c;
 }
 .label.dragging {
