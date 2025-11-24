@@ -100,15 +100,18 @@ window.addEventListener("DOMContentLoaded", () => {
     newCurrent(current);
   });
 
-  document.addEventListener("keydown", function (event) {
-    if (
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey ||
-      event.key === "Tab"
-    ) {
-      return; // Ignore event if Ctrl or Shift key is pressed
-    }
+  document.addEventListener("keydown", function(event) {
+  const activeElement = document.activeElement;
+
+  if (
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey ||
+    event.key === "Tab" ||
+    (activeElement && activeElement.classList.contains("editing"))
+  ) {
+    return; // Do not fire the event handler if keys or div is focused
+  }
 
     const searchBox = document.getElementById("search-box");
     const searchBar = document.getElementById("search-bar");
