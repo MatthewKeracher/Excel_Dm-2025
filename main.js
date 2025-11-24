@@ -110,6 +110,11 @@ window.addEventListener("DOMContentLoaded", () => {
     event.key === "Tab" ||
     (activeElement && activeElement.classList.contains("editing"))
   ) {
+
+    if (event.key === "Escape") {
+      console.log(activeElement)      
+    }
+
     return; // Do not fire the event handler if keys or div is focused
   }
 

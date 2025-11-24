@@ -1,5 +1,7 @@
 import { Entry } from "./classes.js";
 import { excelDM, reCurrent, newCurrent, currentTab, current } from "./main.js";
+import { marked } from './node_modules/marked/lib/marked.esm.js';
+
 
 export function loadNoteCards(data, search = "no") {
   let entries;
@@ -41,6 +43,7 @@ export function loadNoteCards(data, search = "no") {
 }
 
 
+
 function makeNoteCard(entry, index) {
   const card = document.createElement("div");
   card.dataset.entryTitle = entry.title;
@@ -62,7 +65,7 @@ function makeNoteCard(entry, index) {
   const body = document.createElement("div");
   body.className = "notecard-body";
   body.dataset.fullText = entry.body;
-  body.textContent = entry.body;
+  body.innerHTML = marked.parse(entry.body);
   body.style.marginTop = "8px";
   body.style.backgroundColor = entry?.color || "";
 
@@ -79,7 +82,6 @@ function makeNoteCard(entry, index) {
       `.label[data-entry-title="${CSS.escape(entry.title)}"]`
     );
 
-   
     if (label) {
       label.classList.add("highlight");
       label.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -120,7 +122,6 @@ function makeNoteCard(entry, index) {
 
     // Find the index of the entry to delete
     const deleteIndex = targetArray.indexOf(entry);
-
 
     if (deleteIndex >= 0) {
       if (
@@ -166,11 +167,13 @@ function makeNoteCard(entry, index) {
       editBtn.innerHTML = "💾";
       titleInput.focus();
     } else {
+      
+
       isEditing = false;
       const newText = textarea.value.trim();
       body.dataset.fullText = newText;
       entry.body = newText;
-      body.textContent = newText;
+      body.innerHTML = marked.parse(newText);
 
       const newTitle = card
         .querySelector(".notecard-title.editing")
@@ -243,10 +246,10 @@ function makeNoteCard(entry, index) {
     if (lockbtn.innerHTML === "🔓") {
       lockbtn.innerHTML = "🔒";
       lockbtn.style.backgroundColor = "red";
-      current.parentOf(entry)
+      current.parentOf(entry);
     } else {
       lockbtn.innerHTML = "🔓";
-      entry.parent.children = entry.parent.children.filter(e => e !== entry);
+      entry.parent.children = entry.parent.children.filter((e) => e !== entry);
       entry.parent = [];
       lockbtn.style.backgroundColor = "transparent";
     }
