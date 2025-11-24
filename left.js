@@ -1,6 +1,6 @@
 import { Entry } from "./classes.js";
 import { excelDM, reCurrent, newCurrent, currentTab, current } from "./main.js";
-import { marked } from './node_modules/marked/lib/marked.esm.js';
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 
 
 export function loadNoteCards(data, search = "no") {
