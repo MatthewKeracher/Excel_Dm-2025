@@ -1,0 +1,304 @@
+{
+  "entries": [
+    {
+      "title": "Equipment: General",
+      "type": "items",
+      "image": "",
+      "body": "| Item                          | Price  | Weight |\n|:------------------------------|:-------|:-------|\n| Backpack (Standard or Halfling) | 4 gp  | *      |\n| Belt Pouch                    | 1 gp   | *      |\n| Bit and bridle                | 15 sp  | 3      |\n| Candles, 12                  | 1 gp   | *      |\n| Chalk, small bag of pieces    | 2 gp   | *      |\n| Cloak                        | 2 gp   | 1      |\n| Clothing, common outfit       | 4 gp   | 1      |\n| Glass bottle or vial          | 1 gp   | *      |\n| Grappling Hook               | 2 gp   | 4      |\n| Holy Symbol                  | 25 gp  | *      |\n| Holy Water, per vial          | 10 gp  | *      |\n| Horseshoes & shoeing         | 1 gp   | 10     |\n| Ink, per jar                 | 8 gp   | ½      |\n| Iron Spikes, 12              | 1 gp   | 1      |\n| Ladder, 10 ft.                | 1 gp   | 20     |\n| Lantern                     | 5 gp   | 2      |\n| Lantern, Bullseye            | 14 gp  | 3      |\n| Lantern, Hooded              | 8 gp   | 2      |\n| Manacles (without padlock)   | 6 gp   | 4      |\n| Map or scroll case            | 1 gp   | ½      |\n| Mirror, small metal          | 7 gp   | *      |\n| Oil (per flask)              | 1 gp   | 1      |\n| Padlock (with 2 keys)        | 12 gp  | 1      |\n| Paper (per sheet)            | 1 gp   | **     |\n| Pole, 10' wooden             | 1 gp   | 10     |\n| Quill                       | 1 sp   | **     |\n| Quill Knife                 | 1 gp   | *      |\n| Quiver or Bolt case          | 1 gp   | 1      |\n| Rations, Dry, one week       | 10 gp  | 14     |\n| Rope, Hemp (per 50 ft.)      | 1 gp   | 5      |\n| Rope, Silk (per 50 ft.)      | 10 gp  | 2      |\n| Sack, Large                 | 1 gp   | *      |\n| Sack, Small                 | 5 sp   | *      |\n| Saddle, Pack                | 5 gp   | 15     |\n| Saddle, Riding              | 10 gp  | 35     |\n| Saddlebags, pair            | 4 gp   | 7      |\n| Spellbook (128 pages)       | 25 gp  | 1      |\n| Tent, Large (ten men)       | 25 gp  | 20     |\n| Tent, Small (one man)       | 5 gp   | 10     |\n| Thieves' picks and tools    | 25 gp  | 1      |\n| Tinderbox, flint and steel | 3 gp   | 1      |\n| Torches, 6                 | 1 gp   | 1      |\n| Whetstone                  | 1 gp   | 1      |\n| Whistle                    | 1 gp   | **     |\n| Wineskin/Waterskin         | 1 gp   | 2      |\n| Winter blanket             | 1 gp   | 3      |\n| Magnet, small            | 1 sp   | *      |\n| Magnifying glass         | 100 gp | *      |\n| Mirror, small metal      | 7 gp   | *      |\n| Mirror, small silver     | 25 gp  | *      |\n| Nails, Iron (20)         | 2 sp   | 1      |\n| Nails, silver (20)       | 2 gp   | 1      |\n| Needle, magnetized       | 1 gp   | **     |\n| Oil (per flask)          | 1 gp   | 1      |\n| Fine Paper or Vellum, per sheet | 4 gp   | **     |\n| Paper or Parchment, per sheet | 1 gp   | **     |\n| Rope, Hemp (per 50 ft)   | 1 gp   | 5      |\n| Rope, Silk (per 50 ft)   | 10 gp  | 2      |\n| Signal whistle           | 1 gp   | **     |\n| String / Twine, 100 ft   | 2 sp   | 1      |\n| String / Twine, Silk, 100 ft | 6 sp   | 1/2    |\n| Vial, glass              | 1 gp   | *      |\n| Wax, beeswax             | 3 sp   | 1      |\n| Wooden Stake             | 2 cp   | 2      |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Melee Weapons",
+      "type": "items",
+      "image": "",
+      "body": "| Weapon                     | Price   | Size | Weight | Damage                         |\n|:---------------------------|:--------|:-----|:-------|:-------------------------------|\n| **Axes**                   |         |      |        |                                |\n| Hand Axe                   | 4 gp    | S    | 5      | 1d6                            |\n| Battle Axe                 | 7 gp    | M    | 7      | 1d8                            |\n| Great Axe                  | 14 gp   | L    | 15     | 1d10                           |\n| Pickaxe (Military Pick)    | 6 gp    | S    | 4      | 1d6                            |\n| Mattock (Footman's Pick)   | 8 gp    | M    | 6      | 1d8                            |\n| **Daggers**                |         |      |        |                                |\n| Dagger                    | 2 gp    | S    | 1      | 1d4                            |\n| Defending Dagger          | 7 gp    | S    | 2      | 1d4                            |\n| Silver† Dagger            | 25 gp   | S    | 1      | 1d4                            |\n| **Swords**                 |         |      |        |                                |\n| Shortsword / Cutlass      | 6 gp    | S    | 3      | 1d6                            |\n| Longsword / Scimitar      | 10 gp   | M    | 4      | 1d8                            |\n| Two-Handed Sword          | 18 gp   | L    | 10     | 1d10                           |\n| **Hammers and Maces**      |         |      |        |                                |\n| Warhammer                 | 4 gp    | S    | 6      | 1d6                            |\n| Light Mace                | 5 gp    | S    | 5      | 1d6                            |\n| Mace                      | 6 gp    | M    | 10     | 1d8                            |\n| Morningstar               | 7 gp    | M    | 7      | 1d8                            |\n| Maul / Great Mace         | 10 gp   | L    | 16     | 1d10                           |\n| **Spears and Polearms**    |         |      |        |                                |\n| Spear                     | 5 gp    | M    | 5      |                                |\n| - Thrown (one handed)     |         |      |        | 1d6                            |\n| - Melee (one handed)      |         |      |        | 1d6                            |\n| - Melee (two handed)      |         |      |        | 1d8                            |\n| Fork / Trident (E)        | 6 gp    | M    | 5      |                                |\n| - Thrown (one handed)     |         |      |        | 1d6                            |\n| - Melee (one handed)      |         |      |        | 1d6                            |\n| - Melee (two handed)      |         |      |        | 1d8                            |\n| Boar Spear                | 6 gp    | M    | 5      |                                |\n| - Thrown (one handed)     |         |      |        | 1d6                            |\n| - Melee (one handed)      |         |      |        | 1d6                            |\n| - Melee (two handed)      |         |      |        | 1d8                            |\n| Lance                     | 10 gp   | L    | 10     | 1d8                            |\n| Quarterstaff              | 2 gp    | L    | 4      | 1d6                            |\n| Pole Arm                  | 9 gp    | L    | 15     | 1d10                           |\n| **Chain and Flail**             |       |       |        |           |\n| Chain††                        | 9 gp  | M/L   | 3      | 1d4       |\n| Flail                         | 8 gp  | M     | 6      | 1d8       |\n| Great Flail                   | 12 gp | L     | 15     | 1d10      |\n| Whip                         | 3 gp  | M     | 2      | 1d3       |\n| **Other Weapons**              |       |       |        |           |\n| Club/Cudgel/Walking Staff     | 2 sp  | M     | 1      | 1d4       |\n| Silver Walking Stick/Staff†   | 4 gp  | M     | 1      | 1d4       |\n| Greatclub                    | 3 gp  | L     | 8      | 1d8       |\n| Sap / Blackjack**             | 1 gp  | S     | 1      | 1d4       |\n| Hook                         | 6 sp  | S     | 1      | 1d4       |\n| Sickle                       | 2 gp  | S     | 2      | 1d6       |\n| Scythe                      | 7 gp  | L     | 10     | 1d8       |\n| **Improvised Weapons**         |       |       |        |           |\n| Random Object                | –     | S     | 1 to 4 | 1d3       |\n| –                           | –     | M     | 5 to 8 | 1d4       |\n| Spade                        | 2 gp  | M     | 4      | 1d6       |\n| Crowbar                     | 2 gp  | M     | 5      | 1d6       |\n| Pitchfork                   | 1 gp  | M     | 3      | 1d6       |\n| Frying Pan                  | 8 sp  | S     | 4      | 1d4       |\n| Torch (fire damage)          | –     | S     | *      | 1d3       |\n| **Brawling**                  |       |       |        |           |\n| Punch**                     | –     | –     | –      | 1d3       |\n| Kick**                      | –     | –     | –      | 1d4       |\n| Gauntlet / pommel**          | –     | –     | –      | 1d3       |\n| Cestus / spiked gauntlet    | 1 gp  | S     | 2      | 1d3       |\n<hr>* These items weigh little individually. Ten of these items weigh one pound. ** This weapon only does subduing damage – see Basic Fantasy RPG Core Rules. (E) Entangling: This weapon may be used to snare or hold opponents. † Silver tip or blade, for use against lycanthropes. †† Minimum weight and price.",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Stats: Missile Weapon Ranges",
+      "type": "items",
+      "image": "",
+      "body": "| Weapon            | Short (+1) | Medium (0) | Long (-2) |\n|:------------------|:-----------|:-----------|:----------|\n| Longbow           | 70         | 140        | 210       |\n| Shortbow          | 50         | 100        | 150       |\n| Heavy Crossbow    | 80         | 160        | 240       |\n| Light Crossbow    | 60         | 120        | 180       |\n| Hand Crossbow     | 30         | 60         | 90        |\n| Bola              | 20         | 40         | 60        |\n| Blowgun           | 10         | 20         | 30        |\n| Dagger            | 10         | 20         | 30        |\n| Dart              | 10         | 20         | 30        |\n| Throwing Blade    | 10         | 20         | 30        |\n| Warhammer         | 10         | 20         | 30        |\n| Hand Axe          | 10         | 20         | 30        |\n| Oil or Holy Water | 10         | 30         | 50        |\n| Sling             | 30         | 60         | 90        |\n| Boar Spear        | 10         | 20         | 30        |\n| Fork              | 10         | 20         | 30        |\n| Spear             | 10         | 20         | 30        |\n| Trident           | 10         | 20         | 30        |\n| Javelin           | 20         | 40         | 60        |\n| Net               | 10         | 15         | 20        |\n| Random Object     | -          | 10         | 20        |\n<hr>Missile weapon ranges are measured in feet. When operating in the wilderness, substitute yards for feet in these measurements. Attacking a target at or within the Short range grants the attacker a +1 attack bonus. If the target is beyond the Medium range but not exceeding the Long range, the attacker suffers a -2 attack penalty.",
+      "color": "rgba(176, 151, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Armor",
+      "type": "items",
+      "image": "",
+      "body": "| Armor Type           | Cost    | Weight | AC |\n|:---------------------|:--------|:-------|:---|\n| No Armor             | 0 gp    | 0      | 11 |\n| Padded or Quilted    | 15 gp   | 10     | 12 |\n| Hide                 | 10 gp   | 30     | 13 |\n| Leather              | 20 gp   | 15     | 13 |\n| Studded Leather      | 30 gp   | 25     | 14 |\n| Ring Mail            | 25 gp   | 30     | 14 |\n| Brigandine           | 80 gp   | 30     | 15 |\n| Chain Mail           | 60 gp   | 40     | 15 |\n| Scale Mail           | 80 gp   | 55     | 16 |\n| Splint Mail          | 100 gp  | 45     | 16 |\n| Banded Mail          | 200 gp  | 35     | 16 |\n| Plate Mail           | 300 gp  | 50     | 17 |\n| Field Plate Mail     | 500 gp  | 70     | 18 |\n| Full Plate Mail      | 1,500 gp| 80     | 19 |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Animals: Mounts & Beasts of Burden",
+      "type": "items",
+      "image": "",
+      "body": "| Item                  | Price         |\n|:----------------------|:--------------|\n| Camel†                | 75 gp         |\n| Donkey, mule, or ass  | 40 gp         |\n| Elephant, Labor†      | 200 gp        |\n| Elephant, War†        | 500 gp        |\n| Horse, Draft          | 120 gp        |\n| Horse, War            | 200 gp        |\n| Horse, Riding         | 75 gp         |\n| Pony*                 | 40 gp         |\n| Pony, War*            | 80 gp         |\n| War Ram*†             | 200 gp        |\n| Riding Dog*           | 80 gp         |\n| Griffon               | 5,000 gp      |\n| Hippogriff            | 2,000-3,000 gp|\n| Pegasus               | Min 5,000 gp  |\n| Roc, Normal*          | min 5,000 gp  |\n| Roc, Large            | min 10,000 gp |",
+      "color": "rgba(158, 209, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Land Transportation",
+      "type": "items",
+      "image": "",
+      "body": "| Vehicle | Length x Width    | Weight (lbs) | Cargo (lbs) | Movement          | Hardness / HP | Cost (gp) |\n|:--------|:------------------|:-------------|:------------|:------------------|:--------------|:----------|\n| Chariot | 15' x 6'          | 300          | 750         | 60' (10')        | 10 / 10       | 400       |\n| Coach   | 30' x 8'          | 1,000        | 2,000       | 40' (15')        | 6 / 12        | 1,500     |\n| Wagon   | 35' x 8'          | 2,000        | 4,000       | 20' (15')        | 6 / 16        | 500       |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Ranged Weapons",
+      "type": "items",
+      "image": "",
+      "body": "| Weapon                      | Price | Size | Weight | Damage   |\n|:----------------------------|:------|:-----|:-------|:---------|\n| **Bows**                    |       |      |        |          |\n| Shortbow                   | 25 gp | M    | 2      |          |\n| Shortbow Arrow             | 1 sp  | *    |        | 1d6      |\n| Silver† Shortbow Arrow      | 2 gp  | *    |        | 1d6      |\n| Longbow                    | 60 gp | L    | 3      |          |\n| Longbow Arrow              | 2 sp  | *    |        | 1d8      |\n| Silver† Longbow Arrow       | 4 gp  | *    |        | 1d8      |\n| Light Crossbow             | 30 gp | M    | 7      |          |\n| Light Quarrel              | 2 sp  | *    |        | 1d6      |\n| Silver† Light Quarrel       | 5 gp  | *    |        | 1d6      |\n| Heavy Crossbow             | 50 gp | L    | 14     |          |\n| Heavy Quarrel              | 4 sp  | *    |        | 1d8      |\n| Silver† Heavy Quarrel       | 10 gp | *    |        | 1d8      |\n| Hand Crossbow              | 150 gp| S    | 3      |          |\n| Hand Quarrel               | 2 sp  | *    |        | 1d3      |\n| Silver† Hand Quarrel        | 5 gp  | *    |        | 1d3      |\n| Bullet Crossbow            | 30 gp | M    | 7      |          |\n| **Slings & Hurled Weapons** |       |      |        |          |\n| Sling                      | 1 gp  | S    | *      |          |\n| Bullet                     | 1 sp  | *    |        | 1d4      |\n| Stone                      | n/a   | *    |        | 1d3      |\n| Silver† Bullet             | 1 gp  | *    |        | 1d4      |\n| Bola (E)                   | 2 gp  | S    | 2      | 1d3      |\n| Dart / Throwing Blade      | 1 gp  | S    | * to ½ | 1d3      |\n| Javelin                    | 1 gp  | M    | 2      | 1d4      |\n| Blowgun                    | 2 gp  | M    | 2      |          |\n| Dart                       | 1 sp  | *    |        | 1d3      |\n| Net (E)                    | 20 gp | M    | 5      | -        |\n| Random Object (thrown)     | -     | S-M  | 1 to 5 | 1d3      |\n<hr>* These items weigh little individually. Ten of these items weigh one pound. ** This weapon only does subduing damage – see Basic Fantasy RPG Core Rules. (E) Entangling: This weapon may be used to snare or hold opponents. † Silver tip or blade, for use against lycanthropes.",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Shields",
+      "type": "items",
+      "image": "",
+      "body": "| Shield Type    | Cost   | Weight | AC Bonus (Melee/Missile) |\n|:--------------|:-------|:-------|:------------------------|\n| Buckler       | 5 gp   | 2      | +1 / 0                  |\n| Medium Shield | 7 gp   | 5      | +1 / +1                 |\n| Tower Shield  | 15 gp  | 12     | +1 / +3                 |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Cooking",
+      "type": "items",
+      "image": "",
+      "body": "| Item                      | Price  | Weight |\n|:--------------------------|:-------|:-------|\n| **Cooking**               |        |        |\n| Cooking Supplies (per week)| 3 gp   | 7      |\n| Fire grate                | 3 gp   | 5      |\n| Fishhook                  | 1 sp   | **     |\n| Iron Pan (Frying)         | 8 sp   | 2      |\n| Iron Pot                  | 5 sp   | 3      |\n| **Rations**               |        |        |\n| Dry, one week             | 10 gp  | 14     |\n| Elven Waybread, one week  | 35 gp  | 7      |\n| Standard (perishable), one day | 6 sp   | 4      |\n| Tea pot                   | 3 sp   | 2      |\n| Tripod, cooking           | 3 gp   | 10     |\n\n<hr>Cooking Supplies are odds and ends needed for cooking\non the road, including some basic sundries, common\nseasonings, smoking wood, and so on.<br>\nStandard Rations include cured meats, seasonal fruits and vegetables, and fresh breads or biscuits, often wrapped in cloth. These are tastier than dry rations but will generally only keep for a few days in all but the coldest or driest climates (up to 1 week).<br>\nDry Rations may consist of dry bread, hard cheese, dried fruit, nuts, beans, jerky, or any other food which will not \"go bad\" in less than about a month (if not longer). Dry rations are generally sold in quantities sufficient for one character for a week and are packaged in waxed or oiled cloth to protect them.<br>\nElven Waybread is famously described to fill a man's stomach for a day with just one bite. While not quite this sustaining, this dry but not-bad-tasting tack biscuit is very nourishing. A single small cake will provide one day's sustenance.",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Dungeon Exploration",
+      "type": "items",
+      "image": "",
+      "body": "| Item                         | Price  | Weight |\n|:-----------------------------|:-------|:-------|\n| Bed Roll                     | 6 gp   | 5      |\n| Candles, 12                 | 1 gp   | *      |\n| Chalk, colored, small bag of pieces | 4 gp   | *      |\n| Chalk, small bag of pieces   | 2 gp   | *      |\n| Charcoal sticks             | 1 gp   | *      |\n| Coal Keeper                 | 2 gp   | 1      |\n| Cord/ Strap, per 3 ft       | 1 sp   | 1      |\n| Flask, Silver               | 20 gp  | 1      |\n| Flask, Steel                | 2 gp   | 1      |\n| Grappling Hook              | 2 gp   | 4      |\n| Hammock                     | 5 gp   | 5      |\n| Iron Spikes, 12             | 1 gp   | 1      |\n| Jar or Bottle, Ceramic      | 4 sp   | 1      |\n| Jar or Bottle, Glass        | 12 sp  | 1      |\n| Ladder, Rope, 25ft          | 3 gp   | 10     |\n| Lantern, Bullseye           | 14 gp  | 3      |\n| Lantern, Hooded             | 8 gp   | 2      |\n| Lens, small                 | 8 gp   | *      |\n| Lock, Excellent             | 200 gp | 2      |\n| Lock, Good                  | 100 gp | 1      |\n| Lock, Poor                  | 20 gp  | 1/2    |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Health & Hygiene",
+      "type": "items",
+      "image": "",
+      "body": "| Item                           | Price | Weight |\n|:-------------------------------|:------|:-------|\n| Bandages                      | 1 sp  | **     |\n| Crutches                      | 1 gp  | 4      |\n| Oil (per flask), scented/rubbing | 5 gp  | 2      |\n| Perfume (per vial)            | 5 gp  | 1/2    |\n| Razor                        | 1 gp  | *      |\n| Soap (per lb)                | 5 sp  | 1      |\n| Soap, perfumed (per lb)      | 5 gp  | 1      |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Outdoors",
+      "type": "items",
+      "image": "",
+      "body": "| Item             | Price  | Weight |\n|:-----------------|:-------|:-------|\n| Air Bladder      | 15 gp  | 3      |\n| Caltrops         | 1 gp   | 2      |\n| Crampons         | 4 gp   | *      |\n| Hunter's Horn    | 5 gp   | 2      |\n| Piton, climbing  | 2 sp   | **     |\n| Skates           | 10 gp  | 2      |\n| Snow skis        | 15 gp  | 7      |\n| Tent, Large (ten men)  | 25 gp  | 20     |\n| Tent, Pavilion   | 100 gp | 40     |\n| Tent, Small (one man)  | 5 gp   | 10     |\n| Trap, small animal  | 4 gp   | 1      |\n| Trap, medium animal | 7 gp   | 2      |\n| Trap, large animal  | 14 gp  | 5      |\n| Travois          | 5 gp   | 15     |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Personal",
+      "type": "items",
+      "image": "",
+      "body": "| Item                     | Price  | Weight |\n|:-------------------------|:-------|:-------|\n| Journal (blank)          | 20 gp  | 1      |\n| Map or scroll case       | 1 gp   | 1/2    |\n| Mess Kit                 | 8 gp   | 2      |\n| Sealing Wax              | 3 sp   | *      |\n| Signet ring or personal seal | 5 gp   | **     |\n| Smoking Pipe             | 1 gp   | *      |\n| Smoking pouch            | 1 gp   | *      |\n| Tinder Box, Flint & Steel| 3 gp   | 1      |\n| Torches, 6               | 1 gp   | 1      |\n| Wineskin/Waterskin       | 1 gp   | 2      |\n| Wineskin/Waterskin, gallon | 3 gp  | 7      |\n| Winter blanket           | 1 gp   | 3      |\n| Writing ink (per vial)   | 8 gp   | 1/2    |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Tools",
+      "type": "items",
+      "image": "",
+      "body": "| Item                  | Price | Weight |\n|:----------------------|:------|:-------|\n| Bell, small           | 1 gp  | *      |\n| Bellows               | 10 gp | 3      |\n| Block and tackle      | 5 gp  | 2      |\n| Bucket (up to 5 gal)  | 5 sp  | 2 (15) |\n| Canvas (per sq yard)  | 4 sp  | 5      |\n| Chain (per ft), Heavy | 4 gp  | 10     |\n| Chain (per ft), Light | 3 gp  | 5      |\n| Chisel                | 2 gp  | 2      |\n| Crowbar (3 ft)        | 2 gp  | 10     |\n| Fishing net, 10 ft sq | 4 gp  | 1      |\n| Grease Pot            | 5 gp  | 5      |\n| Hammer or Mallet      | 3 gp  | 2      |\n| Hand Drill            | 10 gp | 3      |\n| Hourglass (Hour)      | 25 gp | 3      |\n| Ladder, 10 ft         | 1 gp  | 20     |\n| Marbles, Bag          | 8 sp  | 1      |\n| Needle, sewing        | 5 sp  | **     |\n| Paint, per gallon     | 1-2 gp| 4      |\n| Paint, small pot      | 2 sp  | 1      |\n| Pick Axe, Mining      | 4 gp  | 7      |\n| Pliers                | 1 gp  | 1      |\n| Pole, 10 ft Collapsing| 50 gp | 15     |\n| Pole, 10 ft wooden    | 1 gp  | 10     |\n| Scissors              | 5 sp  | 1      |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Bags & Containers",
+      "type": "items",
+      "image": "",
+      "body": "| Container            | Price   | Weight (lbs) | Volume Held (cu ft) | Weight Held (lbs) |\n|:---------------------|:--------|:----------------|:--------------------|:---------------------|\n| Beltpouch            | 1 gp    | *               | 1/4                 | 2                    |\n| Large Pouch or Purse | 2 gp    | *               | 1/2                 | 5                    |\n| Backpack, Adventurer's | 4 gp  | *               | 3                   | 40                   |\n| Backpack, Halfling   | 4 gp    | *               | 1 1/2               | 30                   |\n| Backpack, Knapsack   | 3 gp    | *               | 2                   | 25                   |\n| Backpack, Wicker     | 7 cp    | *               | 2                   | 15                   |\n| Pack Vest            | 10 gp   | 1               | 2                   | 15                   |\n| Satchel / Haversack  | 12 sp   | *               | 1                   | 10                   |\n| Satchel, Oilskin (water resistant) | 6 gp | *         | 1                   | 15                   |\n| Bag, Cloth           | 8 cp    | *               | 1/4                 | 5                    |\n| Bag, Cloth, tiny     | 2 cp    | *               | *                   | -                    |\n| Sack, Large          | 1 gp    | *               | 4                   | 40                   |\n| Sack, Large Leather  | 2 gp    | *               | 4                   | 60                   |\n| Sack, Small          | 5 sp    | *               | 2                   | 20                   |\n| Sack, Small Leather  | 1 gp    | *               | 2                   | 30                   |\n| Saddle Bags, Large   | 4 gp    | 7               | 1                   | 10                   |\n| Saddle Bags, Small   | 3 gp    | 5               | 1/2                 | 5                    |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Equipment: Outfits",
+      "type": "items",
+      "image": "",
+      "body": "| Item                  | Price    | Weight |\n|:----------------------|:---------|:-------|\n| Common Outfit         | 4 gp     | 1      |\n| Artisan / Craftsman Clothes | 5 gp     | 2      |\n| Clerical Vestments    | 10 gp    | 2      |\n| Cold Weather Outfit   | 6 gp     | 3      |\n| Scholar's Robes       | 5 gp     | 1      |\n| Entertainer's Costume | 10 gp    | 1      |\n| Adventurer's Outfit   | 8 gp     | 3      |\n| Travel Clothes        | 6 gp     | 3      |\n| Peasant Outfit        | 1 gp     | 1      |\n| Courtier Costume      | min 25 gp| 2      |\n| Noble's Finery        | min 50 gp| 5      |\n| Royal Regalia         | min 100 gp| 10     |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Animals: Game, Farm & Livestock",
+      "type": "items",
+      "image": "",
+      "body": "| Animal                  | Price  |\n|:------------------------|:-------|\n| Bees (100, w/ queen)    | 10 gp  |\n| Boar                    | 10 gp  |\n| Bull                    | 20 gp  |\n| Calf                    | 5 gp   |\n| Chicken                 | 2 cp   |\n| Cow                     | 10 gp  |\n| Deer, Doe               | 5 gp   |\n| Deer, Stag              | 9 gp   |\n| Game Fowl (pheasant, partridge, quail, etc.) | 5 sp   |\n| Goat                    | 1 gp   |\n| Goose                   | 5 cp   |\n| Ox                      | 15 gp  |\n| Pig                     | 3 gp   |\n| Rabbit                  | 3 cp   |\n| Ram                     | 4 gp   |\n| Sheep                   | 2 gp   |\n| Swan                    | 5 sp   |",
+      "color": "rgba(158, 209, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Animals: Guards & Hunting",
+      "type": "items",
+      "image": "",
+      "body": "| Animal                | Price     |\n|:----------------------|:----------|\n| Bear                  | 1,000 gp  |\n| Cat, Hunting (Cheetah, Jaguar, Mountain Lion)† | 1,500 gp  |\n| Cat, Great (Lion, Tiger)†         | 3,000 gp  |\n| Dog, Guard            | 25 gp     |\n| Dog, Hunting          | 17 gp     |\n| Dog, War              | 50 gp     |\n| Eagle (trained)       | 1,500 gp  |\n| Hawk/ Falcon (trained)| 1,000 gp  |\n| Monkey (Sentry)†      | 1,500 gp  |\n| Ape (Guard)†          | 3,000 gp  |\n| Owl                   | 3 gp      |\n| Wolf                  | 2,500 gp  |",
+      "color": "rgba(158, 209, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Animals: Pets & Other Animals",
+      "type": "items",
+      "image": "",
+      "body": "| Animal                       | Price           |\n|:-----------------------------|:----------------|\n| Cat, Domestic                | 1 sp            |\n| Cat, Small wild             | 25 gp           |\n| Crocodilian†                 | 500 to 1,000 gp |\n| Dog, Pet                    | 5 to 20 gp      |\n| Ferret                      | 5 sp            |\n| Ferret, trained             | 5 gp            |\n| Fish (small)                | 5 sp            |\n| Fish (medium)               | 1 gp            |\n| Fowl, exotic (Peafowl, Emu, etc.)† | 500 gp    |\n| Lizard / small reptile      | 1 to 5 gp       |\n| Owl                         | 3 gp            |\n| Parrot / Cockatiel†         | 100 gp          |\n| Pigeon, homing              | 100 gp          |\n| Rodent (Common)             | 1 cp            |\n| Rodent (Giant)              | 1 gp            |\n| Snake, Pit Viper (poisonous)| 5 sp            |\n| Snake, Constrictor †        | 50 gp           |\n| Snake, Small (nonpoisonous) | 7 cp            |\n| Songbird                    | 10 sp           |\n| Turtle                      | 10 sp           |",
+      "color": "rgba(158, 209, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Animals: Equipment",
+      "type": "items",
+      "image": "",
+      "body": "| Item                    | Price   | Weight |\n|:------------------------|:--------|:-------|\n| Cage, Small animal      | 5 gp    | 5      |\n| Cage, Large animal      | 15 gp   | 10     |\n| Large Animal Feed, 1 day| 1 sp    | 5      |\n| Medium Animal Feed, 1 day | 5 cp  | 2      |\n| Leash, Small-Medium animal | 1 gp | 1/2    |\n| Leash, Large animal     | 2 gp    | 1      |\n| Muzzle, Dog, leather    | 2 gp    | *      |",
+      "color": "rgba(158, 209, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Services",
+      "type": "items",
+      "image": "",
+      "body": "| Item                                | Price        |\n|:-----------------------------------|:-------------|\n| City rooms (per month), Common     | 20 gp        |\n| City rooms (per month), Poor       | 6 sp         |\n| Grain and stabling for horse (daily)| 5 sp       |\n| Inn lodging (per day/week), Private Room | 2 gp / 8 gp |\n| Inn lodging (per day/week), Common | 5 sp / 3 gp  |\n| Inn lodging (per day/week), Poor   | 5 cp / 2 sp  |\n| Separate latrine for rooms (per month) | 2 gp     |\n| Meals (per day), Poor               | 1 sp         |\n| Meals (per day), Common             | 3 sp         |\n| Meals (per day), Good               | 5 sp         |\n| Bath                               | 3 cp         |\n| Clerk (per letter)                 | 2 sp         |\n| Guide, in city (per day)           | 2 sp         |\n| Lantern or torchbearer (per night)| 1 sp         |\n| Hireling, trained, per day         | 3 sp         |\n| Hireling, untrained, per day       | 1 sp         |\n| Hireling, Specialists & Mercenaries| See Core Rules|\n| Messenger, in city (per message)   | 1 sp         |\n| Messenger, overland, per mile      | 2 cp         |\n| Minstrel (per performance)         | 3 gp         |\n| Mourner (per funeral)              | 2 sp         |\n| Road or gate toll                  | 1 cp         |\n| Ship's passage, per mile           | 1 sp         |\n| Teamster w/wagon, per mile         | 1 sp         |\n| Coach cab (per mile)               | 3 cp         |",
+      "color": "rgba(151, 186, 209, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "At the Tavern: Drinks",
+      "type": "items",
+      "image": "",
+      "body": "| Drink                | Pitcher (Gallon) | Bottle   | Draft pint | Wine glass | Mead pint |\n|:---------------------|:-----------------|:---------|:-----------|:-----------|:----------|\n| Small Beer / Applejack | 5 cp           | 4 sp     | -          | -          | -         |\n| Beer, common          | 5 cp            | 4 sp     | -          | -          | -         |\n| Beer, quality         | 2 sp            | 16 sp    | -          | -          | -         |\n| Ale / Cider, common   | 1 sp            | 8 sp     | -          | -          | -         |\n| Ale / Cider, quality  | 4 sp            | 3 gp     | -          | -          | -         |\n| Ale / Cider, exceptional | 1 gp         | 8 gp     | -          | -          | -         |\n| Wine, common          | 2 sp            | 16 sp    | 1 gp       | 1 gp       | -         |\n| Wine, quality         | 1 gp            | 10 gp    | 5 gp       | 5 gp       | -         |\n| Wine, exceptional     | min 6 gp        | -        | min 30 gp  | min 30 gp  | -         |\n| Mead, common          | 1 sp            | -        | 5 sp       | 5 sp       | -         |\n| Mead, quality         | 4 sp            | -        | 2 gp       | 2 gp       | -         |",
+      "color": "rgba(209, 151, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Trade: Cooking & Provisioning",
+      "type": "items",
+      "image": "",
+      "body": "| Item                        | Price   | Weight |\n|:----------------------------|:--------|:-------|\n| Pickled fish, 5 gal barrel  | 3 gp    | 30     |\n| Pickled vegetables, quart   | 1 gp    | 1      |\n| Sugar                      | 1 gp    | 1      |\n| Fruit, dried               | 2 sp    | 1      |\n| Nuts                       | 1 gp    | 1      |\n| Fresh fruits, Common       | 1 gp    | 1      |\n| Fresh fruits, Rare/imported| 10 gp   | 1      |\n| Candied fruit/herbs, oz    | 5 sp to 5 gp | *    |\n| Cured meats (salted, smoked, dried, etc) | 4 gp | 1  |\n| Carcass, Game Animal       | 1 gp/ HD| varies |\n| Herbs / Spices, common     | 5 sp    | 1      |\n| Herbs / Spices, uncommon   | 1 gp    | 1      |\n| Herbs / Spices, Rare       | 2 gp    | 1      |\n| Herbs / Spices, Exotic     | 15 gp   | 1      |\n| Garlic, 1 bulb             | 5 cp    | *      |\n| Salt (1lb)                 | 1 gp    | 1      |\n| Grain (raw)                | 1 cp    | 1      |\n| Meal (rough)               | 2 cp    | 1      |\n| Flour (fine)               | 3 cp    | 1      |\n| Wood (lumber), 1 cord (128 cubic feet) | 50 gp | 5,000 |\n| Firewood (per day)         | 1 cp    | 20     |\n| Tobacco, per pouch         | 5 sp    | 1      |\n| Tobacco, high quality      | 10 sp   | 1      |\n| Halfling pipeweed          | 2 gp    | 1      |",
+      "color": "rgba(209, 208, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Trade: Drinks by the Barrel",
+      "type": "items",
+      "image": "",
+      "body": "| Item                  | Barrel (30 gal.) | Tun (250 gal.) |\n|:----------------------|:-----------------|:---------------|\n| Small Beer / Applejack| 4 gp             | –              |\n| Beer, common          | 4 gp             | 20 gp          |\n| Beer, quality         | 16 gp            | 80 gp          |\n| Ale / Cider, common   | 8 gp             | 40 gp          |\n| Ale / Cider, quality  | 30 gp            | 150 gp         |\n| Ale / Cider, exceptional (min) | 80 gp   | 400 gp         |\n| Wine, common          | 8 gp             | 40 gp          |\n| Wine, quality         | 80 gp            | 400 gp         |\n| Wine, exceptional (min) | 450 gp          | 2,400 gp       |\n| Mead, common          | 8 gp             | 40 gp          |\n| Mead, quality         | 30 gp            | 150 gp         |\n| Spirits, rotgut       | 12 gp            | –              |\n| Spirits, common       | 40 gp            | 200 gp         |\n| Spirits, quality      | 400 gp           | 2,000 gp       |\n| Spirits, exceptional (min) | 2,000 gp     | 10,000 gp      |",
+      "color": "rgba(209, 208, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Trade: Cloth & Skins",
+      "type": "items",
+      "image": "",
+      "body": "| Item                      | Price  | Weight |\n|:--------------------------|:-------|:-------|\n| Cloth (per 10 sq yards), Common | 7 gp   | 10     |\n| Cloth (per 10 sq yards), Fine   | 50 gp  | 10     |\n| Cloth (per 10 sq yards), Rich   | 100 gp | 10     |\n| Skins/Furs (Common), Pelt       | 1 gp   | 3      |\n| Skins/Furs (Rare), Pelt         | 5 gp   | 3      |\n| Skins/Furs (Exotic), Pelt       | 50 gp  | 3      |\n| Bulk leather (1 sq ft)          | 5 sp   | 1/2    |\n| Fine Leather (per sq ft)        | 5 gp   | 1/2    |",
+      "color": "rgba(209, 208, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Trade: Plates & Silverware",
+      "type": "items",
+      "image": "",
+      "body": "| Item                         | Price | Weight |\n|:-----------------------------|:------|:-------|\n| Place Settings               |       |        |\n| Wooden cup and trencher      | 6 cp  | 1/2    |\n| Common (stoneware or ceramic)| 6 sp  | 3      |\n| Tavern/Merchant (pewter or stoneware) | 3 gp | 5  |\n| Fine setting (porcelain or silver) | 20 gp | 8   |\n| Individual Items             |       |        |\n| Plates & Bowls              |       |        |\n| Wood                        | 3 cp  | *      |\n| Ceramic                     | 8 cp  | 1/2    |\n| Pewter / Stoneware          | 2 sp  | 2      |\n| Porcelain                   | 5 sp  | 1      |\n| Silver                      | 2 gp  | 1/2    |\n| Tableware (forks, knives, spoons) |   |        |\n| Brass                       | 4 cp  | *      |\n| Silver                      | 8 sp  | *      |\n| Mug/Tankard, Brass          | 1 sp  | 1      |\n| Mug/Tankard, Pewter         | 6 sp  | 3      |\n| Tankard, Stoneware          | 15 sp | 2      |\n| Wine Glass, Common (metal)  | 9 cp  | 1      |\n| Wine Glass, Crystal         | 1 gp  | 1      |\n| Serving vessel (bowls, pitchers, platters) | |       |\n| Common                      | 4 sp  | 1      |\n| Tavern                     | 1 gp  | 2      |\n| Fine                       | 5 gp  | 2      |",
+      "color": "rgba(209, 208, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Trade: Metals",
+      "type": "items",
+      "image": "",
+      "body": "| Item     | Price | Weight (lbs) |\n|:---------|:------|:-------|\n| Brass    | 1 sp  | 1      |\n| Bronze   | 7 cp  | 1      |\n| Copper   | 9 cp  | 1      |\n| Electrum | 9 ep  | 1      |\n| Gold     | 9 gp  | 1      |\n| Iron     | 1 sp  | 1      |\n| Lead     | 4 cp  | 1      |\n| Mithral  | 40 gp | 1      |\n| Platinum | 9 pp  | 1      |\n| Silver   | 9 sp  | 1      |\n| Steel    | 3 sp  | 1      |\n| Tin      | 2 sp  | 1      |\n| Zinc     | 8 sp  | 1      |",
+      "color": "rgba(209, 208, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "Trade: Artwork",
+      "type": "items",
+      "image": "",
+      "body": "| Item                       | Price          | Weight |\n|:---------------------------|:---------------|:-------|\n| Bust, life-sized           | 100 gp         | 25     |\n| Bust, tiny                 | 15 gp          | 5      |\n| Carvings, common wood/stone| 5 sp to 100 gp | -      |\n| Carvings, exotic wood/stone| min 20 gp      | -      |\n| Etching                   | 75 gp          | 5      |\n| Figurine, pewter or wood   | 2 to 30 sp     | 1/2    |\n| Figurine, silver or stone  | 2 to 30 gp     | 1      |\n| Historical artifacts (antiquities) | 10 to 500 gp | -  |\n| Metalware                 | 5 to 50 sp     | -      |\n| Native/Folk Art           | 1 to 100 gp    | -      |\n| Painting                  | min 10 gp      | 2+     |\n| Pottery                   | 2 to 8 sp      | 1-30   |\n| Statue, Wood or Clay      | 10 to 200 gp   | 50+    |\n| Statue, Stone or Marble   | 50 to 1,000 gp | 250+   |\n| Tapestries                | 10 to 200 gp   | 20+    |",
+      "color": "rgba(209, 208, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "At the Tavern: Meals",
+      "type": "items",
+      "image": "",
+      "body": "| Meal                      | Price |\n|:--------------------------|:-------|\n| Meal, Poor                | 5 cp   |\n| Meal, Common              | 1 sp   |\n| Meal, Merchant's (Good quality) | 2 sp   |\n| Meal, Rich                | 1 gp   |\n| Meal, Banquet (per person)| 10 gp  |",
+      "color": "rgba(209, 151, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    },
+    {
+      "title": "At the Tavern: Spirits",
+      "type": "items",
+      "image": "",
+      "body": "| Spirits       | Pitcher (Gallon) | Bottle | Spirits shot |\n|:--------------|:-----------------|:-------|:-------------|\n| Spirits, rotgut   | 3 cp             | -      | 6 sp         |\n| Spirits, common   | 1 sp             | -      | 2 gp         |\n| Spirits, quality  | 1 gp             | -      | 20 gp        |\n| Spirits, exceptional | min 5 gp      | -      | min 100 gp   |",
+      "color": "rgba(209, 151, 151, 1)",
+      "children": [],
+      "x": 400,
+      "y": 400
+    }
+  ]
+}

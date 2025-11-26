@@ -1,13 +1,13 @@
 import { Entry, EntryManager } from "./classes.js";
 import { loadNoteCards } from "./left.js";
 import { draw, HexToMap } from "./right.js";
-import { newFile, loadFile, addEntry, saveFile, donate } from "./buttons.js";
+import { initButtons, loadExtData } from "./buttons.js";
 import { saveData, loadData } from "./localStorage.js";
+import { initTabs } from "./tabs.js";
 
 //State
 export let excelDM = new EntryManager();
 export let current = [];
-export let currentTab = "locations";
 
 export function reCurrent() {
   //Reload current obj on UI.
@@ -29,46 +29,9 @@ export function newCurrent(entry) {
 window.addEventListener("DOMContentLoaded", () => {
   //ADD TOP BUTTON FUNCTIONALITY
 
-  const buttons = {
-    "btn-new": newFile,
-    "btn-save": saveFile,
-    "btn-donate": donate,
-    "btn-load": loadFile,
-    "btn-add": addEntry,
-    "btn-demo": loadHommlet,
-  };
+  initButtons();
 
-  Object.entries(buttons).forEach(([id, handler]) => {
-    const btn = document.getElementById(id);
-    if (btn) {
-      btn.addEventListener("click", handler);
-    }
-  });
-
-  //TABS -- IN PROGRESS
-  document.querySelectorAll(".tab-button").forEach((button) => {
-    button.addEventListener("click", () => {
-      const tab = button.dataset.tab;
-
-      // Set active button
-      document
-        .querySelectorAll(".tab-button")
-        .forEach((btn) => btn.classList.remove("active"));
-      button.classList.add("active");
-
-      // Show corresponding panel
-      document.querySelectorAll(".tab-panel").forEach((panel) => {
-        panel.style.display = panel.dataset.tab === tab ? "block" : "none";
-      });
-
-      const validTabs = ["locations", "people", "quests", "monsters", "items"];
-      if (validTabs.includes(tab)) {
-        currentTab = tab;
-      }
-
-      loadNoteCards(current);
-    });
-  });
+  initTabs(["locations", "people", "quests", "monsters", "items", "spells"]);
 
   //LISTENERS
 
@@ -101,29 +64,27 @@ window.addEventListener("DOMContentLoaded", () => {
     newCurrent(current);
   });
 
-  document.addEventListener("keydown", function(event) {
-  const activeElement = document.activeElement;
+  document.addEventListener("keydown", function (event) {
+    const activeElement = document.activeElement;
 
-  if (
-    event.ctrlKey ||
-    event.shiftKey ||
-    event.altKey ||
-    event.key === "Tab" ||
-    (activeElement && activeElement.classList.contains("editing"))
-  ) {
+    if (
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      event.key === "Tab" ||
+      (activeElement && activeElement.classList.contains("editing"))
+    ) {
+      if (event.key === "Escape") {
+        console.log(activeElement);
+      }
 
-    if (event.key === "Escape") {
-      console.log(activeElement)      
+      return; // Do not fire the event handler if keys or div is focused
     }
-
-    return; // Do not fire the event handler if keys or div is focused
-  }
 
     const searchBox = document.getElementById("search-box");
     const searchBar = document.getElementById("search-bar");
 
     if (searchBox.style.display === "none" || !searchBox.style.display) {
-      
       document
         .querySelectorAll(".tab-button")
         .forEach((btn) => btn.classList.remove("active"));
@@ -165,6 +126,7 @@ window.addEventListener("DOMContentLoaded", () => {
   excelDM.add(
     new Entry({
       title: "Excel_DM",
+      type: "locations",
       body: "A small place with small-minded people.",
     })
   );
@@ -172,39 +134,12 @@ window.addEventListener("DOMContentLoaded", () => {
   excelDM.add(
     new Entry({
       title: "Welcome to Excel_DM!",
+      type: "locations",
       body: "Information about the software.",
     })
   );
 
   excelDM.n("Excel_DM").parentOf(excelDM.n("Welcome to Excel_DM!"));
-
-  function loadHommlet() {
-    fetch("./Hommlet.json")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json(); // parses JSON automatically
-      })
-      .then((allData) => {
-        // Clear existing entries in manager
-        excelDM.entries.length = 0;
-
-        // Create Entry instances and add them to manager
-        allData.entries.forEach((data) => {
-          const entry = new Entry(data);
-          excelDM.add(entry);
-        });
-
-        excelDM.findParents(); // Restore Circularity
-        newCurrent(excelDM.entries[0]);
-      })
-      .catch((error) => {
-        console.error("Error loading JSON:", error);
-      });
-  }
-
-
 
   loadData();
   newCurrent(excelDM.entries[0]);

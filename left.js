@@ -1,7 +1,7 @@
 import { Entry } from "./classes.js";
-import { excelDM, reCurrent, newCurrent, currentTab, current } from "./main.js";
+import { excelDM, reCurrent, newCurrent, current } from "./main.js";
+import { currentTab } from "./tabs.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
-
 
 export function loadNoteCards(data, search = "no") {
   let entries;
@@ -41,8 +41,6 @@ export function loadNoteCards(data, search = "no") {
     container.appendChild(div);
   });
 }
-
-
 
 function makeNoteCard(entry, index) {
   const card = document.createElement("div");
@@ -167,8 +165,6 @@ function makeNoteCard(entry, index) {
       editBtn.innerHTML = "💾";
       titleInput.focus();
     } else {
-      
-
       isEditing = false;
       const newText = textarea.value.trim();
       body.dataset.fullText = newText;

@@ -1,4 +1,5 @@
-import { reCurrent, newCurrent, currentTab, current } from "./main.js";
+import { reCurrent, newCurrent, current } from "./main.js";
+import { currentTab } from "./tabs.js";
 
 export class EntryManager {
   constructor() {
@@ -46,14 +47,15 @@ export class EntryManager {
     this.add(
       new Entry({
         title: "Excel_DM",
-        body: "A small place with small-minded people.",
+        type: "locations",
       })
     );
 
     this.add(
       new Entry({
         title: "Welcome to Excel_DM!",
-        body: "Information about the software.",
+        body: "Welcome to Excel_DM, a world and system manager for Game and Dungeon Masters.",
+        type: "locations",
       })
     );
 
@@ -67,7 +69,7 @@ export class EntryManager {
 
 export class Entry {
   title = "";
-  type = ""
+  type = "";
   image = "";
   body = "";
   color = "";
