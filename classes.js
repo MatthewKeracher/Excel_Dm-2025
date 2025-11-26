@@ -54,7 +54,7 @@ export class EntryManager {
     this.add(
       new Entry({
         title: "Welcome to Excel_DM!",
-        body: "Welcome to Excel_DM, a world and system manager for Game and Dungeon Masters.",
+        body: "Roleplaying games are played around a table with players and a game master. But in preparing for each session isn't the game master playing their own game? This solitaire has few rules, and much ink has been spilt on the best way to go about playing it. This software, Excel_DM, is my own take on how best the computer can be used to focus and improve the game master's projects.",
         type: "locations",
       })
     );

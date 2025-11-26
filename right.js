@@ -72,6 +72,46 @@ export function draw(parent) {
   });
 }
 
+function drawBackground(){
+
+const canvas = document.getElementById('map-layer');
+const ctx = canvas.getContext('2d');
+
+const dpr = window.devicePixelRatio || 1;
+const cssWidth = window.innerWidth;
+const cssHeight = window.innerHeight;
+
+// Set the canvas pixel size for the display and scaling
+canvas.width = cssWidth * dpr;
+canvas.height = cssHeight * dpr;
+canvas.style.width = cssWidth + "px";
+canvas.style.height = cssHeight + "px";
+
+// Scale context so coordinates match CSS pixels
+ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+const gridSize = 25;
+ctx.strokeStyle = "#d8d83c91";
+ctx.lineWidth = 1;
+
+for (let x = 0.5; x <= cssWidth; x += gridSize) {
+  ctx.beginPath();
+  ctx.moveTo(x, 0);
+  ctx.lineTo(x, cssHeight);
+  ctx.stroke();
+}
+for (let y = 0.5; y <= cssHeight; y += gridSize) {
+  ctx.beginPath();
+  ctx.moveTo(0, y);
+  ctx.lineTo(cssWidth, y);
+  ctx.stroke();
+}
+
+
+
+}
+
+
 export function HexToMap(parent) {
   return new Promise((resolve, reject) => {
     const hexString = parent?.image;
@@ -82,6 +122,7 @@ export function HexToMap(parent) {
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
 
     if (!hexString) {
+      drawBackground();
       resolve(); // No image, resolve immediately
       return;
     }

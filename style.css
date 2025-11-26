@@ -13,7 +13,7 @@
 }
 
 :root {
-  --color-notecard: rgb(234, 227, 211);  /* pick your colors */
+  --color-notecard: rgb(234, 227, 211); /* pick your colors */
   --color-notecard-darker: color-mix(in srgb, var(--color-notecard), black 20%);
 }
 
@@ -115,7 +115,7 @@ header {
   font-weight: bold;
   font-size: 1em;
   padding: 6px 16px;
-  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.04);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
   cursor: pointer;
   transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
 }
@@ -123,20 +123,16 @@ header {
 /* Hover effect: brighter background, slightly lift */
 .header-btns button:hover {
   background: #5aa887;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
 /* Active/click effect: depress button */
 .header-btns button:active {
   background: #3a695f;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   transform: translateY(0);
 }
-
-
-
-
 
 .header-center {
   text-align: center;
@@ -148,22 +144,23 @@ header {
   flex: 1;
   display: flex;
   min-height: 0;
-  background: #34514e;
+  background-image: url("./cork.jpg");
+
   align-items: stretch;
 }
-
 
 .middle-left {
   flex: 1;
   padding-top: 0;
   padding: 10px;
-  background: #447e78;
   border-right: 3px solid #d8d83c;
   max-height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   font-size: 1.1em;
-  /* width: 20vw; */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 #search-box {
@@ -172,29 +169,27 @@ header {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 30vw;         /* or any fixed or relative width */
-  height: auto;        /* or desired height */
-  z-index: 1000;       /* ensure it is above other content */
+  width: 30vw; /* or any fixed or relative width */
+  height: auto; /* or desired height */
+  z-index: 1000; /* ensure it is above other content */
 }
 
-#search-bar{
-background: #0d0833;  
-border: 3px solid lime;  
-font-size: x-large;
-color: lime;
-font-family: monospace;
-padding: 10px 20px;
-height: 100%;
-width: 100%;
+#search-bar {
+  background: #0d0833;
+  border: 3px solid lime;
+  font-size: x-large;
+  color: lime;
+  font-family: monospace;
+  padding: 10px 20px;
+  height: 100%;
+  width: 100%;
 }
-
 
 #notecards {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
 
 .notecard {
   background: var(--color-notecard);
@@ -213,18 +208,17 @@ width: 100%;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  
 }
 
 .color-grid-container {
   position: absolute;
-  top: 0;       /* Just below buttonsContainer, or adjust as needed */
+  top: 0; /* Just below buttonsContainer, or adjust as needed */
   left: 60%;
   background: white;
   border: 1px solid #ccc;
   padding: 5px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.15);
-  z-index: 1000;   /* High to appear above other siblings */
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000; /* High to appear above other siblings */
 }
 
 .buttons-top-right {
@@ -324,13 +318,13 @@ textarea.notecard-body:focus {
 
 .highlight.no-highlight,
 .no-highlight.highlight {
-  background: inherit;  /* or original background color */
+  background: inherit; /* or original background color */
 }
 
 .middle-right {
   flex: 2;
   padding: 20px;
-  background: rgb(145, 148, 102);
+  background: #3a695f;
   border-left: 1px solid #ddd;
   position: relative; /* needed for absolute canvas children */
   display: flex; /* optional, if you want to control layout further */
@@ -339,7 +333,6 @@ textarea.notecard-body:focus {
   overflow: scroll;
   /* Set fixed or flexible size, example height */
 }
-
 
 .middle-right canvas {
   position: absolute;
@@ -363,7 +356,7 @@ textarea.notecard-body:focus {
   padding: 2px 6px;
   font-weight: bold;
   font-size: 1.1em;
-  font-family: 'Soutane', sans-serif;
+  font-family: "Soutane", sans-serif;
   opacity: 0.7;
   border-radius: 3px;
   cursor: pointer;
@@ -386,11 +379,8 @@ textarea.notecard-body:focus {
   opacity: 0.5;
 }
 
-table th, table td {
+table th,
+table td {
   padding-right: 10px;
   padding-left: 10px;
 }
-
-
-
-
