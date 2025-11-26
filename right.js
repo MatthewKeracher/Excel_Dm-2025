@@ -107,8 +107,6 @@ for (let y = 0.5; y <= cssHeight; y += gridSize) {
   ctx.stroke();
 }
 
-
-
 }
 
 
@@ -120,9 +118,9 @@ export function HexToMap(parent) {
     const dpr = window.devicePixelRatio || 1;
 
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+    drawBackground();
 
     if (!hexString) {
-      drawBackground();
       resolve(); // No image, resolve immediately
       return;
     }
