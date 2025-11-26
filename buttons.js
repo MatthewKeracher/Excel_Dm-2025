@@ -48,7 +48,6 @@ export async function loadExtData(name, replace = true) {
     });
 
     excelDM.findParents();
-    newCurrent(excelDM.entries[0]);
   } catch (error) {
     console.error("Error loading JSON:", error);
   }
@@ -62,6 +61,8 @@ export async function loadHommlet() {
   await loadExtData("./BFRPG/monsters.json", false);
   await loadExtData("./BFRPG/spells.json", false);
   }
+
+  newCurrent(excelDM.entries[0]);
   }
 
 

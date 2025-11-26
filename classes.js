@@ -87,8 +87,14 @@ export class Entry {
     this.color = data.color || "";
     this.children = data.children || [];
     this.parent = data.parent || null;
-    this.x = data.x || 400;
-    this.y = data.y || 400;
+    this.x = data.x || this.getMiddle().x;
+    this.y = data.y || this.getMiddle().y;
+  }
+
+  getMiddle() {
+    const container = document.querySelector(".middle-right");
+    const rect = container.getBoundingClientRect();
+    return ({x:rect.width/2 - 100, y:rect.height/2})
   }
 
   save(title, body) {
@@ -126,8 +132,7 @@ export class Entry {
 
     switch (currentTab) {
       case "people":
-        body = 
- `|Level|Class|Alignment|HP|AC|Weapon|Damage|
+        body = `|Level|Class|Alignment|HP|AC|Weapon|Damage|
   |:-----:|:-----:|:------------:|:--:|:--:|:-----------|:---------|
   |X|X|X|X|X|X|X|
 

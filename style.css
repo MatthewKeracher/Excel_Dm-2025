@@ -144,8 +144,6 @@ header {
   flex: 1;
   display: flex;
   min-height: 0;
-  background-image: url("./cork.jpg");
-
   align-items: stretch;
 }
 
@@ -158,9 +156,7 @@ header {
   overflow-y: auto;
   overflow-x: hidden;
   font-size: 1.1em;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
+  background-image: url("./cork.jpg");
 }
 
 #search-box {
@@ -322,9 +318,9 @@ textarea.notecard-body:focus {
 }
 
 .middle-right {
+  position: relative;
   flex: 2;
   padding: 20px;
-  background: #3a695f;
   border-left: 1px solid #ddd;
   position: relative; /* needed for absolute canvas children */
   display: flex; /* optional, if you want to control layout further */
@@ -336,11 +332,15 @@ textarea.notecard-body:focus {
 
 .middle-right canvas {
   position: absolute;
-  top: 0; /* match padding top */
-  left: 0; /* match padding left */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   user-select: none;
-  height: 100vh;
-  width: 100vw;
+}
+
+#back-layer {
+  background: #3a695f;
 }
 
 .label-layer {

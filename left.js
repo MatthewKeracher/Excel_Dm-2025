@@ -40,6 +40,7 @@ export function loadNoteCards(data, search = "no") {
     let div = makeNoteCard(entry, index);
     container.appendChild(div);
   });
+
 }
 
 function makeNoteCard(entry, index) {
@@ -329,3 +330,5 @@ function makeNoteCard(entry, index) {
 
   return card;
 }
+
+

@@ -72,43 +72,60 @@ export function draw(parent) {
   });
 }
 
-function drawBackground(){
+function drawBackground() {
+  const canvas = document.getElementById("back-layer");
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
 
-const canvas = document.getElementById('map-layer');
-const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  const width = rect.width; // CSS px
+  const height = rect.height; // CSS px
 
-const dpr = window.devicePixelRatio || 1;
-const cssWidth = window.innerWidth;
-const cssHeight = window.innerHeight;
+  // drawing buffer already set in resizeCanvases, so just sync transform
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-// Set the canvas pixel size for the display and scaling
-canvas.width = cssWidth * dpr;
-canvas.height = cssHeight * dpr;
-canvas.style.width = cssWidth + "px";
-canvas.style.height = cssHeight + "px";
+  const gridSize = 25;
+  ctx.strokeStyle = "#d8d83c91";
+  ctx.lineWidth = 1;
 
-// Scale context so coordinates match CSS pixels
-ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
 
-const gridSize = 25;
-ctx.strokeStyle = "#d8d83c91";
-ctx.lineWidth = 1;
-
-for (let x = 0.5; x <= cssWidth; x += gridSize) {
-  ctx.beginPath();
-  ctx.moveTo(x, 0);
-  ctx.lineTo(x, cssHeight);
-  ctx.stroke();
-}
-for (let y = 0.5; y <= cssHeight; y += gridSize) {
-  ctx.beginPath();
-  ctx.moveTo(0, y);
-  ctx.lineTo(cssWidth, y);
-  ctx.stroke();
+  for (let x = 0.5; x <= width; x += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
+    ctx.stroke();
+  }
+  for (let y = 0.5; y <= height; y += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
 }
 
-}
+function resizeCanvases(width, height) {
+  const container = document.querySelector(".middle-right");
+  const rect = container.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
 
+  if (!width || !height) {
+    width = rect.width || 800; // fallback default width in CSS pixels
+    height = rect.height || 600; // fallback default height
+  }
+
+  const imgCanvas = document.getElementById("map-layer");
+  const gridCanvas = document.getElementById("back-layer");
+
+  [imgCanvas, gridCanvas].forEach((canvas) => {
+    const ctx = canvas.getContext("2d");
+    canvas.width = width * dpr; // drawing buffer size in device pixels
+    canvas.height = height * dpr;
+    canvas.style.width = width + "px"; // displayed size in CSS pixels
+    canvas.style.height = height + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  });
+}
 
 export function HexToMap(parent) {
   return new Promise((resolve, reject) => {
@@ -118,40 +135,59 @@ export function HexToMap(parent) {
     const dpr = window.devicePixelRatio || 1;
 
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
-    drawBackground();
 
-    if (!hexString) {
+    if (hexString) {
+      const bytes = [];
+      for (let i = 0; i < hexString.length; i += 2) {
+        bytes.push(parseInt(hexString.slice(i, i + 2), 16));
+      }
+      const uint8arr = new Uint8Array(bytes);
+
+      const blob = new Blob([uint8arr], { type: "image/png" });
+      const url = URL.createObjectURL(blob);
+
+      const img = new Image();
+      img.onload = () => {
+        const dpr = window.devicePixelRatio || 1;
+        const imgWidth = img.naturalWidth; // image width in CSS pixels
+        const imgHeight = img.naturalHeight; // image height in CSS pixels
+
+        const container = document.querySelector(".middle-right");
+        const rect = container.getBoundingClientRect();
+        const containerWidth = rect.width;
+        const containerHeight = rect.height;
+
+        // Calculate max width and height between container and image
+        const width = Math.max(imgWidth, containerWidth);
+        const height = Math.max(imgHeight, containerHeight);
+
+        // Resize canvases to the max dimensions
+        resizeCanvases(width, height);
+        drawBackground();
+
+        const mapCanvas = document.getElementById("map-layer");
+        mapCanvas.style.width = width + "px";
+        mapCanvas.style.height = height + "px";
+
+        const ctx = mapCanvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0);
+
+        URL.revokeObjectURL(url);
+        resolve();
+      };
+
+      img.onerror = (error) => {
+        reject(error); // Reject if loading fails
+      };
+
+      img.src = url;
+    } else if (!hexString) {
+      resizeCanvases();
+      drawBackground();
       resolve(); // No image, resolve immediately
       return;
     }
-
-    const bytes = [];
-    for (let i = 0; i < hexString.length; i += 2) {
-      bytes.push(parseInt(hexString.slice(i, i + 2), 16));
-    }
-    const uint8arr = new Uint8Array(bytes);
-
-    const blob = new Blob([uint8arr], { type: "image/png" });
-    const url = URL.createObjectURL(blob);
-
-    const img = new Image();
-    img.onload = () => {
-      mapCanvas.width = img.naturalWidth * dpr;
-      mapCanvas.height = img.naturalHeight * dpr;
-      mapCanvas.style.width = img.naturalWidth + "px";
-      mapCanvas.style.height = img.naturalHeight + "px";
-
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.drawImage(img, 0, 0);
-
-      URL.revokeObjectURL(url);
-      resolve(); // Resolve the promise when done
-    };
-
-    img.onerror = (error) => {
-      reject(error); // Reject if loading fails
-    };
-
-    img.src = url;
   });
 }
