@@ -8,6 +8,7 @@ import { initTabs } from "./tabs.js";
 //State
 export let excelDM = new EntryManager();
 export let current = [];
+export let masterEdit = false;
 
 export function reCurrent() {
   //Reload current obj on UI.
@@ -44,7 +45,9 @@ window.addEventListener("DOMContentLoaded", () => {
     const mouseY = e.clientY - rect.top;
 
     // Create a new note at clicked position
-    const newName = `${current.title} ${excelDM.entries.length + 1}`;
+    const dateTime = new Date().toLocaleString();
+    const newName = `_${dateTime}`;
+
 
     let newEntry = new Entry({
       title: newName,

@@ -273,15 +273,15 @@ function makeNoteCard(entry, index) {
 
     // Generate 9 pastel colors (3x3)
     const pastelColors = [
-      "rgba(209, 151, 151, 1)",
-      "rgba(209, 208, 151, 1)",
-      "rgba(158, 209, 151, 1)",
-      "rgba(151, 207, 209, 1)",
-      "rgba(151, 186, 209, 1)",
-      "rgba(176, 151, 209, 1)",
-      "rgba(199, 151, 209, 1)",
-      "rgba(155, 155, 155, 1)",
-      "rgba(255, 255, 255, 1)",
+      "rgba(255, 179, 186, 1)", // Pastel Red
+      "rgba(255, 223, 186, 1)", // Pastel Orange
+      "rgba(255, 255, 186, 1)", // Pastel Yellow
+      "rgba(142, 194, 154, 1)", // Pastel Green
+      "rgba(186, 225, 255, 1)", // Pastel Blue
+      "rgba(174, 234, 229, 1)", // Pastel Teal
+      "rgba(198, 186, 255, 1)", // Pastel Indigo
+      "rgba(221, 186, 255, 1)", // Pastel Violet
+      "rgba(245, 245, 245, 1)", // White Smoke
     ];
 
     // Generate buttons for each color

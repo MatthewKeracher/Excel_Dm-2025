@@ -20,10 +20,9 @@ export function draw(parent) {
 
     // Reset width so it can shrink/grow to content size
     label.style.width = "auto";
-    label.style.background = child.color || '#fffbe6';
+    label.style.background = child.color || "#fffbe6";
 
     label.addEventListener("mouseenter", (e) => {
- 
       label.classList.add("highlight");
 
       const leftPanelCard = document.querySelector(

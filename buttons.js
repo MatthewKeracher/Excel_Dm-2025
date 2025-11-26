@@ -1,4 +1,4 @@
-import { current, excelDM, reCurrent, newCurrent } from "./main.js";
+import { current, excelDM, reCurrent, newCurrent, masterEdit } from "./main.js";
 import { Entry, EntryManager } from "./classes.js";
 import { saveData } from "./localStorage.js";
 import { currentTab } from "./tabs.js";
@@ -56,10 +56,14 @@ export async function loadExtData(name, replace = true) {
 
 export async function loadHommlet() {
   await loadExtData("./Hommlet.json", true);
+
+  if(masterEdit === false){
   await loadExtData("./BFRPG/items.json", false);
   await loadExtData("./BFRPG/monsters.json", false);
   await loadExtData("./BFRPG/spells.json", false);
-}
+  }
+  }
+
 
 export function saveFile() {
   try {
