@@ -31,7 +31,7 @@ export function donate() {
 
 export async function loadExtData(name, replace = true) {
   try {
-    console.log(`Loading from... ${name}`)
+    console.log(`Loading from... ${name}`);
     const response = await fetch(name);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -160,11 +160,8 @@ export function loadFile() {
 }
 
 export function addEntry() {
-  const number = excelDM.entries.filter((entry) => entry.type === currentTab);
-  const newName = `${current.title} ${currentTab.toUpperCase()} ${
-    number.length + 1
-  }`;
-  //Switch to ID system?
+  const dateTime = new Date().toLocaleString();
+  const newName = `_${dateTime}`;
 
   let newEntry = new Entry({
     title: newName,

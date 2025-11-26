@@ -83,7 +83,7 @@ export class Entry {
     this.title = data.title || "Untitled Entry";
     this.type = data.type || currentTab;
     this.image = data.image || "";
-    this.body = data.body || "This is an entry.";
+    this.body = data.body || this.defaultBody();
     this.color = data.color || "";
     this.children = data.children || [];
     this.parent = data.parent || null;
@@ -119,5 +119,33 @@ export class Entry {
     } else {
       return `${this.title} has no parent location!`;
     }
+  }
+
+  defaultBody() {
+    let body = ``;
+
+    switch (currentTab) {
+      case "people":
+        body = 
+ `|Level|Class|Alignment|HP|AC|Weapon|Damage|
+  |:-----:|:-----:|:------------:|:--:|:--:|:-----------|:---------|
+  |X|X|X|X|X|X|X|
+
+  |Ability | Score |      
+  |:------:|:-----:|       
+  |Str     |   X   |      
+  |Dex     |   X   |
+  |Int     |   X   |
+  |Wis     |   X   |
+  |Con     |   X   |
+  |Cha     |   X   |`;
+
+        break;
+
+      default:
+        body = `This is an entry.`;
+        break;
+    }
+    return body;
   }
 }
