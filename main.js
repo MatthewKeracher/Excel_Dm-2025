@@ -8,7 +8,7 @@ import { initTabs } from "./tabs.js";
 //State
 export let excelDM = new EntryManager();
 export let current = [];
-export let masterEdit = false;
+export let masterEdit = false; //For Editing Demo File
 
 export function reCurrent() {
   //Reload current obj on UI.
