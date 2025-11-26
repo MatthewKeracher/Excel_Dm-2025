@@ -64,6 +64,7 @@ window.addEventListener("DOMContentLoaded", () => {
     newCurrent(current);
   });
 
+  //SEARCH & HOTKEYS
   document.addEventListener("keydown", function (event) {
     const activeElement = document.activeElement;
 
