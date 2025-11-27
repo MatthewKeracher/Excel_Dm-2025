@@ -1,6 +1,7 @@
-import { excelDM } from "./main.js";
+import { excelDM, reCurrent } from "./main.js";
 import { loadNoteCards } from "./left.js";
 import { currentTab } from "./tabs.js";
+import { addEntry, saveFile } from "./buttons.js";
 
 let currentIndex = -1; // tracks highlighted card index
 let tabTracker = currentTab;
@@ -23,12 +24,36 @@ export function addHotkeys() {
     }
 
     // For other keys except modifiers, tab, and arrows
-    if (
-      event.key === "ArrowLeft" ||
-      event.key === "ArrowRight" ||
-      event.key === "Shift" ||
-      event.key === "Alt"
-    ) {
+    if (event.key === "Alt" || event.key === "Shift") {
+      return;
+    }
+
+    if (event.key === "Tab") {
+      event.preventDefault();
+      const focusableCards = document.querySelectorAll(".notecard");
+      const currentCard = focusableCards[currentIndex];
+
+      currentCard.querySelector(".edit-btn").click();
+      return;
+    }
+
+    if (event.key === "ArrowRight") {
+      const focusableCards = document.querySelectorAll(".notecard");
+      const currentCard = focusableCards[currentIndex];
+
+      currentCard.querySelector(".next-btn").click();
+      currentIndex = -1;
+
+      return;
+    }
+
+    if (event.key === "ArrowLeft") {
+      const focusableCards = document.querySelectorAll(".notecard");
+      const currentCard = focusableCards[currentIndex];
+
+      currentCard.querySelector(".prev-btn").click();
+      currentIndex = -1;
+
       return;
     }
 
@@ -37,6 +62,7 @@ export function addHotkeys() {
 
       if (currentTab !== tabTracker) {
         currentIndex = -1;
+        console.log(currentIndex);
         tabTracker = currentTab;
       }
 
@@ -60,7 +86,6 @@ export function addHotkeys() {
       }
 
       focusableCards[currentIndex].classList.add("highlight");
-
       focusableCards[currentIndex].focus();
       focusableCards[currentIndex].scrollIntoView({
         behavior: "smooth",
@@ -101,10 +126,24 @@ export function addHotkeys() {
       }
     });
 
-    if (event.key === "Enter" || event.key === "Escape") {
+    if (event.key === "Escape") {
       if (searchBox.style.display === "block") {
         searchBox.style.display = "none";
         searchBar.value = "";
+      }
+    }
+
+    if (event.key === "Enter") {
+      if (searchBox.style.display === "block") {
+        if (searchBar.value === "> add") {
+          addEntry();
+        } else if (searchBar.value === "> save") {
+          saveFile();
+        }
+
+        searchBox.style.display = "none";
+        searchBar.value = "";
+        reCurrent();
       }
     }
   });

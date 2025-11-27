@@ -153,6 +153,7 @@ header {
   padding: 10px;
   border-right: 3px solid #d8d83c;
   max-height: 100%;
+  min-width: 500px;
   overflow-y: auto;
   overflow-x: hidden;
   font-size: 1.1em;
@@ -357,7 +358,7 @@ textarea.notecard-body:focus {
   font-weight: bold;
   font-size: 1.1em;
   font-family: "Soutane", sans-serif;
-  opacity: 0.7;
+  opacity: 1;
   border-radius: 3px;
   cursor: pointer;
   transition: box-shadow 0.13s, background 0.13s;

@@ -9,7 +9,7 @@ import { addHotkeys } from "./hotkeys.js";
 //State
 export let excelDM = new EntryManager();
 export let current = [];
-export let masterEdit = false; //For Editing Demo File
+export let masterEdit = true; //For Editing Demo File
 
 export function reCurrent() {
   //Reload current obj on UI.

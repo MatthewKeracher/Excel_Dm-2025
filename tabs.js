@@ -47,19 +47,19 @@ export function initTabs(tabsArray) {
   });
 
   // Keyboard navigation: left/right arrows cycle tabs
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-      const buttons = document.querySelectorAll(".tab-button");
-      let activeIndex = Array.from(buttons).findIndex(btn => btn.classList.contains("active"));
+  // document.addEventListener("keydown", (event) => {
+  //   if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+  //     const buttons = document.querySelectorAll(".tab-button");
+  //     let activeIndex = Array.from(buttons).findIndex(btn => btn.classList.contains("active"));
 
-      if (event.key === "ArrowLeft") {
-        activeIndex--;
-      } else {
-        activeIndex++;
-      }
+  //     if (event.key === "ArrowLeft") {
+  //       activeIndex--;
+  //     } else {
+  //       activeIndex++;
+  //     }
 
-      activateTab(activeIndex);
-      event.preventDefault();
-    }
-  });
+  //     activateTab(activeIndex);
+  //     event.preventDefault();
+  //   }
+  // });
 }

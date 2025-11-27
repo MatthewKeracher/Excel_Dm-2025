@@ -83,9 +83,10 @@ export function saveFile() {
 
     const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-
+    const lastPlace = document.getElementById("currentTitle")?.innerHTML
+    
     const fileName =
-      document.getElementById("currentTitle")?.innerHTML || "excel_DM.json";
+       `${lastPlace}.json`|| "excel_DM.json";
 
     const a = document.createElement("a");
     a.href = url;
