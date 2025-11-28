@@ -1,4 +1,5 @@
 export function draw(parent) {
+ 
   const children = parent.children.filter(
     (entry) => entry.type === "locations"
   );

@@ -125,9 +125,10 @@ function makeNoteCard(entry, index) {
     if (deleteIndex >= 0) {
       if (
         event.shiftKey ||
-        confirm("Are you sure you want to delete this note?")
+        confirm(`Delete this ${currentTab} and any children?`)
       ) {
-        targetArray.splice(deleteIndex, 1);
+        //targetArray.splice(deleteIndex, 1);
+        excelDM.deleteEntry(entry);
       }
     }
 

@@ -6,7 +6,7 @@ export function saveData() {
   try {
     function replacer(key, value) {
       //Flatten Circularity
-      if (key === "parent" || key === "image") {
+      if (key === "parent") {
         return null;
       }
       return value;

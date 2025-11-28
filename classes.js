@@ -1,4 +1,4 @@
-import { reCurrent, newCurrent, current } from "./main.js";
+import { reCurrent, newCurrent, current, excelDM } from "./main.js";
 import { currentTab } from "./tabs.js";
 
 export class EntryManager {
@@ -65,6 +65,26 @@ export class EntryManager {
 
     return this.entries;
   }
+
+  deleteEntry(entry) {
+    // Remove the entry from the main entries list
+    this.entries = this.entries.filter((e) => e !== entry);
+
+    // Remove entry from ALL parents' children lists
+    this.entries.forEach((parent) => {
+      if (parent.children) {
+        parent.children = parent.children.filter((child) => child !== entry);
+      }
+    });
+
+    entry.children.forEach((child) => {
+      if (child.type === "locations") {
+        this.deleteEntry(child);
+      }
+    });
+
+    console.log(this.entries);
+  }
 }
 
 export class Entry {
@@ -94,7 +114,7 @@ export class Entry {
   getMiddle() {
     const container = document.querySelector(".middle-right");
     const rect = container.getBoundingClientRect();
-    return ({x:rect.width/2 - 100, y:rect.height/2})
+    return { x: rect.width / 2 - 100, y: rect.height / 2 };
   }
 
   save(title, body) {
