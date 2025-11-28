@@ -107,22 +107,7 @@ function makeNoteCard(entry, index) {
   deleteBtn.innerHTML = "❌";
 
   deleteBtn.addEventListener("click", (event) => {
-    let targetArray;
-
-    // Switch to select correct array for deletion
-    switch (currentTab) {
-      case "locations":
-        targetArray = entry.parent.children;
-        break;
-      default:
-        targetArray = excelDM.entries;
-        break;
-    }
-
-    // Find the index of the entry to delete
-    const deleteIndex = targetArray.indexOf(entry);
-
-    if (deleteIndex >= 0) {
+    
       if (
         event.shiftKey ||
         confirm(`Delete this ${currentTab} and any children?`)
@@ -130,7 +115,6 @@ function makeNoteCard(entry, index) {
         //targetArray.splice(deleteIndex, 1);
         excelDM.deleteEntry(entry);
       }
-    }
 
     reCurrent();
   });
