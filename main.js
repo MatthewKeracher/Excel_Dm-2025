@@ -2,7 +2,7 @@ import { Entry, EntryManager } from "./classes.js";
 import { loadNoteCards } from "./left.js";
 import { draw, HexToMap } from "./right.js";
 import { initButtons, loadExtData } from "./buttons.js";
-import { saveData, loadData } from "./localStorage.js";
+import { saveData, loadData, openDB } from "./localStorage.js";
 import { initTabs } from "./tabs.js";
 import { addHotkeys } from "./hotkeys.js";
 
@@ -19,7 +19,9 @@ export function reCurrent() {
 }
 
 export function newCurrent(entry = excelDM.entries.find(e => e.current === true)) {
+  
   if(entry === undefined){entry = excelDM.entries[0]}
+
   current.current = false;
   current = entry;
   current.current = true;
@@ -30,9 +32,10 @@ export function newCurrent(entry = excelDM.entries.find(e => e.current === true)
   currentTitle.innerHTML = current.title;
 }
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
   //ADD TOP BUTTON FUNCTIONALITY
 
+  await openDB();
   initButtons();
   addHotkeys();
 
@@ -59,7 +62,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   excelDM.n("Excel_DM").parentOf(excelDM.n("Welcome to Excel_DM!"));
 
-  loadData();
+  await loadData();
   newCurrent();
 
   initTabs(["locations", "people", "quests", "monsters", "items", "spells"]);

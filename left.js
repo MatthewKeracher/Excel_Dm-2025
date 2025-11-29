@@ -36,6 +36,8 @@ export function loadNoteCards(data, search = "no") {
     }
   }
 
+  console.log(data, entries)
+
   entries.forEach((entry, index) => {
     let div = makeNoteCard(entry, index);
     container.appendChild(div);
