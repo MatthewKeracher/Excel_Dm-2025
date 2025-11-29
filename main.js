@@ -18,9 +18,11 @@ export function reCurrent() {
   saveData();
 }
 
-export function newCurrent(entry) {
-  //Load new current obj on UI.
+export function newCurrent(entry = excelDM.entries.find(e => e.current === true)) {
+  if(entry === undefined){entry = excelDM.entries[0]}
+  current.current = false;
   current = entry;
+  current.current = true;
   HexToMap(entry);
   reCurrent();
 
@@ -41,6 +43,7 @@ window.addEventListener("DOMContentLoaded", () => {
       title: "Excel_DM",
       type: "locations",
       body: "A small place with small-minded people.",
+      current: false,
     })
   );
 
@@ -49,13 +52,15 @@ window.addEventListener("DOMContentLoaded", () => {
       title: "Welcome to Excel_DM!",
       type: "locations",
       body: "Information about the software.",
+      current: true,
     })
   );
+
 
   excelDM.n("Excel_DM").parentOf(excelDM.n("Welcome to Excel_DM!"));
 
   loadData();
-  newCurrent(excelDM.entries[0]);
+  newCurrent();
 
   initTabs(["locations", "people", "quests", "monsters", "items", "spells"]);
 

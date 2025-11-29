@@ -153,7 +153,6 @@ header {
   padding: 10px;
   border-right: 3px solid #d8d83c;
   max-height: 100%;
-  min-width: 500px;
   overflow-y: auto;
   overflow-x: hidden;
   font-size: 1.1em;
@@ -363,9 +362,9 @@ textarea.notecard-body:focus {
   cursor: pointer;
   transition: box-shadow 0.13s, background 0.13s;
   z-index: 1;
-
-  min-width: 100px; /* ensures minimum readable width */
-  max-width: 300px; /* optional max width for layout */
+  text-align: center;
+  /* min-width: 100px; 
+  max-width: 300px;  */
   white-space: nowrap; /* prevent label text wrapping */
   overflow: hidden; /* hide overflow text */
   text-overflow: ellipsis; /* show ... if text too long */
@@ -390,11 +389,11 @@ table td {
 
 .boxed-text {
   border: 2px dashed #000000;
-  background: transparent;
-  padding: 1em;
-  margin: 1em 0;
-  font-size: 0.95em;
+  background: rgba(255, 255, 255, 0.288);
+  padding: 0.5em;
+  margin: 0.5em 0;
+  font-size: 1.01em;
 }
 .boxed-text p {
-  margin: 0 0 0.4em 0;
+  margin: 0 0 0 0;
 }

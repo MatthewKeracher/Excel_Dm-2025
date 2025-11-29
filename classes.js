@@ -48,6 +48,7 @@ export class EntryManager {
       new Entry({
         title: "Excel_DM",
         type: "locations",
+        current: true,
       })
     );
 
@@ -56,6 +57,7 @@ export class EntryManager {
         title: "Welcome to Excel_DM!",
         body: "Roleplaying games are played around a table with players and a game master. But in preparing for each session isn't the game master playing their own game? This solitaire has few rules, and much ink has been spilt on the best way to go about playing it. This software, Excel_DM, is my own take on how best the computer can be used to focus and improve the game master's projects.",
         type: "locations",
+        current: false,
       })
     );
 
@@ -95,6 +97,7 @@ export class Entry {
   color = "";
   children = [];
   parent = null;
+  current = false;
   x = 0;
   y = 0;
 
@@ -107,6 +110,7 @@ export class Entry {
     this.color = data.color || "";
     this.children = data.children || [];
     this.parent = data.parent || null;
+    this.current = data.current || false;
     this.x = data.x || this.getMiddle().x;
     this.y = data.y || this.getMiddle().y;
   }
@@ -152,9 +156,10 @@ export class Entry {
 
     switch (currentTab) {
       case "people":
-        body = `|Level|Class|Alignment|HP|AC|Weapon|Damage|
-  |:-----:|:-----:|:------------:|:--:|:--:|:-----------|:---------|
-  |X|X|X|X|X|X|X|
+        body = 
+ `|Level|Class|Alignment|HP |AC |Weapon|Damage|
+  |:---:|:---:|:-------:|:-:|:-:|:-----|:-----|
+  |Level|Class|Alignment|HP |AC |Weapon|Damage|
 
   |Ability | Score |      
   |:------:|:-----:|       
@@ -163,8 +168,16 @@ export class Entry {
   |Int     |   X   |
   |Wis     |   X   |
   |Con     |   X   |
-  |Cha     |   X   |`;
+  |Cha     |   X   |
+  
+  |Spell | Level |      
+  |:----:|:-----:|       
+  |Spell | Level |      
+  `;
 
+        break;
+        case "locations":
+body = `<div class="boxed-text">You see and hear the environment around you</div>The players are at a location in space and time.`
         break;
 
       default:

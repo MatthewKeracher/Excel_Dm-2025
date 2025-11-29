@@ -62,8 +62,9 @@ export async function loadHommlet() {
   await loadExtData("./BFRPG/spells.json", false);
   }
 
-  newCurrent(excelDM.entries[0]);
-  }
+  newCurrent();
+  
+}
 
 
 export function saveFile() {
@@ -132,7 +133,7 @@ export function loadFile() {
 
           excelDM.findParents(); //Imporant to add circulairty to data!
 
-          newCurrent(excelDM.entries[0]);
+          newCurrent();
         } catch (err) {
           console.error("Invalid JSON:", err);
         }

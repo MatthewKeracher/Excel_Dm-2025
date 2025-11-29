@@ -15,7 +15,7 @@ export function draw(parent) {
     const label = document.createElement("div");
     label.className = "label";
     label.dataset.entryTitle = child.title;
-    label.textContent = child.title;
+    label.textContent = child.title.replace(/\([^)]*\)/g, "").trim();
     label.style.left = `${child.x}px`;
     label.style.top = `${child.y}px`;
 

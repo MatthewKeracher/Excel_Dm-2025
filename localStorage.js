@@ -43,7 +43,7 @@ export function loadData() {
     });
 
     excelDM.findParents(); //Restore Circularity
-    newCurrent(excelDM.entries[0]);
+    newCurrent();
   } catch (err) {
     console.error("Error loading data from localStorage", err);
   }
