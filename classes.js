@@ -85,7 +85,6 @@ export class EntryManager {
       }
     });
 
-    console.log(this.entries);
   }
 }
 

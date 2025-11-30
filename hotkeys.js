@@ -62,7 +62,6 @@ export function addHotkeys() {
 
       if (currentTab !== tabTracker) {
         currentIndex = -1;
-        console.log(currentIndex);
         tabTracker = currentTab;
       }
 

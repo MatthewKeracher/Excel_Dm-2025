@@ -31,7 +31,6 @@ export function donate() {
 
 export async function loadExtData(name, replace = true) {
   try {
-    console.log(`Loading from... ${name}`);
     const response = await fetch(name);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
