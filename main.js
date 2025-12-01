@@ -95,6 +95,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     // Redraw all notes (as DOM elements)
     reCurrent(current);
+
   });
 
   //Refresh Canvas on Window Resize
@@ -102,3 +103,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     newCurrent(current);
   });
 });
+
+ const logo = document.getElementById('logoContainer');
+    function hideLogo() {
+      logo.style.display = 'none';
+      window.removeEventListener('click', hideLogo);
+    }
+    window.addEventListener('click', hideLogo);
