@@ -40,7 +40,6 @@ export function loadNoteCards(data, search = "no") {
     let div = makeNoteCard(entry, index);
     container.appendChild(div);
   });
-
 }
 
 function makeNoteCard(entry, index) {
@@ -107,14 +106,13 @@ function makeNoteCard(entry, index) {
   deleteBtn.innerHTML = "❌";
 
   deleteBtn.addEventListener("click", (event) => {
-    
-      if (
-        event.shiftKey ||
-        confirm(`Delete this ${currentTab} and any children?`)
-      ) {
-        //targetArray.splice(deleteIndex, 1);
-        excelDM.deleteEntry(entry);
-      }
+    if (
+      event.shiftKey ||
+      confirm(`Delete this ${currentTab} and any children?`)
+    ) {
+      //targetArray.splice(deleteIndex, 1);
+      excelDM.deleteEntry(entry);
+    }
 
     reCurrent();
   });
@@ -127,6 +125,7 @@ function makeNoteCard(entry, index) {
 
   let isEditing = false;
   let textarea;
+  let codeArea;
 
   editBtn.addEventListener("click", () => {
     if (!isEditing) {
@@ -134,7 +133,8 @@ function makeNoteCard(entry, index) {
       textarea = document.createElement("textarea");
       textarea.className = "notecard-body editing";
       textarea.value = body.dataset.fullText;
-      textarea.style.width = "100%";
+      // textarea.style.width = "100%";
+      // textarea.style.height = "100%";
       textarea.style.backgroundColor = entry?.color || "";
 
       const titleInput = document.createElement("input");
@@ -147,12 +147,23 @@ function makeNoteCard(entry, index) {
       card.replaceChild(titleInput, title);
       card.classList.add("no-highlight");
 
+      // Now replace textarea with CodeMirror editor
+      codeArea = CodeMirror.fromTextArea(textarea, {
+        mode: "markdown",
+        lineNumbers: true,
+        lineWrapping: true,
+      });
+
+      // Add 'editing' class to CodeMirror editor wrapper for styling/logic
+      codeArea.getInputField().classList.add("editing");
+      // codeArea.getWrapperElement().style.backgroundColor = entry?.color || "";
+
       editBtn.title = "Save note";
       editBtn.innerHTML = "💾";
       titleInput.focus();
     } else {
       isEditing = false;
-      const newText = textarea.value.trim();
+      const newText = codeArea.getValue().trim();
       body.dataset.fullText = newText;
       entry.body = newText;
       body.innerHTML = marked.parse(newText);
@@ -315,5 +326,3 @@ function makeNoteCard(entry, index) {
 
   return card;
 }
-
-

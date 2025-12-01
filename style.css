@@ -396,4 +396,19 @@ table td {
 }
 .boxed-text p {
   margin: 0 0 0 0;
+  
 }
+
+.CodeMirror {
+  height: 100%; /* set the desired height */
+  min-height: 100px; /* optional: minimum height */
+  background: rgba(255, 255, 255, 0.288);
+}
+
+
+.CodeMirror-code {
+  font-size: 16px;
+}
+
+
+
