@@ -2,6 +2,40 @@ import { Entry } from "./classes.js";
 import { excelDM, reCurrent, newCurrent, current } from "./main.js";
 import { currentTab } from "./tabs.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+import { saveData } from "./localStorage.js";
+
+function getNestedAtDepth(obj) {
+  let current = obj;
+  let level = 0;
+
+  while (level < obj.currentChild && current.children && current.children.length > 0) {
+    current = current.children[0]; // Go into first child
+    level++;
+  }
+  console.log(obj.title, current.title)
+  return current; // Return the nested object at desired depth or last possible
+}
+
+function findRootNode(node) {
+  //Helper for Tracking Quest State
+  let current = node;
+  while (current.parent !== null && current.parent !== undefined) {
+    current = current.parent; // Traverse up to the parent
+  }
+  return current; // This is the root node with no parent
+}
+
+function countParentsUp(node) {
+  let count = 0;
+  let current = node;
+
+  while (current.parent !== undefined && current.parent !== null) {
+    count++;
+    current = current.parent; // Move up one level
+  }
+
+  return count + 1;
+}
 
 export function loadNoteCards(data, search = "no") {
   let entries;
@@ -25,6 +59,16 @@ export function loadNoteCards(data, search = "no") {
         entries = excelDM.entries.filter(
           (entry) => entry.type === "quests" && entry.parent === null
         );
+
+        const updatedEntries = entries.map((entry) => {
+          if (entry.currentChild === null) return entry; // Keep unchanged
+
+          const currentQuest = getNestedAtDepth(entry);
+          return currentQuest; // Add property instead
+        });
+
+        entries = updatedEntries;
+        console.log(entries)
 
         entries.sort((a, b) =>
           a.title.localeCompare(b.title, undefined, {
@@ -218,25 +262,16 @@ function makeNoteCard(entry, index) {
       newCurrent(entry);
     } else if (currentTab === "quests") {
       let nextObjective = makeNoteCard(entry.children[0]);
+      let rootNode = findRootNode(entry);
+      rootNode.currentChild = countParentsUp(entry);
       card.replaceWith(nextObjective);
+      console.log(rootNode)
+      saveData();
     }
   });
 
   //COUNTER
   const counterBtn = document.createElement("button");
-
-  function countParentsUp(node) {
-    let count = 0;
-    let current = node;
-
-    while (current.parent !== undefined && current.parent !== null) {
-      count++;
-      current = current.parent; // Move up one level
-    }
-
-    return count + 1;
-  }
-
   counterBtn.innerHTML = countParentsUp(entry);
 
   //PREV BUTTON
@@ -282,9 +317,12 @@ function makeNoteCard(entry, index) {
           excelDM.n(`Before ${entry.title}`).parentOf(entry);
         }
       }
-
       let lastObjective = makeNoteCard(entry.parent);
+      let rootNode = findRootNode(entry);
+      rootNode.currentChild = countParentsUp(entry) - 2;
       card.replaceWith(lastObjective);
+      console.log(rootNode)
+      saveData()
     }
   });
 

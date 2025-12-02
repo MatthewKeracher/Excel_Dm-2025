@@ -95,6 +95,7 @@ export class Entry {
   body = "";
   color = "";
   children = [];
+  currentChild = null;
   parent = null;
   current = false;
   x = 0;
@@ -108,6 +109,7 @@ export class Entry {
     this.body = data.body || this.defaultBody();
     this.color = data.color || "";
     this.children = data.children || [];
+    this.currentChild = data.currentChild || null;
     this.parent = data.parent || null;
     this.current = data.current || false;
     this.x = data.x || this.getMiddle().x;
