@@ -84,7 +84,6 @@ export class EntryManager {
         this.deleteEntry(child);
       }
     });
-
   }
 }
 
@@ -157,8 +156,7 @@ export class Entry {
 
     switch (currentTab) {
       case "people":
-        body = 
- `|Level|Class|Alignment|HP |AC |Weapon|Damage|
+        body = `|Level|Class|Alignment|HP |AC |Weapon|Damage|
   |:---:|:---:|:-------:|:-:|:-:|:-----|:-----|
   |Level|Class|Alignment|HP |AC |Weapon|Damage|
 
@@ -177,8 +175,8 @@ export class Entry {
   `;
 
         break;
-        case "locations":
-body = `<div class="boxed-text">You see and hear the environment around you</div>The players are at a location in space and time.`
+      case "locations":
+        body = `<div class="boxed-text">You see and hear the environment around you</div>The players are at a location in space and time.`;
         break;
 
       default:
@@ -186,5 +184,42 @@ body = `<div class="boxed-text">You see and hear the environment around you</div
         break;
     }
     return body;
+  }
+
+  getNestedAtDepth() {
+    let current = this;
+    let level = 0;
+
+    while (
+      level < current.currentChild &&
+      current.children &&
+      current.children.length > 0
+    ) {
+      current = current.children[0]; // Go into first child
+      level++;
+    }
+
+    return current; // Return the nested object at desired depth or last possible
+  }
+
+  findRootNode() {
+    //Helper for Tracking Quest State
+    let current = this;
+    while (current.parent !== null && current.parent !== undefined) {
+      current = current.parent; // Traverse up to the parent
+    }
+    return current; // This is the root node with no parent
+  }
+
+  countParentsUp() {
+    let count = 0;
+    let current = this;
+
+    while (current.parent !== undefined && current.parent !== null) {
+      count++;
+      current = current.parent; // Move up one level
+    }
+
+    return count + 1;
   }
 }

@@ -4,38 +4,6 @@ import { currentTab } from "./tabs.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { saveData } from "./localStorage.js";
 
-function getNestedAtDepth(obj) {
-  let current = obj;
-  let level = 0;
-
-  while (level < obj.currentChild && current.children && current.children.length > 0) {
-    current = current.children[0]; // Go into first child
-    level++;
-  }
-  console.log(obj.title, current.title)
-  return current; // Return the nested object at desired depth or last possible
-}
-
-function findRootNode(node) {
-  //Helper for Tracking Quest State
-  let current = node;
-  while (current.parent !== null && current.parent !== undefined) {
-    current = current.parent; // Traverse up to the parent
-  }
-  return current; // This is the root node with no parent
-}
-
-function countParentsUp(node) {
-  let count = 0;
-  let current = node;
-
-  while (current.parent !== undefined && current.parent !== null) {
-    count++;
-    current = current.parent; // Move up one level
-  }
-
-  return count + 1;
-}
 
 export function loadNoteCards(data, search = "no") {
   let entries;
@@ -63,7 +31,7 @@ export function loadNoteCards(data, search = "no") {
         const updatedEntries = entries.map((entry) => {
           if (entry.currentChild === null) return entry; // Keep unchanged
 
-          const currentQuest = getNestedAtDepth(entry);
+          const currentQuest = entry.getNestedAtDepth();
           return currentQuest; // Add property instead
         });
 
@@ -262,8 +230,8 @@ function makeNoteCard(entry, index) {
       newCurrent(entry);
     } else if (currentTab === "quests") {
       let nextObjective = makeNoteCard(entry.children[0]);
-      let rootNode = findRootNode(entry);
-      rootNode.currentChild = countParentsUp(entry);
+      let rootNode = entry.findRootNode();
+      rootNode.currentChild = entry.countParentsUp();
       card.replaceWith(nextObjective);
       console.log(rootNode)
       saveData();
@@ -272,7 +240,7 @@ function makeNoteCard(entry, index) {
 
   //COUNTER
   const counterBtn = document.createElement("button");
-  counterBtn.innerHTML = countParentsUp(entry);
+  counterBtn.innerHTML = entry.countParentsUp();
 
   //PREV BUTTON
   const prevbtn = document.createElement("button");
@@ -318,8 +286,8 @@ function makeNoteCard(entry, index) {
         }
       }
       let lastObjective = makeNoteCard(entry.parent);
-      let rootNode = findRootNode(entry);
-      rootNode.currentChild = countParentsUp(entry) - 2;
+      let rootNode = entry.findRootNode();
+      rootNode.currentChild = entry.countParentsUp() - 2;
       card.replaceWith(lastObjective);
       console.log(rootNode)
       saveData()
