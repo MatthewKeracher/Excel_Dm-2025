@@ -21,6 +21,19 @@ export function loadNoteCards(data, search = "no") {
           })
         );
         break;
+      case "quests":
+        entries = excelDM.entries.filter(
+          (entry) => entry.type === "quests" && entry.parent === null
+        );
+
+        entries.sort((a, b) =>
+          a.title.localeCompare(b.title, undefined, {
+            numeric: true,
+            sensitivity: "base",
+          })
+        );
+
+        break;
 
       default:
         entries = excelDM.entries.filter((entry) => entry.type === currentTab);
@@ -32,6 +45,7 @@ export function loadNoteCards(data, search = "no") {
             sensitivity: "base",
           });
         });
+
         break;
     }
   }
@@ -187,39 +201,91 @@ function makeNoteCard(entry, index) {
   //NEXT BUTTON
   const nextBtn = document.createElement("button");
   nextBtn.className = "next-btn";
-  nextBtn.title = "Go Inside";
+  nextBtn.title = currentTab === "locations" ? "Go Inside" : "Next Objective";
   nextBtn.innerHTML = ">";
 
   nextBtn.addEventListener("click", () => {
     if (entry.children.length === 0) {
-      let newEntry = new Entry({ title: `Inside ${entry.title}` });
+      let newEntry = new Entry({
+        title: `Inside ${entry.title}`,
+        color: entry.color,
+      });
       excelDM.add(newEntry);
       excelDM.n(entry.title).parentOf(excelDM.n(`Inside ${entry.title}`));
     }
 
-    newCurrent(entry);
+    if (currentTab === "locations") {
+      newCurrent(entry);
+    } else if (currentTab === "quests") {
+      let nextObjective = makeNoteCard(entry.children[0]);
+      card.replaceWith(nextObjective);
+    }
   });
+
+  //COUNTER
+  const counterBtn = document.createElement("button");
+
+  function countParentsUp(node) {
+    let count = 0;
+    let current = node;
+
+    while (current.parent !== undefined && current.parent !== null) {
+      count++;
+      current = current.parent; // Move up one level
+    }
+
+    return count + 1;
+  }
+
+  counterBtn.innerHTML = countParentsUp(entry);
 
   //PREV BUTTON
   const prevbtn = document.createElement("button");
   prevbtn.className = "prev-btn";
-  prevbtn.title = "Go Back";
+  prevbtn.title =
+    currentTab === "locations" ? "Go Outside" : "Previous Objective";
   prevbtn.innerHTML = "<";
 
   prevbtn.addEventListener("click", () => {
-    if (!entry.parent.parent) {
-      // Show confirm dialog with Yes/No buttons
-      const userConfirmed = confirm("Do you want to make a new, outer layer?");
+    if (currentTab === "locations") {
+      if (!entry.parent.parent) {
+        // Show confirm dialog with Yes/No buttons
+        const userConfirmed = confirm(
+          "Do you want to make a new, outer layer?"
+        );
 
-      // If user clicks Yes (OK)
-      if (userConfirmed) {
-        let newEntry = new Entry({ title: `Outside ${entry.parent.title}` });
-        excelDM.add(newEntry);
-        excelDM.n(`Outside ${entry.parent.title}`).parentOf(entry.parent);
+        // If user clicks Yes (OK)
+        if (userConfirmed) {
+          let newEntry = new Entry({
+            title: `Outside ${entry.parent.title}`,
+            color: entry.parent.color,
+          });
+          excelDM.add(newEntry);
+          excelDM.n(`Outside ${entry.parent.title}`).parentOf(entry.parent);
+        }
       }
-    }
+      newCurrent(entry.parent.parent);
+    } else if (currentTab === "quests") {
+      if (!entry.parent) {
+        // Show confirm dialog with Yes/No buttons
+        const userConfirmed = confirm(
+          "Do you want to make a new, previous objective?"
+        );
 
-    newCurrent(entry.parent.parent);
+        // If user clicks Yes (OK)
+        if (userConfirmed) {
+          let newEntry = new Entry({
+            title: `Before ${entry.title}`,
+            color: entry.color,
+          });
+          excelDM.add(newEntry);
+          excelDM.n(`Before ${entry.title}`).parentOf(entry);
+        }
+      }
+
+      let lastObjective = makeNoteCard(entry.parent);
+      card.replaceWith(lastObjective);
+    }
   });
 
   //LOCK BUTTON
@@ -312,7 +378,10 @@ function makeNoteCard(entry, index) {
   if (entry.type === "locations") {
     buttonsContainer.appendChild(prevbtn);
     buttonsContainer.appendChild(nextBtn);
-  } else {
+  } else if (entry.type === "quests") {
+    buttonsContainer.appendChild(prevbtn);
+    buttonsContainer.appendChild(counterBtn);
+    buttonsContainer.appendChild(nextBtn);
     buttonsContainer.appendChild(lockbtn);
   }
 
