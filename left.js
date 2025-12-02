@@ -420,6 +420,7 @@ function makeNoteCard(entry, index) {
     buttonsContainer.appendChild(prevbtn);
     buttonsContainer.appendChild(counterBtn);
     buttonsContainer.appendChild(nextBtn);
+  } else{
     buttonsContainer.appendChild(lockbtn);
   }
 
