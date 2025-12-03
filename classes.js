@@ -156,31 +156,32 @@ export class Entry {
 
     switch (currentTab) {
       case "people":
-        body = `|Level|Class|Alignment|HP |AC |Weapon|Damage|
-  |:---:|:---:|:-------:|:-:|:-:|:-----|:-----|
-  |Level|Class|Alignment|HP |AC |Weapon|Damage|
+        body = `|Level|Class|Alignment|HP |AC |Damage|
+|:---:|:---:|:-------:|:-:|:-:|:----:|
+|Level|Class|Alignment|HP |AC |Damage|
 
-  |Ability | Score |      
-  |:------:|:-----:|       
-  |Str     |   X   |      
-  |Dex     |   X   |
-  |Int     |   X   |
-  |Wis     |   X   |
-  |Con     |   X   |
-  |Cha     |   X   |
-  
-  |Spell | Level |      
-  |:----:|:-----:|       
-  |Spell | Level |      
-  `;
+|Ability | Score |      
+|:------:|:-----:|       
+|Str     |   X   |      
+|Dex     |   X   |
+|Int     |   X   |
+|Wis     |   X   |
+|Con     |   X   |
+|Cha     |   X   |
+
+|Spell | Level |      
+|:----:|:-----:|       
+|Spell | Level |      
+`;
 
         break;
       case "locations":
-        body = `<div class="boxed-text">You see and hear the environment around you</div>The players are at a location in space and time.`;
+        body = `<div class="boxed-text">...</div>`;
         break;
 
       default:
-        body = `This is an entry.`;
+        body = `<div class="boxed-text">...</div>
+        `;
         break;
     }
     return body;

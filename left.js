@@ -159,8 +159,6 @@ function makeNoteCard(entry, index) {
       textarea = document.createElement("textarea");
       textarea.className = "notecard-body editing";
       textarea.value = body.dataset.fullText;
-      // textarea.style.width = "100%";
-      // textarea.style.height = "100%";
       textarea.style.backgroundColor = entry?.color || "";
 
       const titleInput = document.createElement("input");

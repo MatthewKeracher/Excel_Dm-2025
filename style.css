@@ -19,6 +19,7 @@
 
 #logoContainer {
   position: fixed;
+  height: 25vh;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -31,9 +32,8 @@
 
 #logo {
   position: relative;
-  height: 15vh;
+  height: 20vh;
 }
-
 
 html,
 body {
@@ -71,6 +71,7 @@ header {
 
 .tabs {
   display: flex;
+  max-width: 500px;
   width: 30vw;
   margin-bottom: 0;
 }
@@ -167,6 +168,7 @@ header {
 
 .middle-left {
   flex: 1;
+  max-width: 500px;
   padding-top: 0;
   padding: 10px;
   border-right: 3px solid #d8d83c;
@@ -203,11 +205,12 @@ header {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-width: 500px;
 }
 
 .notecard {
   background: var(--color-notecard);
-  border: 1px solid #ddd;
+  border: 1px solid black;
   border-radius: 5px;
   padding: 6px 9px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -275,6 +278,7 @@ header {
   max-height: 3.6em;
   line-height: 1.2;
   overflow-y: hidden;
+  overflow-x: hidden;
   transition: max-height 0s ease;
   margin-top: 8px;
   white-space: pre-wrap;
@@ -414,7 +418,6 @@ table td {
 }
 .boxed-text p {
   margin: 0 0 0 0;
-  
 }
 
 .CodeMirror {
@@ -423,10 +426,6 @@ table td {
   background: rgba(255, 255, 255, 0.288);
 }
 
-
 .CodeMirror-code {
   font-size: 16px;
 }
-
-
-
