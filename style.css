@@ -275,7 +275,7 @@ header {
 /* Textarea and input styling etc remain unchanged */
 
 .notecard-body {
-  max-height: 3.6em;
+  max-height: 4.6em;
   line-height: 1.2;
   overflow-y: hidden;
   overflow-x: hidden;

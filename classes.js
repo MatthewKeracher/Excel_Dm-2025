@@ -72,6 +72,12 @@ export class EntryManager {
     // Remove the entry from the main entries list
     this.entries = this.entries.filter((e) => e !== entry);
 
+    // Recount currentChildren length on rootNode.
+    let rootNode = entry.findRootNode();
+    let newNumber = rootNode.getLowestEntry();
+    console.log(newNumber)
+    rootNode.currentChild = newNumber - 1;
+
     // Remove entry from ALL parents' children lists
     this.entries.forEach((parent) => {
       if (parent.children) {
@@ -188,16 +194,16 @@ export class Entry {
   }
 
   getNestedAtDepth() {
-    let current = this;
-    let level = 0;
+    const root = this;
 
-    while (
-      level < current.currentChild &&
-      current.children &&
-      current.children.length > 0
-    ) {
-      current = current.children[0]; // Go into first child
-      level++;
+    let level = 0;
+    let current = this;
+
+    if (root.currentChild) {
+      while (level < root.currentChild) {
+        current = current.children[0]; // Go into first child
+        level++;
+      }
     }
 
     return current; // Return the nested object at desired depth or last possible
@@ -222,5 +228,29 @@ export class Entry {
     }
 
     return count + 1;
+  }
+
+  getLowestEntry() {
+    const rootNode = this.findRootNode();
+
+    if (!rootNode.currentChild) {
+      return rootNode; // No currentChild means root is lowest
+    }
+
+    let current = rootNode;
+    let level = 0;
+
+    // Traverse down to currentChild depth using first children
+    while (level < rootNode.currentChild && current.children.length > 0) {
+      current = current.children[0];
+      level++;
+    }
+
+    // Continue down to deepest leaf from that depth
+    while (current.children.length > 0) {
+      current = current.children[0];
+    }
+
+    return level //current;
   }
 }

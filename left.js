@@ -4,7 +4,6 @@ import { currentTab } from "./tabs.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { saveData } from "./localStorage.js";
 
-
 export function loadNoteCards(data, search = "no") {
   let entries;
   const container = document.getElementById("leftPanel");
@@ -36,7 +35,6 @@ export function loadNoteCards(data, search = "no") {
         });
 
         entries = updatedEntries;
-        console.log(entries)
 
         entries.sort((a, b) =>
           a.title.localeCompare(b.title, undefined, {
@@ -95,7 +93,7 @@ function makeNoteCard(entry, index) {
 
   card.addEventListener("click", () => {
     if (body.style.maxHeight === "100%") {
-      body.style.maxHeight = "3.6em";
+      body.style.maxHeight = "4.6em";
     } else {
       body.style.maxHeight = "100%";
     }
@@ -230,8 +228,14 @@ function makeNoteCard(entry, index) {
       let nextObjective = makeNoteCard(entry.children[0]);
       let rootNode = entry.findRootNode();
       rootNode.currentChild = entry.countParentsUp();
+
       card.replaceWith(nextObjective);
-      console.log(rootNode)
+
+      const newBody = nextObjective.querySelector(".notecard-body");
+      if (newBody) {
+        newBody.style.maxHeight = "100%";
+      }
+
       saveData();
     }
   });
@@ -287,8 +291,13 @@ function makeNoteCard(entry, index) {
       let rootNode = entry.findRootNode();
       rootNode.currentChild = entry.countParentsUp() - 2;
       card.replaceWith(lastObjective);
-      console.log(rootNode)
-      saveData()
+
+      const newBody = lastObjective.querySelector(".notecard-body");
+      if (newBody) {
+        newBody.style.maxHeight = "100%";
+      }
+
+      saveData();
     }
   });
 
@@ -386,7 +395,7 @@ function makeNoteCard(entry, index) {
     buttonsContainer.appendChild(prevbtn);
     buttonsContainer.appendChild(counterBtn);
     buttonsContainer.appendChild(nextBtn);
-  } else{
+  } else {
     buttonsContainer.appendChild(lockbtn);
   }
 
