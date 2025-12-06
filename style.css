@@ -330,6 +330,14 @@ textarea.notecard-body:focus {
   background-color: transparent;
 }
 
+.popout {
+  position: fixed;
+  width: 500px;
+  z-index: 100;
+  pointer-events: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
 .highlight {
   box-shadow: 0 0 0 4px lime;
 }

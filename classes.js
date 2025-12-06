@@ -102,6 +102,8 @@ export class Entry {
   children = [];
   currentChild = null;
   parent = null;
+  popOut = false;
+  coords = {x: 0, y:0}; //coords for popOuts
   current = false;
   x = 0;
   y = 0;
@@ -116,6 +118,8 @@ export class Entry {
     this.children = data.children || [];
     this.currentChild = data.currentChild || null;
     this.parent = data.parent || null;
+    this.popOut = data.popOut || false;
+    this.coords = data.coords || {x: `${window.innerWidth - 600}px`, y: "100px"};
     this.current = data.current || false;
     this.x = data.x || this.getMiddle().x;
     this.y = data.y || this.getMiddle().y;

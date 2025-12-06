@@ -1,5 +1,5 @@
 import { Entry, EntryManager } from "./classes.js";
-import { loadNoteCards } from "./left.js";
+import { loadNoteCards, loadPopUp } from "./left.js";
 import { draw, HexToMap } from "./right.js";
 import { initButtons, loadExtData } from "./buttons.js";
 import { saveData, loadData, openDB } from "./localStorage.js";
@@ -11,10 +11,12 @@ export let excelDM = new EntryManager();
 export let current = [];
 export let masterEdit = true; //For Editing Demo File
 
+
 export function reCurrent() {
   //Reload current obj on UI.
   draw(current);
   loadNoteCards(current);
+  loadPopUp();
   saveData();
 }
 
@@ -68,7 +70,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   await loadData();
   newCurrent();
 
-  initTabs(["locations", "people", "quests", "monsters", "items", "spells"]);
+  initTabs(["locations", "people", "quests", "misc"]);
 
   //LISTENERS
 
@@ -104,9 +106,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
- const logo = document.getElementById('logoContainer');
-    function hideLogo() {
-      logo.style.display = 'none';
-      window.removeEventListener('click', hideLogo);
-    }
-    window.addEventListener('click', hideLogo);
+//  const logo = document.getElementById('logoContainer');
+//     function hideLogo() {
+//       logo.style.display = 'none';
+//       window.removeEventListener('click', hideLogo);
+//     }
+//     window.addEventListener('click', hideLogo);

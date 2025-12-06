@@ -60,13 +60,98 @@ export function loadNoteCards(data, search = "no") {
     }
   }
 
-  entries.forEach((entry, index) => {
-    let div = makeNoteCard(entry, index);
+  entries.forEach((entry) => {
+    if (entry.popOut) {
+      return;
+    }
+    let div = makeNoteCard(entry);
     container.appendChild(div);
   });
 }
 
-function makeNoteCard(entry, index) {
+export function loadPopUp() {
+  document.querySelectorAll(".popout").forEach((popout) => {
+    popout.remove();
+  });
+
+  const popOuts = excelDM.entries.filter((entry) => entry.popOut === true);
+  if (popOuts.length > 0) {
+    popOuts.forEach((popOut) => {
+      let div = makePopOut(popOut);
+      document.body.appendChild(div);
+    });
+  }
+}
+
+let nextZIndex = 51;
+
+function makePopOut(entry, coords) {
+  entry.popOut = true;
+  saveData();
+
+  const popOut = makeNoteCard(entry, true);
+  popOut.classList.add("popout");
+
+  popOut.style.left = coords ? coords.x : entry.coords.x;
+  popOut.style.top = coords ? coords.y : entry.coords.y;
+
+  const popOutBody = popOut.querySelector(".notecard-body");
+  popOutBody.style.maxHeight = "100%";
+
+  // Make draggable
+  let isDragging = false;
+  let dragOffsetX = 0;
+  let dragOffsetY = 0;
+
+  // Drag handle (top of card)
+  popOut.style.cursor = "move";
+  popOut.style.userSelect = "none";
+
+  popOut.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    dragOffsetX = e.clientX - popOut.getBoundingClientRect().left;
+    dragOffsetY = e.clientY - popOut.getBoundingClientRect().top;
+    popOut.style.cursor = "grabbing";
+    document.body.style.userSelect = "none";
+    popOut.style.zIndex = (nextZIndex++).toString();
+    e.preventDefault();
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    popOut.style.left = `${e.clientX - dragOffsetX}px`;
+    popOut.style.top = `${e.clientY - dragOffsetY}px`;
+  });
+
+  document.addEventListener("mouseup", () => {
+    entry.coords.x = popOut.style.left;
+    entry.coords.y = popOut.style.top;
+    isDragging = false;
+    popOut.style.cursor = "grab";
+    document.body.style.userSelect = "";
+  });
+
+  const popOutBtn = popOut.querySelector(".pop-btn");
+  popOutBtn.remove();
+
+  const deleteBtn = popOut.querySelector(".delete-btn");
+
+  if (deleteBtn) {
+    // Override previous behavior
+    deleteBtn.title = "Close Window";
+    deleteBtn.replaceWith(deleteBtn.cloneNode(true));
+    const newDeleteBtn = popOut.querySelector(".delete-btn");
+    newDeleteBtn.addEventListener("click", () => {
+      popOut.remove();
+      entry.popOut = false;
+      reCurrent();
+    });
+  }
+
+  return popOut;
+}
+
+function makeNoteCard(entry, isPopOut = false) {
   const card = document.createElement("div");
   card.dataset.entryTitle = entry.title;
   card.className = "notecard";
@@ -91,13 +176,15 @@ function makeNoteCard(entry, index) {
   body.style.marginTop = "8px";
   body.style.backgroundColor = entry?.color || "";
 
-  card.addEventListener("click", () => {
-    if (body.style.maxHeight === "100%") {
-      body.style.maxHeight = "4.6em";
-    } else {
-      body.style.maxHeight = "100%";
-    }
-  });
+  if (isPopOut === false) {
+    card.addEventListener("click", () => {
+      if (body.style.maxHeight === "100%") {
+        body.style.maxHeight = "4.6em";
+      } else {
+        body.style.maxHeight = "100%";
+      }
+    });
+  }
 
   card.addEventListener("mouseenter", (e) => {
     const label = document.querySelector(
@@ -109,6 +196,7 @@ function makeNoteCard(entry, index) {
       label.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   });
+
   card.addEventListener("mouseleave", () => {
     const label = document.querySelector(
       `.label[data-entry-title="${CSS.escape(entry.title)}"]`
@@ -134,7 +222,6 @@ function makeNoteCard(entry, index) {
       event.shiftKey ||
       confirm(`Delete this ${currentTab} and any children?`)
     ) {
-      //targetArray.splice(deleteIndex, 1);
       excelDM.deleteEntry(entry);
     }
 
@@ -178,7 +265,6 @@ function makeNoteCard(entry, index) {
 
       // Add 'editing' class to CodeMirror editor wrapper for styling/logic
       codeArea.getInputField().classList.add("editing");
-      // codeArea.getWrapperElement().style.backgroundColor = entry?.color || "";
 
       editBtn.title = "Save note";
       editBtn.innerHTML = "💾";
@@ -209,7 +295,7 @@ function makeNoteCard(entry, index) {
   //NEXT BUTTON
   const nextBtn = document.createElement("button");
   nextBtn.className = "next-btn";
-  nextBtn.title = currentTab === "locations" ? "Go Inside" : "Next Objective";
+  nextBtn.title = entry.type === "locations" ? "Go Inside" : "Next Objective";
   nextBtn.innerHTML = ">";
 
   nextBtn.addEventListener("click", () => {
@@ -222,13 +308,20 @@ function makeNoteCard(entry, index) {
       excelDM.n(entry.title).parentOf(excelDM.n(`Inside ${entry.title}`));
     }
 
-    if (currentTab === "locations") {
+    if (entry.type === "locations") {
       newCurrent(entry);
-    } else if (currentTab === "quests") {
-      let nextObjective = makeNoteCard(entry.children[0]);
+    } else if (entry.type === "quests") {
+      let nextObjective
+
+      if (entry.popOut) {
+        entry.popOut = false;
+        nextObjective = makePopOut(entry.children[0], entry.coords);
+      } else {
+        nextObjective = makeNoteCard(entry.children[0]);
+      }
+
       let rootNode = entry.findRootNode();
       rootNode.currentChild = entry.countParentsUp();
-
       card.replaceWith(nextObjective);
 
       const newBody = nextObjective.querySelector(".notecard-body");
@@ -248,11 +341,11 @@ function makeNoteCard(entry, index) {
   const prevbtn = document.createElement("button");
   prevbtn.className = "prev-btn";
   prevbtn.title =
-    currentTab === "locations" ? "Go Outside" : "Previous Objective";
+    entry.type === "locations" ? "Go Outside" : "Previous Objective";
   prevbtn.innerHTML = "<";
 
   prevbtn.addEventListener("click", () => {
-    if (currentTab === "locations") {
+    if (entry.type === "locations") {
       if (!entry.parent.parent) {
         // Show confirm dialog with Yes/No buttons
         const userConfirmed = confirm(
@@ -270,9 +363,8 @@ function makeNoteCard(entry, index) {
         }
       }
       newCurrent(entry.parent.parent);
-    } else if (currentTab === "quests") {
+    } else if (entry.type === "quests") {
       if (!entry.parent) {
-        // Show confirm dialog with Yes/No buttons
         const userConfirmed = confirm(
           "Do you want to make a new, previous objective?"
         );
@@ -287,7 +379,16 @@ function makeNoteCard(entry, index) {
           excelDM.n(`Before ${entry.title}`).parentOf(entry);
         }
       }
-      let lastObjective = makeNoteCard(entry.parent);
+
+      let lastObjective;
+
+      if (entry.popOut) {
+        entry.popOut = false;
+        lastObjective = makePopOut(entry.parent, entry.coords);
+      } else {
+        lastObjective = makeNoteCard(entry.parent);
+      }
+
       let rootNode = entry.findRootNode();
       rootNode.currentChild = entry.countParentsUp() - 2;
       card.replaceWith(lastObjective);
@@ -386,7 +487,20 @@ function makeNoteCard(entry, index) {
     card.appendChild(colorGridContainer); // Or inside a specific modal/dialog
   });
 
+  //POP-OUT BUTTON
+  const popbtn = document.createElement("button");
+  popbtn.className = "pop-btn";
+  popbtn.title = "Pop Out";
+  popbtn.innerHTML = "⟰";
+
+  popbtn.addEventListener("click", () => {
+    entry.popOut = true;
+    loadPopUp();
+    reCurrent();
+  });
+
   buttonsContainer.appendChild(clrbtn);
+  buttonsContainer.appendChild(popbtn);
 
   if (entry.type === "locations") {
     buttonsContainer.appendChild(prevbtn);
