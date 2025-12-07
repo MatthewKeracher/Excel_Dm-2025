@@ -48,12 +48,15 @@ body {
   font-family: "Soutane", sans-serif;
 }
 
+
+/* The bar itself (track background) */
 *::-webkit-scrollbar {
   width: 0px;
   height: 0px;
   background: transparent;
   display: none;
 }
+
 
 header {
   padding: 0;
@@ -220,11 +223,14 @@ header {
 
 .notecard-title {
   font-weight: bold;
-  margin-bottom: 6px;
+  font-size: large;
+  margin-bottom: 0px;
+  margin-top: 7px;
   max-width: 100%; /* leave space for buttons */
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  border-bottom: 2.5px solid black;
 }
 
 .color-grid-container {
@@ -248,7 +254,7 @@ header {
   align-items: center;
   gap: 8px;
   z-index: 1;
-  padding: 2px;
+  margin-bottom: 0px;
 }
 
 .buttons-top-right button {
@@ -310,7 +316,7 @@ textarea.notecard-body:focus {
 
 .notecard-title.editing {
   width: 60%;
-  font-size: 1em;
+  font-size: large;
   font-weight: bold;
   font-family: inherit;
   padding: 6px 10px;
@@ -333,7 +339,7 @@ textarea.notecard-body:focus {
 .popout {
   position: fixed;
   width: 500px;
-  z-index: 100;
+  z-index: 25;
   pointer-events: auto;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }

@@ -96,7 +96,8 @@ function makePopOut(entry, coords) {
   popOut.style.top = coords ? coords.y : entry.coords.y;
 
   const popOutBody = popOut.querySelector(".notecard-body");
-  popOutBody.style.maxHeight = "100%";
+  popOutBody.style.maxHeight = "60vh";
+  popOutBody.style.overflowY = "scroll";
 
   // Make draggable
   let isDragging = false;
