@@ -312,7 +312,7 @@ function makeNoteCard(entry, isPopOut = false) {
     if (entry.type === "locations") {
       newCurrent(entry);
     } else if (entry.type === "quests") {
-      let nextObjective
+      let nextObjective;
 
       if (entry.popOut) {
         entry.popOut = false;
@@ -337,6 +337,7 @@ function makeNoteCard(entry, isPopOut = false) {
   //COUNTER
   const counterBtn = document.createElement("button");
   counterBtn.innerHTML = entry.countParentsUp();
+  
 
   //PREV BUTTON
   const prevbtn = document.createElement("button");

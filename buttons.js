@@ -46,7 +46,8 @@ export async function loadExtData(name, replace = true) {
       excelDM.add(entry);
     });
 
-    excelDM.findParents();
+    excelDM.prepareFromJSON();
+
   } catch (error) {
     console.error("Error loading JSON:", error);
   }
@@ -55,38 +56,26 @@ export async function loadExtData(name, replace = true) {
 export async function loadHommlet() {
   await loadExtData("./Hommlet.json", true);
 
-  if(masterEdit === false){
-  await loadExtData("./BFRPG/items.json", false);
-  await loadExtData("./BFRPG/monsters.json", false);
-  await loadExtData("./BFRPG/spells.json", false);
+  if (masterEdit === false) {
+    await loadExtData("./BFRPG/items.json", false);
+    await loadExtData("./BFRPG/monsters.json", false);
+    await loadExtData("./BFRPG/spells.json", false);
   }
 
   newCurrent();
-  
 }
-
 
 export function saveFile() {
   try {
-    function replacer(key, value) {
-      if (key === "parent") {
-        // Return undefined to omit the parent property during serialization
-        return undefined;
-        // Or return a non-circular substitute, like parent's title
-        // return value?.title || null;
-      }
-      return value;
-    }
-
     // When saving JSON:
-    const jsonString = JSON.stringify(excelDM, replacer, 2);
+    const dataToDownload = excelDM.prepareForJSON();
+    const jsonString = JSON.stringify(dataToDownload, null, 2);
 
     const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const lastPlace = document.getElementById("currentTitle")?.innerHTML
-    
-    const fileName =
-       `${lastPlace}.json`|| "excel_DM.json";
+    const lastPlace = document.getElementById("currentTitle")?.innerHTML;
+
+    const fileName = `${lastPlace}.json` || "excel_DM.json";
 
     const a = document.createElement("a");
     a.href = url;
@@ -116,6 +105,7 @@ export function loadFile() {
 
     if (fileType === "application/json" || ext === "json") {
       // JSON file logic
+      console.clear()
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
@@ -130,7 +120,7 @@ export function loadFile() {
             excelDM.add(entry);
           });
 
-          excelDM.findParents(); //Imporant to add circulairty to data!
+          excelDM.prepareFromJSON();
 
           newCurrent();
         } catch (err) {

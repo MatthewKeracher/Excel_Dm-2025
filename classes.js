@@ -28,17 +28,42 @@ export class EntryManager {
     return this.entries; //Ex. of use: entries = loc.erase(loc.n("Hommlet"));
   }
 
-  findParents() {
-    this.entries.forEach((entry) => {
-      entry.children = entry.children.map((child) => {
-        const childEntry = this.n(child.title); // Lookup full child Entry by title
-        if (childEntry) {
-          childEntry.parent = entry; // Set parent reference on child
-          return childEntry; // Replace shallow child with full Entry object
-        }
-        return child; // Return original if no full object found
-      });
+  prepareForJSON() {
+    // Build index map: entry id/title -> array index
+    const entryIndexMap = {};
+    this.entries.forEach((entry, index) => {
+      if (entry.id !== undefined) {
+        entryIndexMap[entry.id] = index;
+      } else if (entry.title) {
+        entryIndexMap[entry.title] = index;
+      }
     });
+
+    const stripChildren = (obj) => {
+      if (obj && typeof obj === "object") {
+        const copy = Array.isArray(obj) ? [] : {};
+        for (const key in obj) {
+          if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+          if (key === "children") {
+            copy.children = [];
+          } else if (key === "parent") {
+            // Replace with parent's array index (or -1/null if no match)
+            const parentId = obj.parent?.id || obj.parent?.title || obj.parent;
+            copy.parent =
+              parentId !== undefined ? entryIndexMap[parentId] ?? null : null;
+          } else {
+            copy[key] = stripChildren(obj[key]);
+          }
+        }
+
+        return copy;
+      }
+      return obj;
+    };
+
+    const Copy = {};
+    Copy.entries = stripChildren(this.entries);
+    return Copy;
   }
 
   deleteAll() {
@@ -75,7 +100,6 @@ export class EntryManager {
     // Recount currentChildren length on rootNode.
     let rootNode = entry.findRootNode();
     let newNumber = rootNode.getLowestEntry();
-    console.log(newNumber)
     rootNode.currentChild = newNumber - 1;
 
     // Remove entry from ALL parents' children lists
@@ -91,6 +115,62 @@ export class EntryManager {
       }
     });
   }
+
+  prepareFromJSON() {
+    const hasChildren = this.entries.some(
+      (e) => Array.isArray(e.children) && e.children.length > 0
+    );
+    const hasParent = this.entries.some((e) => e.parent);
+
+    if (hasChildren && !hasParent) {
+      // Old data: rebuild parent from children
+      console.log("Rebuilding parents from children...");
+      this.entries.forEach((entry) => {
+        if (!Array.isArray(entry.children)) return;
+
+        entry.children = entry.children.map((child) => {
+          const childEntry = this.n(child.title); // Lookup full child Entry by title
+          if (childEntry) {
+            childEntry.parent = entry; // Set parent reference on child
+            return childEntry; // Use full Entry object
+          }
+          return child; // Fallback
+        });
+      });
+    } else if (hasParent && !hasChildren) {
+      // New data: rebuild children from parent
+      // Clear existing children arrays
+      this.entries.forEach((entry) => {
+        entry.children = [];
+      });
+
+      // For every entry with a parent index, replace index with parent entry AND add to children
+      this.entries.forEach((entry, entryIndex) => {
+        const parentIndex = entry.parent;
+        if (
+          parentIndex !== null &&
+          parentIndex !== undefined &&
+          Number.isInteger(parentIndex) &&
+          parentIndex >= 0 &&
+          parentIndex < this.entries.length
+        ) {
+          // 1. Replace index with actual parent entry reference
+          entry.parent = this.entries[parentIndex];
+
+          // 2. Add this entry to parent's children array
+          const parent = entry.parent;
+          if (!Array.isArray(parent.children)) {
+            parent.children = [];
+          }
+          if (!parent.children.includes(entry)) {
+            parent.children.push(entry);
+          }
+        } else {
+          // console.log(entry.title, parentIndex);
+        }
+      });
+    } // If both present, assume data is consistent
+  }
 }
 
 export class Entry {
@@ -103,7 +183,7 @@ export class Entry {
   currentChild = null;
   parent = null;
   popOut = false;
-  coords = {x: 0, y:0}; //coords for popOuts
+  coords = { x: 0, y: 0 }; //coords for popOuts
   current = false;
   x = 0;
   y = 0;
@@ -117,9 +197,12 @@ export class Entry {
     this.color = data.color || "";
     this.children = data.children || [];
     this.currentChild = data.currentChild || null;
-    this.parent = data.parent || null;
+    this.parent = data.parent !== undefined ? data.parent : null;
     this.popOut = data.popOut || false;
-    this.coords = data.coords || {x: `${window.innerWidth - 600}px`, y: "100px"};
+    this.coords = data.coords || {
+      x: `${window.innerWidth - 600}px`,
+      y: "100px",
+    };
     this.current = data.current || false;
     this.x = data.x || this.getMiddle().x;
     this.y = data.y || this.getMiddle().y;
@@ -255,6 +338,6 @@ export class Entry {
       current = current.children[0];
     }
 
-    return level //current;
+    return level; //current;
   }
 }

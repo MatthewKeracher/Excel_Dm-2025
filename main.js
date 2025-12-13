@@ -13,7 +13,7 @@ export let masterEdit = true; //For Editing Demo File
 
 
 export function reCurrent() {
-  //Reload current obj on UI.
+  console.log(current);
   draw(current);
   loadNoteCards(current);
   loadPopUp();
