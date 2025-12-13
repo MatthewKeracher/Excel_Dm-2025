@@ -176,7 +176,6 @@ export class EntryManager {
 export class Entry {
   title = "";
   type = "";
-  image = "";
   body = "";
   color = "";
   children = [];
@@ -187,6 +186,7 @@ export class Entry {
   current = false;
   x = 0;
   y = 0;
+  image = "";
 
   constructor(data = {}) {
     // this.id = crypto.randomUUID(); // Generates a UUID

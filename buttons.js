@@ -47,7 +47,6 @@ export async function loadExtData(name, replace = true) {
     });
 
     excelDM.prepareFromJSON();
-
   } catch (error) {
     console.error("Error loading JSON:", error);
   }
@@ -105,7 +104,7 @@ export function loadFile() {
 
     if (fileType === "application/json" || ext === "json") {
       // JSON file logic
-      console.clear()
+      console.clear();
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
