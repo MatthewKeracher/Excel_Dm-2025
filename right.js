@@ -1,5 +1,4 @@
 export function draw(parent) {
- 
   const children = parent.children.filter(
     (entry) => entry.type === "locations"
   );
@@ -30,7 +29,7 @@ export function draw(parent) {
         `.notecard[data-entry-title="${CSS.escape(child.title)}"]`
       );
 
-      if (leftPanelCard) {
+      if (e.ctrlKey && leftPanelCard) {
         leftPanelCard.classList.add("highlight");
         leftPanelCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }

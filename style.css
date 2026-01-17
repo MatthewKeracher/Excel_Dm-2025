@@ -48,7 +48,6 @@ body {
   font-family: "Soutane", sans-serif;
 }
 
-
 /* The bar itself (track background) */
 *::-webkit-scrollbar {
   width: 0px;
@@ -56,7 +55,6 @@ body {
   background: transparent;
   display: none;
 }
-
 
 header {
   padding: 0;
@@ -169,6 +167,46 @@ header {
   align-items: stretch;
 }
 
+.filter {
+  position: fixed;        
+  top: 50%;             
+  left: 45%;            
+  transform: translate(-50%, -50%); 
+  display: none; 
+  font-size: large;
+  font-family: monospace;
+  color: lime;
+  background-color: black;
+  width: 500px;
+  height: auto;
+  max-height: 90%;
+  overflow-y: scroll;
+  z-index: 9999;        
+  border: 2px solid lime; 
+  border-radius: 8px;    
+}
+
+.filter header{
+  background: #0d0833;
+  border-bottom: 3px solid lime;
+  padding: 10px;
+  font-size: x-large;
+  color: lime;
+  font-family: monospace;
+}
+
+.filter-categories :hover {
+  background-color: lime;
+  color: black;
+}
+
+.filter hr {
+  border: none;
+  border-top: 2px dotted lime;
+  margin: 5px 0;
+}
+
+
 .middle-left {
   flex: 1;
   max-width: 500px;
@@ -231,6 +269,14 @@ header {
   white-space: nowrap;
   text-overflow: ellipsis;
   border-bottom: 2.5px solid black;
+}
+
+.notecard-category {
+  font-size: 0.85em;
+  color: black;
+  font-weight: bold;
+  margin-top: 2px;
+  padding-right: 60px; /* Match button space */
 }
 
 .color-grid-container {
@@ -331,6 +377,28 @@ textarea.notecard-body:focus {
 }
 
 .notecard-title.editing:focus {
+  border-color: none;
+  box-shadow: none;
+  background-color: transparent;
+}
+
+.notecard-category.editing {
+  width: 60%;
+  font-size: 0.85em;
+  font-weight: bold;
+  font-family: inherit;
+  padding: 6px 10px;
+  border: none;
+  border-bottom: 2px #000000;
+  border-radius: 10px;
+  box-sizing: border-box;
+  outline: none;
+  background-color: transparent;
+  color: #000000;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.notecard-category.editing:focus {
   border-color: none;
   box-shadow: none;
   background-color: transparent;

@@ -58,6 +58,40 @@ export function loadNoteCards(data, search = "no") {
 
         break;
     }
+    // ✅ Filter out unchecked categories - comma-separated support
+    const checkedCategories = Object.entries(excelDM.categories[currentTab])
+      .filter(([cat, state]) => state === 1)
+      .map(([cat]) => cat);
+
+    // Expand comma-separated checked categories
+    const expandedCheckedCategories = [];
+    checkedCategories.forEach((cat) => {
+      // If category itself contains commas, split it
+      if (cat.includes(",")) {
+        const subCats = cat
+          .split(",")
+          .map((c) => c.trim())
+          .filter((c) => c);
+        expandedCheckedCategories.push(...subCats);
+      } else {
+        expandedCheckedCategories.push(cat);
+      }
+    });
+
+    if (expandedCheckedCategories.length > 0) {
+      entries = entries.filter((entry) => {
+        if (!entry.category) return true; // No category = show all
+
+        // Split entry's category by commas
+        const entryCats = entry.category
+          .split(",")
+          .map((c) => c.trim())
+          .filter((c) => c);
+
+        // Show if ANY of entry's categories match checked ones
+        return entryCats.some((cat) => expandedCheckedCategories.includes(cat));
+      });
+    }
   }
 
   entries.forEach((entry) => {
@@ -158,7 +192,7 @@ function makeNoteCard(entry, isPopOut = false) {
   card.className = "notecard";
   card.style.backgroundColor = entry?.color || "";
 
-  // Title container for title and delete button aligned horizontally
+  // Title container for title and buttonContainer aligned horizontally
   const titleContainer = document.createElement("div");
   titleContainer.style.display = "flex";
   titleContainer.style.justifyContent = "space-between";
@@ -253,8 +287,15 @@ function makeNoteCard(entry, isPopOut = false) {
       titleInput.value = title.textContent;
       titleInput.style.backgroundColor = entry?.color || "";
 
+      const categoryInput = document.createElement("input");
+      categoryInput.type = "text";
+      categoryInput.className = "notecard-category editing";
+      categoryInput.value = category.textContent;
+      categoryInput.style.backgroundColor = entry?.color || "";
+
       card.replaceChild(textarea, body);
       card.replaceChild(titleInput, title);
+      card.replaceChild(categoryInput, category);
       card.classList.add("no-highlight");
 
       // Now replace textarea with CodeMirror editor
@@ -272,6 +313,7 @@ function makeNoteCard(entry, isPopOut = false) {
       titleInput.focus();
     } else {
       isEditing = false;
+
       const newText = codeArea.getValue().trim();
       body.dataset.fullText = newText;
       entry.body = newText;
@@ -283,8 +325,19 @@ function makeNoteCard(entry, isPopOut = false) {
       entry.title = newTitle;
       title.textContent = newTitle;
 
+      const newCategory = card
+        .querySelector(".notecard-category.editing")
+        .value.trim();
+      entry.category = newCategory;
+      category.textContent = newCategory;
+
       card.replaceChild(body, textarea);
       card.replaceChild(title, card.querySelector(".notecard-title.editing"));
+      card.replaceChild(
+        category,
+        card.querySelector(".notecard-category.editing")
+      );
+
       card.classList.remove("no-highlight");
 
       editBtn.title = "Edit note";
@@ -337,7 +390,6 @@ function makeNoteCard(entry, isPopOut = false) {
   //COUNTER
   const counterBtn = document.createElement("button");
   counterBtn.innerHTML = entry.countParentsUp();
-  
 
   //PREV BUTTON
   const prevbtn = document.createElement("button");
@@ -514,6 +566,12 @@ function makeNoteCard(entry, isPopOut = false) {
   } else {
     buttonsContainer.appendChild(lockbtn);
   }
+
+  //CATEGORY
+  const category = document.createElement("div");
+  category.className = "notecard-category";
+  category.textContent = entry.category || "Uncategorised"; // Use entry.subtitle or default
+  card.appendChild(category);
 
   buttonsContainer.appendChild(deleteBtn);
   buttonsContainer.appendChild(editBtn);

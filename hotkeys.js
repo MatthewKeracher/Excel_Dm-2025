@@ -28,12 +28,26 @@ export function addHotkeys() {
       return;
     }
 
+    if (event.ctrlKey) {
+      return;
+    }
+
     if (event.key === "Tab") {
       event.preventDefault();
-      const focusableCards = document.querySelectorAll(".notecard");
-      const currentCard = focusableCards[currentIndex];
 
-      currentCard.querySelector(".edit-btn").click();
+      // const focusableCards = document.querySelectorAll(".notecard");
+      // const currentCard = focusableCards[currentIndex];
+
+      // if (currentCard) {
+      //   // Edit current card
+      //   currentCard.querySelector(".edit-btn").click();
+      // } else {
+      // Toggle filter if no cards found
+      const filter = document.querySelector(".filter");
+      filter.style.display =
+        filter.style.display === "block" ? "none" : "block";
+      //}
+
       return;
     }
 

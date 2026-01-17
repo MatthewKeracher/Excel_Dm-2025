@@ -3,7 +3,7 @@ import { loadNoteCards, loadPopUp } from "./left.js";
 import { draw, HexToMap } from "./right.js";
 import { initButtons, loadExtData } from "./buttons.js";
 import { saveData, loadData, openDB } from "./localStorage.js";
-import { initTabs } from "./tabs.js";
+import { currentTab, initTabs, updateFilter } from "./tabs.js";
 import { addHotkeys } from "./hotkeys.js";
 
 //State
@@ -11,10 +11,13 @@ export let excelDM = new EntryManager();
 export let current = [];
 export let masterEdit = true; //For Editing Demo File
 
+//tab names
+export const tabNames = ["locations", "people", "quests", "misc"];
+
 
 export function reCurrent() {
-  console.log(current);
   draw(current);
+  updateFilter();
   loadNoteCards(current);
   loadPopUp();
   saveData();
@@ -36,6 +39,9 @@ export function newCurrent(entry = excelDM.entries.find(e => e.current === true)
   const currentTitle = document.getElementById("currentTitle");
   currentTitle.innerHTML = current.title;
 }
+
+
+
 
 window.addEventListener("DOMContentLoaded", async () => {
   //ADD TOP BUTTON FUNCTIONALITY
@@ -70,7 +76,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   await loadData();
   newCurrent();
 
-  initTabs(["locations", "people", "quests", "misc"]);
+  initTabs(tabNames);
+  
+
 
   //LISTENERS
 

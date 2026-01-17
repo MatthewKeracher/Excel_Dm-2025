@@ -174,6 +174,7 @@ export class EntryManager {
 }
 
 export class Entry {
+  category = "";
   title = "";
   type = "";
   body = "";
@@ -190,6 +191,7 @@ export class Entry {
 
   constructor(data = {}) {
     // this.id = crypto.randomUUID(); // Generates a UUID
+    this.category = data.category || "Uncategorised";
     this.title = data.title || "Untitled Entry";
     this.type = data.type || currentTab;
     this.image = data.image || "";
