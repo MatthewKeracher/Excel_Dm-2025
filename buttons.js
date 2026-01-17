@@ -21,8 +21,10 @@ export function initButtons() {
   });
 }
 
-export function newFile() {
-  excelDM.deleteAll();
+export async function newFile() {
+  //excelDM.deleteAll();
+  await loadExtData("./Excel_DM.json", true);
+  newCurrent();
 }
 
 export function donate() {

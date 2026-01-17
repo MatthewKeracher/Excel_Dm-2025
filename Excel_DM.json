@@ -1,0 +1,130 @@
+{
+  "entries": [
+    {
+      "title": "Excel_DM",
+      "type": "locations",
+      "body": "<div class=\"boxed-text\">...</div>",
+      "color": "",
+      "children": [],
+      "currentChild": null,
+      "parent": null,
+      "popOut": false,
+      "coords": {
+        "x": "1320px",
+        "y": "100px"
+      },
+      "current": true,
+      "x": 598.5,
+      "y": 510,
+      "image": ""
+    },
+    {
+      "title": "Welcome to Excel_DM!",
+      "type": "locations",
+      "body": "Roleplaying games are played around a table with players and a game master. But in preparing for each session isn't the game master playing their own game? This solitaire has few rules, and much ink has been spilt on the best way to go about playing it. This software, Excel_DM, is my own take on how best the computer can be used to focus and improve the game master's projects.",
+      "color": "",
+      "children": [],
+      "currentChild": null,
+      "parent": 0,
+      "popOut": false,
+      "coords": {
+        "x": "1320px",
+        "y": "100px"
+      },
+      "current": false,
+      "x": 598.5,
+      "y": 510,
+      "image": ""
+    },
+    {
+      "title": "Exposition",
+      "type": "quests",
+      "body": "<div class=\"boxed-text\">Sets up the story: main characters, setting, and initial situation before major changes.</div>Use this to quickly establish context and hooks, improvising based on player choices to set stakes without railroading.\n<br>In a campaign, introduce world lore and initial quests organically during session zero or travel scenes; for an encounter, describe the environment, NPCs, and immediate threat in 1-2 minutes to orient players.\n<br>This scaffolds improv by giving you hooks (e.g., a suspicious villager) to riff on player questions or detours.",
+      "color": "rgba(255, 179, 186, 1)",
+      "children": [],
+      "currentChild": 0,
+      "parent": null,
+      "popOut": true,
+      "coords": {
+        "x": "1371px",
+        "y": "85px"
+      },
+      "current": false,
+      "x": 598.5,
+      "y": 510,
+      "image": ""
+    },
+    {
+      "title": "Rising Action",
+      "type": "quests",
+      "body": "<div class=\"boxed-text\">Sequence of events where conflicts intensify and stakes rise for the protagonist. </div>\nBuild tension through escalating complications tailored to player actions, improvising obstacles from their decisions to maintain momentum.\n<br>Campaigns benefit from layering subplots and foreshadowing across sessions; encounters use chained challenges (e.g., foes, traps, moral dilemmas) to create urgency. \n<br>This structure supports improv by turning player successes/failures into organic escalations, preventing flat scenes.",
+      "color": "rgba(233, 157, 71, 1)",
+      "children": [],
+      "currentChild": null,
+      "parent": 2,
+      "popOut": false,
+      "coords": {
+        "x": "1320px",
+        "y": "100px"
+      },
+      "current": false,
+      "x": 598.5,
+      "y": 510,
+      "image": ""
+    },
+    {
+      "title": "Climax",
+      "type": "quests",
+      "body": "<div class=\"boxed-text\"> Peak of tension; decisive turning point where main conflict reaches its head. </div>\nPivot to a high-stakes confrontation shaped by prior improv, ensuring a decisive peak regardless of scale. \n<br>In campaigns, this could be a boss fight or revelation after arcs; for encounters, it's the final enemy round or puzzle crux. \n<br>Scaffold improv by preparing modular \"climax triggers\" (e.g., player vulnerabilities) that adapt to unexpected tactics, delivering payoff without predetermining outcomes.",
+      "color": "rgba(255, 255, 186, 1)",
+      "children": [],
+      "currentChild": null,
+      "parent": 3,
+      "popOut": false,
+      "coords": {
+        "x": "1320px",
+        "y": "100px"
+      },
+      "current": false,
+      "x": 598.5,
+      "y": 510,
+      "image": ""
+    },
+    {
+      "title": "Falling Action",
+      "type": "quests",
+      "body": "<div class=\"boxed-text\">Aftermath of climax; shows consequences and ties up some loose ends.</div>\nUnwind consequences immediately after the peak, improvising ripple effects from player choices to transition smoothly. \n<br>Campaigns tie this to downtime or travel for reflection; encounters resolve loot, NPC reactions, or wounds in moments. \n<br>This aids improv by using the structure as a breather to weave in foreshadowing or hooks, keeping narrative flow amid chaos.",
+      "color": "rgba(142, 194, 154, 1)",
+      "children": [],
+      "currentChild": null,
+      "parent": 4,
+      "popOut": false,
+      "coords": {
+        "x": "1320px",
+        "y": "100px"
+      },
+      "current": false,
+      "x": 598.5,
+      "y": 510,
+      "image": ""
+    },
+    {
+      "title": "Resolution",
+      "type": "quests",
+      "body": "<div class=\"boxed-text\"> Story's outcome; central conflict resolved, new status quo established.</div>\nClose loops with satisfying payoffs, improvising denouements that honor player impact for closure or teases.\n<br>Campaigns end arcs with rewards and new hooks; encounters wrap in 30-60 seconds with experience, loot, or twists. \n<br>The structure scaffolds large-scale improv by ensuring every scene feels complete, training your instincts to scale beats dynamically.",
+      "color": "rgba(186, 225, 255, 1)",
+      "children": [],
+      "currentChild": null,
+      "parent": 5,
+      "popOut": false,
+      "coords": {
+        "x": "1320px",
+        "y": "100px"
+      },
+      "current": false,
+      "x": 598.5,
+      "y": 510,
+      "image": ""
+    }
+  ]
+}
