@@ -2,6 +2,7 @@ import { current, excelDM, reCurrent, newCurrent, masterEdit } from "./main.js";
 import { Entry, EntryManager } from "./classes.js";
 import { saveData } from "./localStorage.js";
 import { currentTab } from "./tabs.js";
+import { returnFiltered } from "./filter.js";
 
 export function initButtons() {
   const buttons = {
@@ -66,16 +67,22 @@ export async function loadHommlet() {
   newCurrent();
 }
 
-export function saveFile() {
+export function saveFile(filter = false) {
   try {
-    // When saving JSON:
-    const dataToDownload = excelDM.prepareForJSON();
-    const jsonString = JSON.stringify(dataToDownload, null, 2);
+    let dataToDownload;
+
+    if (filter) {
+      dataToDownload = excelDM.prepareForJSON();
+      dataToDownload = returnFiltered(dataToDownload); // ✅ First get data, then filter
+    } else {
+      dataToDownload = excelDM.prepareForJSON();
+    }
+
+    const jsonString = JSON.stringify(dataToDownload, null, 2); // ✅ Stringify here
 
     const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const lastPlace = document.getElementById("currentTitle")?.innerHTML;
-
     const fileName = `${lastPlace}.json` || "excel_DM.json";
 
     const a = document.createElement("a");

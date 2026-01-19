@@ -181,7 +181,7 @@ header {
   height: auto;
   max-height: 90%;
   overflow-y: scroll;
-  z-index: 9999;        
+  z-index: 999;        
   border: 2px solid lime; 
   border-radius: 8px;    
 }

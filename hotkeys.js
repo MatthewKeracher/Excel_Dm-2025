@@ -14,7 +14,7 @@ export function addHotkeys() {
     if (activeElement && activeElement.classList.contains("editing")) {
       if (event.key === "Escape") {
         const inputElem = document.querySelector(
-          "input.notecard-title.editing"
+          "input.notecard-title.editing",
         );
         const parent = inputElem.parentElement;
         const editBtn = parent.querySelector("button.edit-btn");
@@ -47,8 +47,6 @@ export function addHotkeys() {
       filter.style.display =
         filter.style.display === "block" ? "none" : "block";
       //}
-
-        
 
       return;
     }
@@ -111,7 +109,7 @@ export function addHotkeys() {
         focusableCards[currentIndex].getAttribute("data-entry-title");
 
       const label = document.querySelector(
-        `.label[data-entry-title="${CSS.escape(title)}"]`
+        `.label[data-entry-title="${CSS.escape(title)}"]`,
       );
 
       if (label) {
@@ -150,9 +148,11 @@ export function addHotkeys() {
 
     if (event.key === "Enter") {
       if (searchBox.style.display === "block") {
-        if (searchBar.value === "> add") {
+        if (searchBar.value === ">add") {
           addEntry();
-        } else if (searchBar.value === "> save") {
+        } else if (searchBar.value === ">save filter") {
+          saveFile(true);
+        } else if (searchBar.value === ">save") {
           saveFile();
         }
 
@@ -165,15 +165,15 @@ export function addHotkeys() {
 
   const searchBox = document.getElementById("search-bar");
 
- searchBox.addEventListener("input", () => {
-  const query = searchBox.value.toLowerCase();
+  searchBox.addEventListener("input", () => {
+    const query = searchBox.value.toLowerCase();
 
-  const results = excelDM.entries.filter((entry) =>
-    entry.title?.toLowerCase().includes(query) ||
-    entry.category?.toLowerCase().includes(query)
-  );
+    const results = excelDM.entries.filter(
+      (entry) =>
+        entry.title?.toLowerCase().includes(query) ||
+        entry.category?.toLowerCase().includes(query),
+    );
 
-  loadNoteCards(results, "search");
-});
-
+    loadNoteCards(results, "search");
+  });
 }

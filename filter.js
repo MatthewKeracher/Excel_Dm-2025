@@ -2,6 +2,8 @@ import { excelDM, current } from "./main.js";
 import { tabNames } from "./main.js";
 import { loadNoteCards } from "./left.js";
 import { saveCategories } from "./localStorage.js";
+import { currentTab } from "./tabs.js";
+
 
 // Global event handler references
 const filterHandlers = {
@@ -128,7 +130,7 @@ function checkboxHandler() {
       e.target.checked = excelDM.categories[tabType][category] === 1;
       saveCategories();
       loadNoteCards(current);
-      console.log(excelDM.categories);
+      //console.log(excelDM.categories);
     }
   };
 }
@@ -163,3 +165,44 @@ export function updateFilter() {
   filter.addEventListener("click", filterHandlers.toggleHeader);
   filter.addEventListener("change", filterHandlers.toggleCheckbox);
 }
+
+export function returnFiltered(data) {
+  const checkedCategories = Object.entries(excelDM.categories[currentTab])
+    .filter(([cat, state]) => state === 1)
+    .map(([cat]) => cat);
+
+  // Expand comma-separated checked categories
+  const expandedCheckedCategories = [];
+  checkedCategories.forEach((cat) => {
+    if (cat.includes(",")) {
+      const subCats = cat
+        .split(",")
+        .map((c) => c.trim())
+        .filter((c) => c);
+      expandedCheckedCategories.push(...subCats);
+    } else {
+      expandedCheckedCategories.push(cat);
+    }
+  });
+
+  if (expandedCheckedCategories.length > 0) {
+    data.entries = data.entries.filter((entry) => {
+      // ✅ EXCLUDE uncategorised - must have category
+      if (!entry.category || entry.category.trim() === "") return false;
+
+      // Split entry's category by commas
+      const entryCats = entry.category
+        .split(",")
+        .map((c) => c.trim())
+        .filter((c) => c);
+
+      // Show ONLY if entry has at least one matching checked category
+      return entryCats.some((cat) => expandedCheckedCategories.includes(cat));
+    });
+  }
+
+  console.log(data)
+
+  return data;
+}
+
