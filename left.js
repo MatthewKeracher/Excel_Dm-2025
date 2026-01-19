@@ -19,12 +19,12 @@ export function loadNoteCards(data, search = "no") {
           a.title.localeCompare(b.title, undefined, {
             numeric: true,
             sensitivity: "base",
-          })
+          }),
         );
         break;
       case "quests":
         entries = excelDM.entries.filter(
-          (entry) => entry.type === "quests" && entry.parent === null
+          (entry) => entry.type === "quests" && entry.parent === null,
         );
 
         const updatedEntries = entries.map((entry) => {
@@ -40,7 +40,7 @@ export function loadNoteCards(data, search = "no") {
           a.title.localeCompare(b.title, undefined, {
             numeric: true,
             sensitivity: "base",
-          })
+          }),
         );
 
         break;
@@ -58,6 +58,8 @@ export function loadNoteCards(data, search = "no") {
 
         break;
     }
+
+
     // ✅ Filter out unchecked categories - comma-separated support
     const checkedCategories = Object.entries(excelDM.categories[currentTab])
       .filter(([cat, state]) => state === 1)
@@ -80,7 +82,7 @@ export function loadNoteCards(data, search = "no") {
 
     if (expandedCheckedCategories.length > 0) {
       entries = entries.filter((entry) => {
-        if (!entry.category) return true; // No category = show all
+        if (!entry.category || entry.category.trim() === "Uncategorised") return true; // No category = show all
 
         // Split entry's category by commas
         const entryCats = entry.category
@@ -223,7 +225,7 @@ function makeNoteCard(entry, isPopOut = false) {
 
   card.addEventListener("mouseenter", (e) => {
     const label = document.querySelector(
-      `.label[data-entry-title="${CSS.escape(entry.title)}"]`
+      `.label[data-entry-title="${CSS.escape(entry.title)}"]`,
     );
 
     if (label) {
@@ -234,7 +236,7 @@ function makeNoteCard(entry, isPopOut = false) {
 
   card.addEventListener("mouseleave", () => {
     const label = document.querySelector(
-      `.label[data-entry-title="${CSS.escape(entry.title)}"]`
+      `.label[data-entry-title="${CSS.escape(entry.title)}"]`,
     );
 
     card.classList.remove("highlight");
@@ -335,7 +337,7 @@ function makeNoteCard(entry, isPopOut = false) {
       card.replaceChild(title, card.querySelector(".notecard-title.editing"));
       card.replaceChild(
         category,
-        card.querySelector(".notecard-category.editing")
+        card.querySelector(".notecard-category.editing"),
       );
 
       card.classList.remove("no-highlight");
@@ -403,7 +405,7 @@ function makeNoteCard(entry, isPopOut = false) {
       if (!entry.parent.parent) {
         // Show confirm dialog with Yes/No buttons
         const userConfirmed = confirm(
-          "Do you want to make a new, outer layer?"
+          "Do you want to make a new, outer layer?",
         );
 
         // If user clicks Yes (OK)
@@ -420,7 +422,7 @@ function makeNoteCard(entry, isPopOut = false) {
     } else if (entry.type === "quests") {
       if (!entry.parent) {
         const userConfirmed = confirm(
-          "Do you want to make a new, previous objective?"
+          "Do you want to make a new, previous objective?",
         );
 
         // If user clicks Yes (OK)

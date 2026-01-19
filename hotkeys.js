@@ -48,6 +48,8 @@ export function addHotkeys() {
         filter.style.display === "block" ? "none" : "block";
       //}
 
+        
+
       return;
     }
 
@@ -163,13 +165,15 @@ export function addHotkeys() {
 
   const searchBox = document.getElementById("search-bar");
 
-  searchBox.addEventListener("input", () => {
-    const query = searchBox.value.toLowerCase();
+ searchBox.addEventListener("input", () => {
+  const query = searchBox.value.toLowerCase();
 
-    const results = excelDM.entries.filter((entry) =>
-      entry.title.toLowerCase().includes(query)
-    );
+  const results = excelDM.entries.filter((entry) =>
+    entry.title?.toLowerCase().includes(query) ||
+    entry.category?.toLowerCase().includes(query)
+  );
 
-    loadNoteCards(results, "search");
-  });
+  loadNoteCards(results, "search");
+});
+
 }

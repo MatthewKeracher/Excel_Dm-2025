@@ -30,6 +30,21 @@ export function openDB() {
   });
 }
 
+export function saveCategories() {
+  if (!db) {
+    console.error("DB not ready");
+    return;
+  }
+
+  const tx = db.transaction(STORE_NAME, "readwrite");
+  const store = tx.objectStore(STORE_NAME);
+
+  store.put({ key: "categories", data: excelDM.categories });
+
+  //tx.oncomplete = () => console.log("Categories Saved.");
+  tx.onerror = () => console.error("Failed to Save Categories.");
+}
+
 export function saveData() {
   if (!db) {
     console.error("DB not ready");
@@ -40,37 +55,76 @@ export function saveData() {
 
   // Apply same flattening as prepareForJSON()
   const flattenedData = excelDM.prepareForJSON();
-  store.put({ key: "excelDM", data: flattenedData });
+  store.put({ key: "entries", data: flattenedData });
 
-  tx.oncomplete = () => console.log("excelDM saved (flattened)");
+  //tx.oncomplete = () => console.log("excelDM saved (flattened)");
   tx.onerror = () => console.error("Save failed");
 }
 
 export async function loadData() {
   if (!db) {
     console.error("DB not ready");
+    // Initialize with empty defaults when DB unavailable
+    excelDM.entries = [];
+    excelDM.categories = {};
+    newCurrent();
     return;
   }
+
   const tx = db.transaction(STORE_NAME, "readonly");
   const store = tx.objectStore(STORE_NAME);
-  const getReq = store.get("excelDM");
+  const getEntries = store.get("entries");
+  const getCategories = store.get("categories");
 
-  getReq.onsuccess = (e) => {
+  let entriesLoaded = false;
+  let categoriesLoaded = false;
+
+  getCategories.onsuccess = (e) => {
     if (e.target.result?.data) {
-      const savedData = e.target.result.data; // Already flattened with parent indices
+      excelDM.categories = e.target.result.data;
+      console.log("Categories Loaded:", excelDM.categories);
+    } else {
+      console.log("No categories found, using empty object");
+      excelDM.categories = {};
+    }
+    categoriesLoaded = true;
+    checkBothLoaded();
+  };
 
-      // Clear existing entries
+  getEntries.onsuccess = (e) => {
+    if (e.target.result?.data) {
+      const savedData = e.target.result.data;
       excelDM.entries.splice(0, excelDM.entries.length);
 
-      // 1. Reconstruct Entry instances (parent = index)
       const entryInstances = (savedData.entries || []).map(
-        (entryData) => new Entry(entryData)
+        (entryData) => new Entry(entryData),
       );
+
       entryInstances.forEach((entry) => excelDM.add(entry));
+      excelDM.prepareFromJSON();
+    } else {
+      console.log("No entries found, starting fresh");
+      excelDM.entries.splice(0, excelDM.entries.length);
+      excelDM.categories = {};
+      excelDM.prepareFromJSON();
+    }
+    entriesLoaded = true;
+    checkBothLoaded();
+  };
 
-      excelDM.prepareFromJSON(); 
-
+  function checkBothLoaded() {
+    if (entriesLoaded && categoriesLoaded) {
       newCurrent();
     }
-  };
+  }
+
+  // Fallback timeout (5s) in case transactions hang
+  setTimeout(() => {
+    if (!entriesLoaded || !categoriesLoaded) {
+      console.warn("LoadData timeout - forcing defaults");
+      excelDM.entries = [];
+      excelDM.categories = {};
+      newCurrent();
+    }
+  }, 5000);
 }

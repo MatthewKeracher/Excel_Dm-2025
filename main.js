@@ -3,8 +3,9 @@ import { loadNoteCards, loadPopUp } from "./left.js";
 import { draw, HexToMap } from "./right.js";
 import { initButtons, loadExtData } from "./buttons.js";
 import { saveData, loadData, openDB } from "./localStorage.js";
-import { currentTab, initTabs, updateFilter } from "./tabs.js";
+import { currentTab, initTabs } from "./tabs.js";
 import { addHotkeys } from "./hotkeys.js";
+import{ updateFilter } from "./filter.js";
 
 //State
 export let excelDM = new EntryManager();
@@ -12,7 +13,7 @@ export let current = [];
 export let masterEdit = true; //For Editing Demo File
 
 //tab names
-export const tabNames = ["locations", "people", "quests", "misc"];
+export const tabNames = ["locations", "people", "quests", "spells", "items", "misc"];
 
 
 export function reCurrent() {
@@ -41,47 +42,19 @@ export function newCurrent(entry = excelDM.entries.find(e => e.current === true)
 }
 
 
-
-
 window.addEventListener("DOMContentLoaded", async () => {
   //ADD TOP BUTTON FUNCTIONALITY
 
   await openDB();
+  await loadData(); //calls newCurrent() when done
+
   initButtons();
   addHotkeys();
-
-
-  // Add some entries, including nested ones as desired
-  excelDM.add(
-    new Entry({
-      title: "Excel_DM",
-      type: "locations",
-      body: "A small place with small-minded people.",
-      current: false,
-    })
-  );
-
-  excelDM.add(
-    new Entry({
-      title: "Welcome to Excel_DM!",
-      type: "locations",
-      body: "Information about the software.",
-      current: true,
-    })
-  );
-
-
-  excelDM.n("Excel_DM").parentOf(excelDM.n("Welcome to Excel_DM!"));
-
-  await loadData();
-  newCurrent();
-
   initTabs(tabNames);
   
 
 
   //LISTENERS
-
   const mapLayer = document.getElementById("map-layer");
   mapLayer.addEventListener("click", (e) => {
     if (!e.shiftKey) return; // Only proceed if Shift key is held
@@ -112,6 +85,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   window.addEventListener("resize", () => {
     newCurrent(current);
   });
+
+
 });
 
 //  const logo = document.getElementById('logoContainer');
