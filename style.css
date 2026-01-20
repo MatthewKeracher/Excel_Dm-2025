@@ -275,7 +275,6 @@ p {
   font-size: large;
   margin-bottom: 0px;
   margin-top: 7px;
-  max-width: 100%; /* leave space for buttons */
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -339,7 +338,6 @@ p {
 
 .notecard-body {
   max-height: 4.6em;
-  line-height: 1.2;
   overflow-y: hidden;
   overflow-x: hidden;
   transition: max-height 0s ease;
@@ -496,11 +494,59 @@ textarea.notecard-body:focus {
 
 /* Markdown */
 
-table th,
-table td {
+.person-card .notecard-body {
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+/* .person-card table{
+  background: rgba(255, 255, 255, 0.288);
+  float: right;
+  margin-left: 10px;
+  padding-bottom: 10px;
+  font-size: 0.95em;
+  height: 100%;
+} */
+
+/* .person-card table th,
+.person-card table td {
+  font-weight: bold;
+  font-size: 1em;
+  padding-right: 10px;
+  padding-left: 10px;  
+} */
+
+.monsters-card table,
+.person-card table{
+  background:  rgba(255, 255, 255, 0.288);
+  float: left;
+  margin-right: 10px;
+  padding-bottom: 10px;
+  font-size: 1em;
+  height: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+
+.monsters-card table td,
+.monsters-card table th,
+.person-card table th,
+.person-card table td {
+  font-weight: normal;
+  font-size: 1em;
   padding-right: 10px;
   padding-left: 10px;
+  border-bottom: 1px solid #000;
+  text-align: center;
+  vertical-align: middle;
 }
+
+.person-card table th,
+.monsters-card table th{
+  font-weight: bold;
+}
+
 
 .boxed-text {
   border: 2px dashed #000000;
@@ -508,7 +554,9 @@ table td {
   padding: 0.5em;
   margin: 0.5em 0;
   font-size: 1.01em;
+  display: inline-block;
 }
+
 .boxed-text p {
   margin: 0 0 0 0;
 }

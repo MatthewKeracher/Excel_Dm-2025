@@ -357,6 +357,7 @@ function makeNoteCard(entry, isPopOut = false) {
   nextBtn.addEventListener("click", () => {
     if (entry.children.length === 0) {
       let newEntry = new Entry({
+        category: entry.category,
         title: `Inside ${entry.title}`,
         color: entry.color,
       });
@@ -567,6 +568,14 @@ function makeNoteCard(entry, isPopOut = false) {
     buttonsContainer.appendChild(nextBtn);
   } else {
     buttonsContainer.appendChild(lockbtn);
+  }
+
+  if(entry.type === "people"){
+    card.classList.add("person-card");
+  }
+
+   if(entry.type === "monsters"){
+    card.classList.add("monsters-card");
   }
 
   //CATEGORY

@@ -13,7 +13,7 @@ export let current = [];
 export let masterEdit = true; //For Editing Demo File
 
 //tab names
-export const tabNames = ["locations", "people", "quests", "spells", "items", "misc"];
+export const tabNames = ["locations", "people", "quests", "monsters", "spells", "items", "misc"];
 
 
 export function reCurrent() {

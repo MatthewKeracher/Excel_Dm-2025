@@ -251,22 +251,29 @@ export class Entry {
 
     switch (currentTab) {
       case "people":
-        body = `|Level|Class|Alignment|HP |AC |Damage|
-|:---:|:---:|:-------:|:-:|:-:|:----:|
-|Level|Class|Alignment|HP |AC |Damage|
+        body = `|Ability|Score|
+|:-----:|:-----:|
+| S T R | ?? |
+| D E X | ?? |
+| I N T | ?? |
+| W I S | ?? |
+| C O N | ?? |
+| C H A | ?? |
+| - - - | - - - |
+| H I T | ?? |
+| A R M | ?? |
+| D A M | ?? |
+| X P   | ?? |
+| - - - | - - - |
+| P P | ?? |
+| E P | ?? |
+| G P | ?? |
+| S P | ?? |
+| C P | ?? |
 
-|Ability | Score |      
-|:------:|:-----:|       
-|Str     |   X   |      
-|Dex     |   X   |
-|Int     |   X   |
-|Wis     |   X   |
-|Con     |   X   |
-|Cha     |   X   |
 
-|Spell | Level |      
-|:----:|:-----:|       
-|Spell | Level |      
+<b>Inventory</b><hr>
+
 `;
 
         break;

@@ -168,6 +168,7 @@ export function addEntry() {
   const newName = `_${dateTime}`;
 
   let newEntry = new Entry({
+    category: current.category,
     title: newName,
   });
 
