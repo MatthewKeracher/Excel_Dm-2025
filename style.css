@@ -520,8 +520,9 @@ textarea.notecard-body:focus {
 .person-card table{
   background:  rgba(255, 255, 255, 0.288);
   float: left;
+  margin-top: 20px;
   margin-right: 10px;
-  padding-bottom: 10px;
+  margin-bottom: 10px;
   font-size: 1em;
   height: 100%;
   border-collapse: collapse;
@@ -538,13 +539,17 @@ textarea.notecard-body:focus {
   padding-right: 10px;
   padding-left: 10px;
   border-bottom: 1px solid #000;
-  text-align: center;
   vertical-align: middle;
 }
 
 .person-card table th,
 .monsters-card table th{
   font-weight: bold;
+}
+
+p{
+margin: 0.2em 0;
+display: inline-block;
 }
 
 

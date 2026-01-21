@@ -45,12 +45,14 @@ export function newCurrent(entry = excelDM.entries.find(e => e.current === true)
 window.addEventListener("DOMContentLoaded", async () => {
   //ADD TOP BUTTON FUNCTIONALITY
 
-  await openDB();
-  await loadData(); //calls newCurrent() when done
-
   initButtons();
   addHotkeys();
   initTabs(tabNames);
+
+  await openDB();
+  await loadData(); //calls newCurrent() when done
+
+  
   
 
 
