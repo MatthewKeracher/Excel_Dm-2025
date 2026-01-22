@@ -1,0 +1,221 @@
+/* Editor */
+
+:root {
+  --color-background: rgb(1, 36, 86);
+  --color-border: lime;
+  --color-cursor: hotpink;
+}
+
+.editor {
+  position: fixed;
+  top: 10%;
+  left: 35%;
+  display: none;
+  font-size: large;
+  font-family: monospace;
+  color: var(--color-border);
+  caret-color: var(--color-cursor);
+  caret: 2px solid var(--color-cursor);
+  background-color: var(--color-background);
+  width: 33%;
+  height: 70vh;
+  overflow-y: hidden;
+  z-index: 999;
+  border: 2px solid var(--color-border);
+}
+
+.editor-toolbar {
+  height: auto;
+  font-weight: bold;
+  color: black;
+  background-color: var(--color-border);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.editor-title {
+  left: 10px;
+  width: 100%;
+  font-size: 1.2em;
+  font-weight: bold;
+  font-family: inherit;
+  padding: 6px 10px;
+  border: none;
+  border-bottom: 2px #000000;
+  box-sizing: border-box;
+  outline: none;
+  background-color: var(--color-background);
+  color: var(--color-border);
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.editor-category {
+  width: 100%;
+  font-weight: normal;
+  font-family: inherit;
+  font-size: large;
+  padding: 6px 10px;
+  border: none;
+  border-bottom: 2px #000000;
+  box-sizing: border-box;
+  outline: none;
+  background-color: transparent;
+  color: var(--color-cursor);
+  border-bottom: 2px solid var(--color-border);
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.notecard-category.editing:focus {
+  border-color: none;
+  box-shadow: none;
+  background-color: transparent;
+}
+
+.CodeMirror {
+  height: auto;
+  color: var(--color-border);
+  background: var(--color-background);
+  padding: 5px;
+  padding-bottom: 15px;
+}
+
+.CodeMirror-code {
+  font-size: 16px;
+  caret-color: var(--color-border);
+}
+
+.CodeMirror-scroll {
+  overflow-y: auto !important;
+  height: 100vh;
+  max-height: 60vh;    /* Leave room for title/category inputs */
+}
+
+/* CodeMirror uses custom cursor elements, not native caret */
+.CodeMirror-cursor {
+  border-left: 3px solid white !important;
+  background-color: transparent !important;
+}
+
+/* Ensure cursor shows when focused */
+.CodeMirror-focused .CodeMirror-cursor {
+  border-left-color: var(--color-cursor) !important;
+}
+
+.CodeMirror-gutters {
+  background: var(--color-background) !important;
+  border-right: transparent !important;
+}
+
+.CodeMirror-linenumber {
+  color: whitesmoke !important;
+}
+
+.CodeMirror-gutter-background {
+  background: black !important;
+}
+
+/* Markdown syntax highlighting colors in CodeMirror */
+.cm-header-1 {
+  color: #ff0 !important;
+} /* # headers */
+.cm-header-2 {
+  color: #ff0 !important;
+} /* ## headers */
+.cm-header-3 {
+  color: #ff0 !important;
+} /* ### headers */
+
+.cm-strong {
+  color: #fff !important;
+} /* **bold** */
+.cm-em {
+  color: #0ff !important;
+} /* *italic* */
+
+.cm-link {
+  color: #0f0 !important;
+} /* [links] */
+.cm-variable-2 {
+  color: #ff8080 !important;
+} /* inline code `code` */
+
+.cm-hr {
+  color: #888 !important;
+} /* --- hr lines */
+.cm-quote {
+  color: #7f7f7f !important;
+} /* > blockquotes */
+
+.cm-list {
+  color: var(--color-border) !important;
+} /* - lists */
+.cm-number {
+  color: #ffa500 !important;
+} /* numbers */
+
+.CodeMirror {
+  color: var(--color-border) !important; /* fallback plain text */
+}
+
+.cm-tag {
+  color: #ff00ff !important; /* <p>, <br>, <div> etc - magenta */
+}
+
+/* Selected/highlighted text in CodeMirror */
+.CodeMirror-selected {
+  background: var(--color-border) !important;
+  color: black !important;
+}
+
+.CodeMirror-focused .CodeMirror-selected {
+  background: rgba(255, 105, 180, 0.603) !important;
+  color: black !important;
+}
+
+/* Ensure text stays black on selection */
+.CodeMirror-selected * {
+  color: black !important;
+}
+
+.filter {
+  position: fixed;
+  top: 50%;
+  left: 45%;
+  transform: translate(-50%, -50%);
+  display: none;
+  font-size: large;
+  font-family: monospace;
+  color: var(--color-border);
+  background-color: var(--color-background);
+  width: 500px;
+  height: auto;
+  max-height: 90%;
+  overflow-y: scroll;
+  z-index: 999;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.filter header {
+  background: var(--color-background);
+  border-bottom: 3px solid var(--color-border);
+  padding: 10px;
+  font-size: x-large;
+  color: var(--color-border);
+  font-family: monospace;
+}
+
+.filter-categories :hover {
+  background-color: var(--color-border);
+  color: var(--color-background);
+}
+
+.filter hr {
+  border: none;
+  border-top: 2px dotted var(--color-border);
+  margin: 5px 0;
+}
+

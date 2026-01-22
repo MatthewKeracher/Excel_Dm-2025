@@ -1,4 +1,4 @@
-import { excelDM, reCurrent } from "./main.js";
+import { current, excelDM, reCurrent } from "./main.js";
 import { loadNoteCards } from "./left.js";
 import { currentTab } from "./tabs.js";
 import { addEntry, saveFile } from "./buttons.js";
@@ -13,12 +13,19 @@ export function addHotkeys() {
     // Check if currently editing
     if (activeElement && activeElement.classList.contains("editing")) {
       if (event.key === "Escape") {
-        const inputElem = document.querySelector(
-          "input.notecard-title.editing",
-        );
-        const parent = inputElem.parentElement;
-        const editBtn = parent.querySelector("button.edit-btn");
-        editBtn.click();
+        // Find the current editor and its save button
+        const currentEditor = document.querySelector(".editor");
+        if (currentEditor) {
+          const saveBtn = currentEditor.querySelector(".save-btn");
+          if (saveBtn) {
+            saveBtn.click();
+          } else {
+            // Fallback: close without saving
+            if (confirm("Close Editor without Saving?")) {
+              currentEditor.remove();
+            }
+          }
+        }
       }
       return; // Exit early if editing
     }
@@ -32,21 +39,22 @@ export function addHotkeys() {
       return;
     }
 
+    // if (event.key === "Enter" && !event.shiftKey) {
+    //   const focusableCards = document.querySelectorAll(".notecard");
+    //   const currentCard = focusableCards[currentIndex];
+
+    //   if (currentCard) {
+    //     // Edit current card
+    //     currentCard.querySelector(".edit-btn").click();
+    //   }
+    // }
+
     if (event.key === "Tab") {
       event.preventDefault();
 
-      // const focusableCards = document.querySelectorAll(".notecard");
-      // const currentCard = focusableCards[currentIndex];
-
-      // if (currentCard) {
-      //   // Edit current card
-      //   currentCard.querySelector(".edit-btn").click();
-      // } else {
-      // Toggle filter if no cards found
       const filter = document.querySelector(".filter");
       filter.style.display =
         filter.style.display === "block" ? "none" : "block";
-      //}
 
       return;
     }

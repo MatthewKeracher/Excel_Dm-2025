@@ -3,6 +3,7 @@ import { excelDM, reCurrent, newCurrent, current } from "./main.js";
 import { currentTab } from "./tabs.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { saveData } from "./localStorage.js";
+import { loadEditor } from "./editor.js"; 
 
 export function loadNoteCards(data, search = "no") {
   let entries;
@@ -59,7 +60,6 @@ export function loadNoteCards(data, search = "no") {
         break;
     }
 
-
     // ✅ Filter out unchecked categories - comma-separated support
     const checkedCategories = Object.entries(excelDM.categories[currentTab])
       .filter(([cat, state]) => state === 1)
@@ -82,7 +82,8 @@ export function loadNoteCards(data, search = "no") {
 
     if (expandedCheckedCategories.length > 0) {
       entries = entries.filter((entry) => {
-        if (!entry.category || entry.category.trim() === "Uncategorised") return true; // No category = show all
+        if (!entry.category || entry.category.trim() === "Uncategorised")
+          return true; // No category = show all
 
         // Split entry's category by commas
         const entryCats = entry.category
@@ -105,6 +106,49 @@ export function loadNoteCards(data, search = "no") {
   });
 }
 
+let nextZIndex = 51;
+
+function makeDraggable(element, saveCoordsCallback = null) {
+  let isDragging = false;
+  let dragOffsetX = 0;
+  let dragOffsetY = 0;
+
+  // Drag handle (whole element)
+  element.style.cursor = "move";
+  element.style.userSelect = "none";
+  element.style.position = "fixed"; // Ensure positioned
+
+  element.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    dragOffsetX = e.clientX - element.getBoundingClientRect().left;
+    dragOffsetY = e.clientY - element.getBoundingClientRect().top;
+    element.style.cursor = "grabbing";
+    document.body.style.userSelect = "none";
+    element.style.zIndex = (nextZIndex++).toString();
+    e.preventDefault();
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    element.style.left = `${e.clientX - dragOffsetX}px`;
+    element.style.top = `${e.clientY - dragOffsetY}px`;
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (saveCoordsCallback) {
+      saveCoordsCallback({
+        x: element.style.left,
+        y: element.style.top,
+      });
+    }
+    isDragging = false;
+    element.style.cursor = "grab";
+    document.body.style.userSelect = "";
+  });
+
+  return { isDragging, dragOffsetX, dragOffsetY };
+}
+
 export function loadPopUp() {
   document.querySelectorAll(".popout").forEach((popout) => {
     popout.remove();
@@ -118,8 +162,6 @@ export function loadPopUp() {
     });
   }
 }
-
-let nextZIndex = 51;
 
 function makePopOut(entry, coords) {
   entry.popOut = true;
@@ -135,46 +177,17 @@ function makePopOut(entry, coords) {
   popOutBody.style.maxHeight = "60vh";
   popOutBody.style.overflowY = "scroll";
 
-  // Make draggable
-  let isDragging = false;
-  let dragOffsetX = 0;
-  let dragOffsetY = 0;
-
-  // Drag handle (top of card)
-  popOut.style.cursor = "move";
-  popOut.style.userSelect = "none";
-
-  popOut.addEventListener("mousedown", (e) => {
-    isDragging = true;
-    dragOffsetX = e.clientX - popOut.getBoundingClientRect().left;
-    dragOffsetY = e.clientY - popOut.getBoundingClientRect().top;
-    popOut.style.cursor = "grabbing";
-    document.body.style.userSelect = "none";
-    popOut.style.zIndex = (nextZIndex++).toString();
-    e.preventDefault();
-  });
-
-  document.addEventListener("mousemove", (e) => {
-    if (!isDragging) return;
-    popOut.style.left = `${e.clientX - dragOffsetX}px`;
-    popOut.style.top = `${e.clientY - dragOffsetY}px`;
-  });
-
-  document.addEventListener("mouseup", () => {
-    entry.coords.x = popOut.style.left;
-    entry.coords.y = popOut.style.top;
-    isDragging = false;
-    popOut.style.cursor = "grab";
-    document.body.style.userSelect = "";
+  // Make draggable using refactored function
+  makeDraggable(popOut, (coords) => {
+    entry.coords = coords;
+    saveData();
   });
 
   const popOutBtn = popOut.querySelector(".pop-btn");
   popOutBtn.remove();
 
   const deleteBtn = popOut.querySelector(".delete-btn");
-
   if (deleteBtn) {
-    // Override previous behavior
     deleteBtn.title = "Close Window";
     deleteBtn.replaceWith(deleteBtn.cloneNode(true));
     const newDeleteBtn = popOut.querySelector(".delete-btn");
@@ -213,9 +226,11 @@ function makeNoteCard(entry, isPopOut = false) {
   body.style.marginTop = "8px";
   body.style.backgroundColor = entry?.color || "";
 
+  let isEditing = false;
+
   if (isPopOut === false) {
     card.addEventListener("click", () => {
-      if (body.style.maxHeight === "100%") {
+      if (body.style.maxHeight === "100%" && isEditing === false) {
         body.style.maxHeight = "4.6em";
       } else {
         body.style.maxHeight = "100%";
@@ -265,88 +280,21 @@ function makeNoteCard(entry, isPopOut = false) {
     reCurrent();
   });
 
-  //EDIT BUTTON
+
+  // EDIT BUTTON
   const editBtn = document.createElement("button");
   editBtn.className = "edit-btn";
   editBtn.title = "Edit note";
   editBtn.innerHTML = "🖉";
 
-  let isEditing = false;
-  let textarea;
-  let codeArea;
-
   editBtn.addEventListener("click", () => {
     if (!isEditing) {
       isEditing = true;
-      textarea = document.createElement("textarea");
-      textarea.className = "notecard-body editing";
-      textarea.value = body.dataset.fullText;
-      textarea.style.backgroundColor = entry?.color || "";
-
-      const titleInput = document.createElement("input");
-      titleInput.type = "text";
-      titleInput.className = "notecard-title editing";
-      titleInput.value = title.textContent;
-      titleInput.style.backgroundColor = entry?.color || "";
-
-      const categoryInput = document.createElement("input");
-      categoryInput.type = "text";
-      categoryInput.className = "notecard-category editing";
-      categoryInput.value = category.textContent;
-      categoryInput.style.backgroundColor = entry?.color || "";
-
-      card.replaceChild(textarea, body);
-      card.replaceChild(titleInput, title);
-      card.replaceChild(categoryInput, category);
-      card.classList.add("no-highlight");
-
-      // Now replace textarea with CodeMirror editor
-      codeArea = CodeMirror.fromTextArea(textarea, {
-        mode: "markdown",
-        lineNumbers: true,
-        lineWrapping: true,
-      });
-
-      // Add 'editing' class to CodeMirror editor wrapper for styling/logic
-      codeArea.getInputField().classList.add("editing");
-
-      editBtn.title = "Save note";
-      editBtn.innerHTML = "💾";
-      titleInput.focus();
-    } else {
-      isEditing = false;
-
-      const newText = codeArea.getValue().trim();
-      body.dataset.fullText = newText;
-      entry.body = newText;
-      body.innerHTML = marked.parse(newText);
-
-      const newTitle = card
-        .querySelector(".notecard-title.editing")
-        .value.trim();
-      entry.title = newTitle;
-      title.textContent = newTitle;
-
-      const newCategory = card
-        .querySelector(".notecard-category.editing")
-        .value.trim();
-      entry.category = newCategory;
-      category.textContent = newCategory;
-
-      card.replaceChild(body, textarea);
-      card.replaceChild(title, card.querySelector(".notecard-title.editing"));
-      card.replaceChild(
-        category,
-        card.querySelector(".notecard-category.editing"),
-      );
-
-      card.classList.remove("no-highlight");
-
-      editBtn.title = "Edit note";
-      editBtn.innerHTML = "🖉";
-      reCurrent();
+      loadEditor(entry, body, title, category, editBtn, isEditing, marked);
     }
   });
+
+  
 
   //NEXT BUTTON
   const nextBtn = document.createElement("button");
@@ -570,13 +518,7 @@ function makeNoteCard(entry, isPopOut = false) {
     buttonsContainer.appendChild(lockbtn);
   }
 
-  if(entry.type === "people"){
-    card.classList.add("person-card");
-  }
 
-   if(entry.type === "monsters"){
-    card.classList.add("monsters-card");
-  }
 
   //CATEGORY
   const category = document.createElement("div");
