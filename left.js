@@ -322,6 +322,7 @@ function makeNoteCard(entry, isPopOut = false) {
         entry.popOut = false;
         nextObjective = makePopOut(entry.children[0], entry.coords);
       } else {
+        console.log(entry)
         nextObjective = makeNoteCard(entry.children[0]);
       }
 
