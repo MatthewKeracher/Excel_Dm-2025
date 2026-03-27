@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+
+      - name: Build linux/amd64
+        working-directory: backend
+        env:
+          GOOS: linux
+          GOARCH: amd64
+          CGO_ENABLED: 0
+        run: go build -o exceldm-linux-amd64 .
+
+      - name: Build linux/arm64
+        working-directory: backend
+        env:
+          GOOS: linux
+          GOARCH: arm64
+          CGO_ENABLED: 0
+        run: go build -o exceldm-linux-arm64 .
+
+      - name: Package tarballs
+        run: |
+          for arch in amd64 arm64; do
+            mkdir -p dist/exceldm/backend
+            cp backend/exceldm-linux-$arch dist/exceldm/backend/exceldm
+            chmod +x dist/exceldm/backend/exceldm
+            cp index.html dist/exceldm/
+            cp -r src css data dist/exceldm/
+            cp deploy/exceldm.openrc dist/exceldm/
+            cp deploy/exceldm.confd  dist/exceldm/
+            cp deploy/setup.sh       dist/exceldm/
+            chmod +x dist/exceldm/setup.sh
+            tar -czf dist/exceldm-linux-$arch.tar.gz -C dist exceldm
+            rm -rf dist/exceldm
+          done
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create ${{ github.ref_name }} \
+            dist/exceldm-linux-amd64.tar.gz \
+            dist/exceldm-linux-arm64.tar.gz \
+            --title "Release ${{ github.ref_name }}" \
+            --generate-notes

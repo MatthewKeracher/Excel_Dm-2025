@@ -1,3 +1,4 @@
 backend/exceldm.db
 backend/*.exe
+backend/exceldm-linux-*
 node_modules/

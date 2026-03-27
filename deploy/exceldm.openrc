@@ -1,0 +1,22 @@
+#!/sbin/openrc-run
+
+name="exceldm"
+description="Excel DM server"
+
+command="/opt/exceldm/backend/exceldm"
+command_background=true
+command_user="exceldm:exceldm"
+directory="/opt/exceldm/backend"
+pidfile="/run/exceldm.pid"
+output_log="/var/log/exceldm/app.log"
+error_log="/var/log/exceldm/app.log"
+
+depend() {
+    need net
+    use logger
+}
+
+start_pre() {
+    checkpath --directory --owner exceldm:exceldm --mode 0755 /var/log/exceldm
+    checkpath --directory --owner exceldm:exceldm --mode 0755 /opt/exceldm/backend
+}

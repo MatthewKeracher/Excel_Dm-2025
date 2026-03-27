@@ -1,0 +1,4 @@
+# Environment for the exceldm OpenRC service.
+# Loaded automatically from /etc/conf.d/exceldm
+
+JWT_SECRET="change-me-in-production"
