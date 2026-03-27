@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"exceldm/db"
@@ -83,6 +84,14 @@ func PutCampaign(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to save campaign", http.StatusInternalServerError)
 		return
 	}
+
+	senderClientID := r.Header.Get("X-Client-ID")
+	go func() {
+		data, err := serializeCampaign(campID, categories)
+		if err == nil {
+			globalHub.broadcast(fmt.Sprintf("user:%d", userID), senderClientID, data)
+		}
+	}()
 
 	w.WriteHeader(http.StatusOK)
 }

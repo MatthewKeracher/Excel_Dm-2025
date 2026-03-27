@@ -1,6 +1,7 @@
 import { current, excelDM, reCurrent, newCurrent, masterEdit } from "./main.js";
 import { Entry, EntryManager } from "./classes.js";
-import { saveData, saveDataNow } from "./localStorage.js";
+import { saveData, saveDataNow, setApiUrl } from "./localStorage.js";
+import { authHeaders } from "./auth.js";
 import { currentTab } from "./tabs.js";
 import { returnFiltered } from "./filter.js";
 
@@ -24,7 +25,7 @@ export function initButtons() {
 
 export async function newFile() {
   if (!confirm("Start a new file? Unsaved changes will be lost.")) return;
-  //excelDM.deleteAll();
+  setApiUrl("/api/campaigns");
   await loadExtData("../data/Excel_DM.json", true);
   newCurrent();
 }
@@ -57,14 +58,23 @@ export async function loadExtData(name, replace = true) {
 }
 
 export async function loadHommlet() {
-  await loadExtData("../data/Hommlet.json", true);
+  try {
+    const res = await fetch("/api/public/hommlet", { headers: authHeaders() });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
 
-  if (masterEdit === false) {
-    await loadExtData("../data/BFRPG/items.json", false);
-    await loadExtData("../data/BFRPG/monsters.json", false);
-    await loadExtData("../data/BFRPG/spells.json", false);
+    excelDM.entries.splice(0, excelDM.entries.length);
+    excelDM.categories = data.categories ?? {};
+    (data.entries || []).forEach((entryData) => {
+      excelDM.add(new Entry(entryData));
+    });
+    excelDM.prepareFromJSON();
+  } catch (err) {
+    console.error("Failed to load Hommlet:", err);
+    return;
   }
 
+  setApiUrl("/api/public/hommlet");
   newCurrent();
 }
 
