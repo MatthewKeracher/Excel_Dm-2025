@@ -31,16 +31,16 @@ All runtime state lives in `main.js`:
 
 | File | Role |
 |------|------|
-| `main.js` | App init, global state, `reCurrent()` orchestrator |
-| `classes.js` | `Entry` and `EntryManager` data classes |
-| `left.js` | Renders note cards in the left sidebar; handles card click, delete, navigation |
-| `right.js` | Canvas map — draws grid and draggable location labels |
-| `buttons.js` | Header button handlers: New, Save, Load, Add, Demo; file I/O |
-| `tabs.js` | Tab bar — switches `currentTab`, triggers re-render |
-| `editor.js` | CodeMirror-based modal editor for entry markdown content |
-| `filter.js` | Category filter UI and compiled filter state |
-| `hotkeys.js` | Keyboard shortcuts (arrows, Tab, Escape, search) |
-| `localStorage.js` | IndexedDB persistence (`excelDB` / `excelData` store) |
+| `src/main.js` | App init, global state, `reCurrent()` orchestrator |
+| `src/classes.js` | `Entry` and `EntryManager` data classes |
+| `src/left.js` | Renders note cards in the left sidebar; handles card click, delete, navigation |
+| `src/right.js` | Canvas map — draws grid and draggable location labels |
+| `src/buttons.js` | Header button handlers: New, Save, Load, Add, Demo; file I/O |
+| `src/tabs.js` | Tab bar — switches `currentTab`, triggers re-render |
+| `src/editor.js` | CodeMirror-based modal editor for entry markdown content |
+| `src/filter.js` | Category filter UI and compiled filter state |
+| `src/hotkeys.js` | Keyboard shortcuts (arrows, Tab, Escape, search) |
+| `src/localStorage.js` | IndexedDB persistence (`excelDB` / `excelData` store) |
 
 ### Rendering Pattern
 
@@ -48,9 +48,9 @@ User action → update `excelDM` or `current` → call `reCurrent()` in `main.js
 
 ### Data Files
 
-- `Excel_DM.json` — blank campaign template loaded on "New"
-- `Hommlet.json` — large demo campaign (~8.7MB)
-- `BFRPG/` — reference data for monsters, spells, and items
+- `data/Excel_DM.json` — blank campaign template loaded on "New"
+- `data/Hommlet.json` — large demo campaign (~8.7MB)
+- `data/BFRPG/` — reference data for monsters, spells, and items
 
 ### Entry Types
 

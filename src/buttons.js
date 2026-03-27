@@ -25,7 +25,7 @@ export function initButtons() {
 export async function newFile() {
   if (!confirm("Start a new file? Unsaved changes will be lost.")) return;
   //excelDM.deleteAll();
-  await loadExtData("./Excel_DM.json", true);
+  await loadExtData("../data/Excel_DM.json", true);
   newCurrent();
 }
 
@@ -57,12 +57,12 @@ export async function loadExtData(name, replace = true) {
 }
 
 export async function loadHommlet() {
-  await loadExtData("./Hommlet.json", true);
+  await loadExtData("../data/Hommlet.json", true);
 
   if (masterEdit === false) {
-    await loadExtData("./BFRPG/items.json", false);
-    await loadExtData("./BFRPG/monsters.json", false);
-    await loadExtData("./BFRPG/spells.json", false);
+    await loadExtData("../data/BFRPG/items.json", false);
+    await loadExtData("../data/BFRPG/monsters.json", false);
+    await loadExtData("../data/BFRPG/spells.json", false);
   }
 
   newCurrent();

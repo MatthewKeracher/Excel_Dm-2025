@@ -3,7 +3,7 @@ import { excelDM, reCurrent, newCurrent, current } from "./main.js";
 import { currentTab } from "./tabs.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { saveData } from "./localStorage.js";
-import { loadEditor } from "./editor.js"; 
+import { loadEditor } from "./editor.js";
 
 export function loadNoteCards(data, search = "no") {
   let entries;
@@ -201,23 +201,17 @@ function makePopOut(entry, coords) {
   return popOut;
 }
 
-function makeNoteCard(entry, isPopOut = false) {
+// --- Card builder helpers ---
+
+function createCardBase(entry) {
   const card = document.createElement("div");
   card.dataset.entryTitle = entry.title;
   card.className = "notecard";
   card.style.backgroundColor = entry?.color || "";
 
-  // Title container for title and buttonContainer aligned horizontally
-  const titleContainer = document.createElement("div");
-  titleContainer.style.display = "flex";
-  titleContainer.style.justifyContent = "space-between";
-  titleContainer.style.alignItems = "center";
-  titleContainer.style.position = "relative";
-
   const title = document.createElement("div");
   title.className = "notecard-title";
   title.textContent = entry.title;
-  titleContainer.appendChild(title);
 
   const body = document.createElement("div");
   body.className = "notecard-body";
@@ -226,23 +220,24 @@ function makeNoteCard(entry, isPopOut = false) {
   body.style.marginTop = "8px";
   body.style.backgroundColor = entry?.color || "";
 
-  let isEditing = false;
+  return { card, title, body };
+}
 
-  if (isPopOut === false) {
-    card.addEventListener("click", () => {
-      if (body.style.maxHeight === "100%" && isEditing === false) {
-        body.style.maxHeight = "4.6em";
-      } else {
-        body.style.maxHeight = "100%";
-      }
-    });
-  }
+function addCollapseToggle(card, body, editState) {
+  card.addEventListener("click", () => {
+    if (body.style.maxHeight === "100%" && editState.isEditing === false) {
+      body.style.maxHeight = "4.6em";
+    } else {
+      body.style.maxHeight = "100%";
+    }
+  });
+}
 
+function addMapHighlight(card, entry) {
   card.addEventListener("mouseenter", (e) => {
     const label = document.querySelector(
       `.label[data-entry-title="${CSS.escape(entry.title)}"]`,
     );
-
     if (label) {
       label.classList.add("highlight");
       label.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -253,17 +248,12 @@ function makeNoteCard(entry, isPopOut = false) {
     const label = document.querySelector(
       `.label[data-entry-title="${CSS.escape(entry.title)}"]`,
     );
-
     card.classList.remove("highlight");
-
     if (label) label.classList.remove("highlight");
   });
+}
 
-  //BUTTONS CONTAINER
-  const buttonsContainer = document.createElement("div");
-  buttonsContainer.className = "buttons-top-right";
-
-  //DELETE BUTTON
+function createDeleteButton(entry) {
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "delete-btn";
   deleteBtn.title = "Delete note";
@@ -276,27 +266,29 @@ function makeNoteCard(entry, isPopOut = false) {
     ) {
       excelDM.deleteEntry(entry);
     }
-
     reCurrent();
   });
 
+  return deleteBtn;
+}
 
-  // EDIT BUTTON
+function createEditButton(entry, body, title, category, editState) {
   const editBtn = document.createElement("button");
   editBtn.className = "edit-btn";
   editBtn.title = "Edit note";
   editBtn.innerHTML = "🖉";
 
   editBtn.addEventListener("click", () => {
-    if (!isEditing) {
-      isEditing = true;
-      loadEditor(entry, body, title, category, editBtn, isEditing, marked);
+    if (!editState.isEditing) {
+      editState.isEditing = true;
+      loadEditor(entry, body, title, category, editBtn, editState.isEditing, marked);
     }
   });
 
-  
+  return editBtn;
+}
 
-  //NEXT BUTTON
+function createNextButton(entry, card) {
   const nextBtn = document.createElement("button");
   nextBtn.className = "next-btn";
   nextBtn.title = entry.type === "locations" ? "Go Inside" : "Next Objective";
@@ -339,26 +331,25 @@ function makeNoteCard(entry, isPopOut = false) {
     }
   });
 
-  //COUNTER
+  return nextBtn;
+}
+
+function createCounterButton(entry) {
   const counterBtn = document.createElement("button");
   counterBtn.innerHTML = entry.countParentsUp();
+  return counterBtn;
+}
 
-  //PREV BUTTON
+function createPrevButton(entry, card) {
   const prevbtn = document.createElement("button");
   prevbtn.className = "prev-btn";
-  prevbtn.title =
-    entry.type === "locations" ? "Go Outside" : "Previous Objective";
+  prevbtn.title = entry.type === "locations" ? "Go Outside" : "Previous Objective";
   prevbtn.innerHTML = "<";
 
   prevbtn.addEventListener("click", () => {
     if (entry.type === "locations") {
       if (!entry.parent.parent) {
-        // Show confirm dialog with Yes/No buttons
-        const userConfirmed = confirm(
-          "Do you want to make a new, outer layer?",
-        );
-
-        // If user clicks Yes (OK)
+        const userConfirmed = confirm("Do you want to make a new, outer layer?");
         if (userConfirmed) {
           let newEntry = new Entry({
             title: `Outside ${entry.parent.title}`,
@@ -371,11 +362,7 @@ function makeNoteCard(entry, isPopOut = false) {
       newCurrent(entry.parent.parent);
     } else if (entry.type === "quests") {
       if (!entry.parent) {
-        const userConfirmed = confirm(
-          "Do you want to make a new, previous objective?",
-        );
-
-        // If user clicks Yes (OK)
+        const userConfirmed = confirm("Do you want to make a new, previous objective?");
         if (userConfirmed) {
           let newEntry = new Entry({
             title: `Before ${entry.title}`,
@@ -387,7 +374,6 @@ function makeNoteCard(entry, isPopOut = false) {
       }
 
       let lastObjective;
-
       if (entry.popOut) {
         entry.popOut = false;
         lastObjective = makePopOut(entry.parent, entry.coords);
@@ -408,7 +394,10 @@ function makeNoteCard(entry, isPopOut = false) {
     }
   });
 
-  //LOCK BUTTON
+  return prevbtn;
+}
+
+function createLockButton(entry) {
   const lockbtn = document.createElement("button");
   lockbtn.className = "lock-btn";
   lockbtn.title = "Pin";
@@ -435,14 +424,16 @@ function makeNoteCard(entry, isPopOut = false) {
     reCurrent();
   });
 
-  //COLOUR BUTTON
+  return lockbtn;
+}
+
+function createColorButton(entry, card) {
   const clrbtn = document.createElement("button");
   clrbtn.className = "clr-btn";
   clrbtn.title = "Change Colour";
   clrbtn.innerHTML = "🎨";
 
   clrbtn.addEventListener("click", () => {
-    // Container for the color grid
     const colorGridContainer = document.createElement("div");
     colorGridContainer.style.display = "grid";
     colorGridContainer.style.gridTemplateColumns = "repeat(3, 40px)";
@@ -454,10 +445,9 @@ function makeNoteCard(entry, isPopOut = false) {
       colorGridContainer.style.display = "none";
     });
 
-    // Generate 9 pastel colors (3x3)
     const pastelColors = [
       "rgba(255, 179, 186, 1)", // Pastel Red
-      "rgba(233, 157, 71, 1)", // Pastel Orange
+      "rgba(233, 157, 71, 1)",  // Pastel Orange
       "rgba(255, 255, 186, 1)", // Pastel Yellow
       "rgba(142, 194, 154, 1)", // Pastel Green
       "rgba(186, 225, 255, 1)", // Pastel Blue
@@ -467,7 +457,6 @@ function makeNoteCard(entry, isPopOut = false) {
       "rgba(245, 245, 245, 1)", // White Smoke
     ];
 
-    // Generate buttons for each color
     pastelColors.forEach((color) => {
       const colorBtn = document.createElement("button");
       colorBtn.style.backgroundColor = color;
@@ -477,11 +466,8 @@ function makeNoteCard(entry, isPopOut = false) {
       colorBtn.style.cursor = "pointer";
       colorBtn.title = color;
 
-      // On click, set entry.color
       colorBtn.addEventListener("click", () => {
         entry.color = color;
-
-        // Optionally hide or disable picker here
         colorGridContainer.style.display = "none";
         reCurrent();
       });
@@ -489,11 +475,13 @@ function makeNoteCard(entry, isPopOut = false) {
       colorGridContainer.appendChild(colorBtn);
     });
 
-    // Add the color grid container to the page as needed
-    card.appendChild(colorGridContainer); // Or inside a specific modal/dialog
+    card.appendChild(colorGridContainer);
   });
 
-  //POP-OUT BUTTON
+  return clrbtn;
+}
+
+function createPopOutButton(entry) {
   const popbtn = document.createElement("button");
   popbtn.className = "pop-btn";
   popbtn.title = "Pop Out";
@@ -504,6 +492,12 @@ function makeNoteCard(entry, isPopOut = false) {
     loadPopUp();
     reCurrent();
   });
+
+  return popbtn;
+}
+
+function assembleCard(card, title, body, buttonsContainer, category, buttons, entry) {
+  const { deleteBtn, editBtn, nextBtn, counterBtn, prevbtn, lockbtn, clrbtn, popbtn } = buttons;
 
   buttonsContainer.appendChild(clrbtn);
   buttonsContainer.appendChild(popbtn);
@@ -519,21 +513,42 @@ function makeNoteCard(entry, isPopOut = false) {
     buttonsContainer.appendChild(lockbtn);
   }
 
-
-
-  //CATEGORY
-  const category = document.createElement("div");
-  category.className = "notecard-category";
-  category.textContent = entry.category || "Uncategorised"; // Use entry.subtitle or default
   card.appendChild(category);
 
   buttonsContainer.appendChild(deleteBtn);
   buttonsContainer.appendChild(editBtn);
 
   card.appendChild(buttonsContainer);
-
   card.appendChild(title);
   card.appendChild(body);
+}
+
+function makeNoteCard(entry, isPopOut = false) {
+  const { card, title, body } = createCardBase(entry);
+  const editState = { isEditing: false };
+
+  if (!isPopOut) addCollapseToggle(card, body, editState);
+  addMapHighlight(card, entry);
+
+  const buttonsContainer = document.createElement("div");
+  buttonsContainer.className = "buttons-top-right";
+
+  const category = document.createElement("div");
+  category.className = "notecard-category";
+  category.textContent = entry.category || "Uncategorised";
+
+  const deleteBtn  = createDeleteButton(entry);
+  const editBtn    = createEditButton(entry, body, title, category, editState);
+  const nextBtn    = createNextButton(entry, card);
+  const counterBtn = createCounterButton(entry);
+  const prevbtn    = createPrevButton(entry, card);
+  const lockbtn    = createLockButton(entry);
+  const clrbtn     = createColorButton(entry, card);
+  const popbtn     = createPopOutButton(entry);
+
+  assembleCard(card, title, body, buttonsContainer, category,
+    { deleteBtn, editBtn, nextBtn, counterBtn, prevbtn, lockbtn, clrbtn, popbtn },
+    entry);
 
   return card;
 }
