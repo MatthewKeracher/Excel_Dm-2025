@@ -8,6 +8,8 @@ Excel_DM is a browser-based Dungeon Master planning tool. It is a **vanilla Java
 
 ## Running the App
 
+### Locally
+
 1. Start the Go backend (serves the frontend too):
    ```
    cd backend && go run .
@@ -16,6 +18,37 @@ Excel_DM is a browser-based Dungeon Master planning tool. It is a **vanilla Java
 3. Register an account via the login modal, then use the app normally.
 
 The only npm dependency is `marked` (markdown parser), also loaded via CDN. CodeMirror is loaded from CDN as well.
+
+### Production (heimvon)
+
+The app runs inside an Alpine Linux Incus container named `exceldm` on `heimvon`. The Go binary is compiled for `linux/amd64` and runs as an OpenRC service. It is exposed on the host at port `8081` via an Incus proxy device.
+
+**Container layout:**
+```
+/opt/exceldm/exceldm/
+  backend/exceldm      ← compiled binary
+  index.html
+  src/
+  css/
+  assets/
+  data/
+```
+
+The binary runs from `backend/` so that `../` resolves to the frontend root.
+
+**Deploy script:** `deploy.sh` at the project root handles building and deploying in one command:
+```
+bash deploy.sh                  # deploy everything
+bash deploy.sh --backend-only   # rebuild and redeploy only the Go binary
+bash deploy.sh --frontend-only  # redeploy only JS/CSS/HTML/data files
+```
+
+**Service management (via SSH into heimvon):**
+```
+sudo incus exec exceldm -- rc-service exceldm restart
+sudo incus exec exceldm -- rc-service exceldm status
+sudo incus exec exceldm -- tail -f /var/log/exceldm/app.log
+```
 
 ## Architecture
 
