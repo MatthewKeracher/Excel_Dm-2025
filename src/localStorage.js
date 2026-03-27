@@ -6,11 +6,10 @@ import { authHeaders, clearToken, showAuthModal, getToken } from "./auth.js";
 // can exclude this client from broadcast echoes.
 const clientId = crypto.randomUUID();
 
-let apiUrl = "/api/campaigns";
+let apiUrl = null;
 
 export function setApiUrl(url) {
   apiUrl = url;
-  connectWS(url);
 }
 
 // No-op: connection is handled by the Go server.
@@ -52,6 +51,8 @@ export async function saveDataNow() {
 }
 
 async function pushToServer() {
+  if (!apiUrl) return;
+
   const dirty = excelDM.dirtyEntries;
   const deleted = excelDM.deletedServerIds;
 
@@ -142,6 +143,7 @@ async function patchToServer(dirty, deleted) {
 // --- Load logic ---
 
 export async function loadData() {
+  if (!apiUrl) return;
   try {
     const res = await fetch(apiUrl, { headers: authHeaders() });
 
@@ -157,7 +159,7 @@ export async function loadData() {
     excelDM.entries.splice(0, excelDM.entries.length);
     excelDM.categories = data.categories ?? {};
 
-    (data.entries || []).forEach((entryData) => {
+    (Array.isArray(data.entries) ? data.entries : []).forEach((entryData) => {
       excelDM.add(new Entry(entryData));
     });
 
@@ -165,8 +167,7 @@ export async function loadData() {
     excelDM.clearDirtyState();
   } catch (err) {
     console.error("Failed to load:", err);
-    excelDM.entries = [];
-    excelDM.categories = {};
+    return; // don't wipe existing data on a failed load
   }
 
   connectWS(apiUrl);
@@ -178,10 +179,12 @@ export async function loadData() {
 
 let ws = null;
 let wsApiUrl = null;
+let wsGen = 0; // incremented on every new connectWS call; stale onclose handlers check this
 
 function connectWS(url) {
   disconnectWS();
   wsApiUrl = url;
+  const gen = ++wsGen;
   const proto = location.protocol === "https:" ? "wss:" : "ws:";
   const token = getToken() ?? "";
   const wsUrl = `${proto}//${location.host}${url}/ws?token=${token}&clientId=${clientId}`;
@@ -190,11 +193,10 @@ function connectWS(url) {
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
-    console.log("[WS] connected to", wsUrl);
+    console.log("[WS] connected");
   };
 
   ws.onmessage = (event) => {
-    console.log("[WS] message received, length=", event.data.length);
     try {
       const data = JSON.parse(event.data);
       applyRemoteUpdate(data);
@@ -204,23 +206,22 @@ function connectWS(url) {
   };
 
   ws.onclose = (ev) => {
-    console.log("[WS] closed code=", ev.code, "reason=", ev.reason);
+    console.log("[WS] closed code=", ev.code);
     ws = null;
-    // Reconnect after 2s if we haven't intentionally disconnected
-    if (wsApiUrl) {
+    // Only reconnect if this is still the active connection (not superseded by a newer one)
+    if (wsGen === gen && wsApiUrl) {
       setTimeout(() => {
-        if (wsApiUrl === url) connectWS(url);
-      }, 2000);
+        if (wsGen === gen && wsApiUrl) connectWS(url);
+      }, 5000);
     }
   };
 
-  ws.onerror = (err) => {
-    console.error("[WS] error", err);
+  ws.onerror = () => {
     ws?.close();
   };
 }
 
-function disconnectWS() {
+export function disconnectWS() {
   wsApiUrl = null;
   if (ws) {
     ws.close();
@@ -233,7 +234,7 @@ function applyRemoteUpdate(data) {
   try {
     excelDM.entries.splice(0, excelDM.entries.length);
     excelDM.categories = data.categories ?? {};
-    (data.entries || []).forEach((entryData) => {
+    (Array.isArray(data.entries) ? data.entries : []).forEach((entryData) => {
       excelDM.add(new Entry(entryData));
     });
     excelDM.prepareFromJSON();

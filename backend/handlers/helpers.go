@@ -210,6 +210,39 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string) ([
 	return ids, tx.Commit()
 }
 
+// campaignRole returns the effective role of userID in campaign campID:
+// "admin" if owner, a membership role if in campaign_members,
+// "editor" if the campaign is public, or "" if no access.
+func campaignRole(userID, campID int) (string, error) {
+	var ownerID sql.NullInt64
+	var memberRole sql.NullString
+	var isPublic bool
+
+	err := db.Conn.QueryRow(`
+		SELECT c.owner_id, cm.role, c.is_public
+		FROM campaigns c
+		LEFT JOIN campaign_members cm ON cm.campaign_id = c.id AND cm.user_id = ?
+		WHERE c.id = ?
+	`, userID, campID).Scan(&ownerID, &memberRole, &isPublic)
+
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	if ownerID.Valid && int(ownerID.Int64) == userID {
+		return "admin", nil
+	}
+	if memberRole.Valid {
+		return memberRole.String, nil
+	}
+	if isPublic {
+		return "editor", nil
+	}
+	return "", nil
+}
+
 // patchEntry is one entry in a delta PATCH request.
 type patchEntry struct {
 	ServerID     int64           `json:"_serverId"`

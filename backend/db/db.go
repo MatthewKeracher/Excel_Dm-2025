@@ -31,7 +31,8 @@ func Init() error {
 	if err := createTables(); err != nil {
 		return err
 	}
-	return seedHommlet()
+	backfillHommletOwner()
+	return nil
 }
 
 // tableExists reports whether a table with the given name exists.
@@ -182,6 +183,17 @@ func createTables() error {
 	}
 
 	if _, err := Conn.Exec(`
+		CREATE TABLE IF NOT EXISTS campaign_members (
+			campaign_id INTEGER NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+			user_id     INTEGER NOT NULL REFERENCES users(id)     ON DELETE CASCADE,
+			role        TEXT NOT NULL CHECK(role IN ('admin','editor','viewer')),
+			PRIMARY KEY (campaign_id, user_id)
+		)
+	`); err != nil {
+		return err
+	}
+
+	if _, err := Conn.Exec(`
 		CREATE TABLE IF NOT EXISTS entries (
 			id            INTEGER PRIMARY KEY AUTOINCREMENT,
 			campaign_id   INTEGER NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
@@ -291,6 +303,22 @@ func migrateBlob(ownerID int, name string, isPublic bool, data string) error {
 	}
 
 	return nil
+}
+
+// backfillHommletOwner sets owner_id on the Hommlet campaign to matthewkeracher94@gmail.com
+// when that user exists. Safe to call on every startup (idempotent).
+func backfillHommletOwner() {
+	var userID int
+	err := Conn.QueryRow("SELECT id FROM users WHERE email = ?", "matthewkeracher94@gmail.com").Scan(&userID)
+	if err != nil {
+		return // user hasn't registered yet, or other transient error
+	}
+	if _, err := Conn.Exec(
+		"UPDATE campaigns SET owner_id = ? WHERE name = 'hommlet' AND is_public = TRUE AND (owner_id IS NULL OR owner_id != ?)",
+		userID, userID,
+	); err != nil {
+		log.Printf("backfillHommletOwner: %v", err)
+	}
 }
 
 func seedHommlet() error {

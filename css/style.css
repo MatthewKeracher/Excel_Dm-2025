@@ -1,3 +1,192 @@
+/* Campaign Picker Modal */
+#campaign-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+#campaign-box {
+  position: relative;
+  background: #1a1a1a;
+  border: 2px solid #d8d83c;
+  border-radius: 8px;
+  padding: 1.75rem 1.75rem 1.25rem;
+  width: 440px;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+#campaign-close-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+}
+
+#campaign-close-btn:hover {
+  color: #eee;
+  background: #333;
+}
+
+#campaign-modal-title {
+  color: #d8d83c;
+  font-family: "SoutaneBlack", sans-serif;
+  font-size: 1.4rem;
+  margin: 0 0 0.25rem;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
+#campaign-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+  min-height: 50px;
+  max-height: 320px;
+  padding-right: 2px;
+}
+
+.campaign-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #252525;
+  border: 1px solid #333;
+  border-radius: 5px;
+  padding: 7px 10px;
+  transition: border-color 0.15s;
+}
+
+.campaign-row:hover {
+  border-color: #555;
+}
+
+.campaign-name {
+  flex: 1;
+  color: #ddd;
+  font-family: "Soutane", sans-serif;
+  font-size: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.campaign-role {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #333;
+  color: #888;
+  letter-spacing: 0.03em;
+}
+
+.campaign-role-admin  { background: #1e3d1e; color: #6ecf6e; border: 1px solid #2e5d2e; }
+.campaign-role-editor { background: #1e2e3d; color: #6eb0cf; border: 1px solid #2e3e5d; }
+.campaign-role-viewer { background: #2e2e1e; color: #cfcf6e; border: 1px solid #4e4e2e; }
+
+.campaign-open-btn {
+  background: #34514e;
+  color: #d8d83c;
+  border: 1px solid #d8d83c;
+  border-radius: 4px;
+  font-family: "Soutane", sans-serif;
+  font-size: 0.85rem;
+  padding: 4px 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.campaign-open-btn:hover {
+  background: #518d87;
+}
+
+#campaign-divider {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 0.25rem 0 0;
+}
+
+#campaign-new-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+#campaign-name-input {
+  flex: 1;
+  padding: 0.45rem 0.75rem;
+  background: #252525;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #eee;
+  font-family: "Soutane", sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+#campaign-name-input:focus {
+  border-color: #d8d83c;
+}
+
+#campaign-create-btn {
+  background: #447e78;
+  color: #d8d83c;
+  border: 1px solid #d8d83c;
+  border-radius: 4px;
+  font-family: "Soutane", sans-serif;
+  font-weight: bold;
+  font-size: 0.95rem;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+#campaign-create-btn:hover {
+  background: #5aa887;
+}
+
+#campaign-error {
+  color: #e06c6c;
+  font-size: 0.85rem;
+  min-height: 1em;
+  margin: 0;
+}
+
+.campaign-loading, .campaign-empty {
+  color: #555;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem 0;
+  margin: 0;
+  font-style: italic;
+}
+
+.campaign-error-msg {
+  color: #e06c6c;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 0;
+}
+
 /* Auth Modal */
 #auth-modal {
   display: none;
@@ -20,11 +209,11 @@
   width: 300px;
 }
 
-#auth-box h2 {
-  margin: 0 0 0.5rem;
-  text-align: center;
-  font-family: "Soutane", serif;
-  color: #ddd;
+#auth-logo {
+  display: block;
+  margin: 0 auto 0.5rem;
+  max-width: 100%;
+  height: auto;
 }
 
 #auth-box input {

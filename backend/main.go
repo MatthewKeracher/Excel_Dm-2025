@@ -26,21 +26,20 @@ func main() {
 	mux.HandleFunc("POST /api/register", handlers.Register)
 	mux.HandleFunc("POST /api/login", handlers.Login)
 
-	// Protected campaign routes
-	mux.Handle("GET /api/campaigns", middleware.Auth(http.HandlerFunc(handlers.GetCampaign)))
-	mux.Handle("PUT /api/campaigns", middleware.Auth(http.HandlerFunc(handlers.PutCampaign)))
-	mux.Handle("PATCH /api/campaigns", middleware.Auth(http.HandlerFunc(handlers.PatchCampaign)))
+	// Campaign list and creation
+	mux.Handle("GET /api/campaigns", middleware.Auth(http.HandlerFunc(handlers.ListCampaigns)))
+	mux.Handle("POST /api/campaigns", middleware.Auth(http.HandlerFunc(handlers.CreateCampaign)))
 
-	// Public campaign routes (any logged-in user can read/write)
-	mux.Handle("GET /api/public/{name}", middleware.Auth(http.HandlerFunc(handlers.GetPublicCampaign)))
-	mux.Handle("PUT /api/public/{name}", middleware.Auth(http.HandlerFunc(handlers.PutPublicCampaign)))
-	mux.Handle("PATCH /api/public/{name}", middleware.Auth(http.HandlerFunc(handlers.PatchPublicCampaign)))
+	// Per-campaign CRUD (ID-based)
+	mux.Handle("GET /api/campaigns/{id}", middleware.Auth(http.HandlerFunc(handlers.GetCampaign)))
+	mux.Handle("PUT /api/campaigns/{id}", middleware.Auth(http.HandlerFunc(handlers.PutCampaign)))
+	mux.Handle("PATCH /api/campaigns/{id}", middleware.Auth(http.HandlerFunc(handlers.PatchCampaign)))
+	mux.Handle("POST /api/campaigns/{id}/members", middleware.Auth(http.HandlerFunc(handlers.AddCampaignMember)))
 
-	// WebSocket routes (auth via ?token= query param)
-	mux.HandleFunc("GET /api/campaigns/ws", handlers.ServePersonalWS)
-	mux.HandleFunc("GET /api/public/{name}/ws", handlers.ServePublicWS)
+	// WebSocket (auth via ?token= query param)
+	mux.HandleFunc("GET /api/campaigns/{id}/ws", handlers.ServeCampaignWS)
 
-	// Serve frontend from project root
+	// Serve frontend
 	mux.Handle("/", http.FileServer(http.Dir("../")))
 
 	fmt.Println("Server running on http://localhost:8080")

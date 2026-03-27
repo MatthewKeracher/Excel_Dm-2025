@@ -1,10 +1,9 @@
 import { current, excelDM, reCurrent, newCurrent, masterEdit } from "./main.js";
 import { Entry, EntryManager } from "./classes.js";
-import { saveData, saveDataNow, setApiUrl } from "./localStorage.js";
-import { authHeaders } from "./auth.js";
+import { saveData, saveDataNow, disconnectWS } from "./localStorage.js";
+import { authHeaders, clearToken, showAuthModal } from "./auth.js";
 import { currentTab } from "./tabs.js";
 import { returnFiltered } from "./filter.js";
-
 export function initButtons() {
   const buttons = {
     "btn-new": newFile,
@@ -12,7 +11,7 @@ export function initButtons() {
     "btn-donate": donate,
     "btn-load": loadFile,
     "btn-add": addEntry,
-    "btn-demo": loadHommlet,
+    "btn-logout": logout,
   };
 
   Object.entries(buttons).forEach(([id, handler]) => {
@@ -23,11 +22,8 @@ export function initButtons() {
   });
 }
 
-export async function newFile() {
-  if (!confirm("Start a new file? Unsaved changes will be lost.")) return;
-  setApiUrl("/api/campaigns");
-  await loadExtData("../data/Excel_DM.json", true);
-  newCurrent();
+export function newFile() {
+  import("./campaigns.js").then(({ showCampaignPicker }) => showCampaignPicker());
 }
 
 export function donate() {
@@ -57,27 +53,6 @@ export async function loadExtData(name, replace = true) {
   }
 }
 
-export async function loadHommlet() {
-  try {
-    const res = await fetch("/api/public/hommlet", { headers: authHeaders() });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-
-    excelDM.entries.splice(0, excelDM.entries.length);
-    excelDM.categories = data.categories ?? {};
-    (data.entries || []).forEach((entryData) => {
-      excelDM.add(new Entry(entryData));
-    });
-    excelDM.prepareFromJSON();
-  } catch (err) {
-    console.error("Failed to load Hommlet:", err);
-    return;
-  }
-
-  setApiUrl("/api/public/hommlet");
-  newCurrent();
-  excelDM.clearDirtyState();
-}
 
 export async function saveFile() {
   await saveDataNow();
@@ -106,6 +81,12 @@ export function loadFile() {
   });
 
   input.click();
+}
+
+export function logout() {
+  disconnectWS();
+  clearToken();
+  showAuthModal();
 }
 
 export function addEntry() {

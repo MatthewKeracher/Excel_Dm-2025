@@ -5,7 +5,7 @@ import { initButtons, loadExtData } from "./buttons.js";
 import { saveData, loadData, openDB } from "./localStorage.js";
 import { currentTab, initTabs } from "./tabs.js";
 import { addHotkeys } from "./hotkeys.js";
-import{ updateFilter } from "./filter.js";
+import { updateFilter } from "./filter.js";
 import { getToken, initAuth, showAuthModal } from "./auth.js";
 
 //State
@@ -54,10 +54,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   addHotkeys();
   initTabs(tabNames);
 
-  initAuth(loadData); // wire modal buttons; on success → load campaign
+  const { showCampaignPicker } = await import("./campaigns.js");
+
+  initAuth(showCampaignPicker); // wire modal buttons; on success → show campaign picker
 
   if (getToken()) {
-    await loadData(); // already logged in
+    await showCampaignPicker(); // already logged in
   } else {
     showAuthModal();
   }

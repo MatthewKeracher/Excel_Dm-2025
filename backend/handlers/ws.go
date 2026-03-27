@@ -15,27 +15,26 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-// ServePersonalWS handles WebSocket connections for a user's personal campaign.
-func ServePersonalWS(w http.ResponseWriter, r *http.Request) {
+// ServeCampaignWS handles WebSocket connections for a campaign by numeric ID.
+func ServeCampaignWS(w http.ResponseWriter, r *http.Request) {
 	userID, ok := wsAuth(r)
 	if !ok {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	clientID := r.URL.Query().Get("clientId")
-	serveWS(w, r, fmt.Sprintf("user:%d", userID), clientID)
-}
-
-// ServePublicWS handles WebSocket connections for a named public campaign.
-func ServePublicWS(w http.ResponseWriter, r *http.Request) {
-	_, ok := wsAuth(r)
+	campID, ok := parseCampID(r)
 	if !ok {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		http.Error(w, "invalid campaign id", http.StatusBadRequest)
 		return
 	}
-	name := r.PathValue("name")
+	role, err := campaignRole(userID, campID)
+	if err != nil || role == "" {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
 	clientID := r.URL.Query().Get("clientId")
-	serveWS(w, r, fmt.Sprintf("public:%s", name), clientID)
+	log.Printf("WS: user %d campID=%d clientID=%s connected", userID, campID, clientID)
+	serveWS(w, r, fmt.Sprintf("campaign:%d", campID), clientID)
 }
 
 func serveWS(w http.ResponseWriter, r *http.Request, campaignKey, clientID string) {

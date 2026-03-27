@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find C:/Users/Matthew/Documents/GitHub/Excel_Dm-2025 -type f -name README* -o -name *.md -o -name .cursorrules)"
+      "Bash(find C:/Users/Matthew/Documents/GitHub/Excel_Dm-2025 -type f -name README* -o -name *.md -o -name .cursorrules)",
+      "Bash(go version:*)",
+      "Bash(psql --version)",
+      "Read(//c/Program Files/Go/bin//**)",
+      "Read(//c/Program Files/PostgreSQL//**)",
+      "Bash(\"/c/Program Files/Go/bin/go.exe\" version)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" --version)",
+      "Bash(\"/c/Program Files/Go/bin/go.exe\" mod init exceldm)",
+      "Bash(\"/c/Program Files/Go/bin/go.exe\" get github.com/jackc/pgx/v5)",
+      "Bash(\"/c/Program Files/Go/bin/go.exe\" build ./...)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -c \"CREATE DATABASE exceldm;\" 2>&1)",
+      "Bash(\"/c/Program Files/Go/bin/go.exe\" get github.com/golang-jwt/jwt/v5 golang.org/x/crypto)"
     ]
   }
 }
