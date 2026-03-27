@@ -8,6 +8,8 @@ let tabTracker = currentTab;
 
 export function addHotkeys() {
   document.addEventListener("keydown", function (event) {
+    if (document.getElementById("auth-modal").style.display === "flex") return;
+
     const activeElement = document.activeElement;
 
     // Check if currently editing

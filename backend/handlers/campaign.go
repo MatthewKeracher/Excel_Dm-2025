@@ -1,29 +1,27 @@
 package handlers
 
 import (
-	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
 	"exceldm/db"
+	"exceldm/middleware"
 	"exceldm/models"
-
-	"github.com/jackc/pgx/v5"
 )
 
-// GetCampaign returns the saved campaign as JSON.
-// Returns an empty campaign if none has been saved yet.
 func GetCampaign(w http.ResponseWriter, r *http.Request) {
-	var data []byte
+	userID := r.Context().Value(middleware.UserIDKey).(int)
 
+	var data string
 	err := db.Conn.QueryRow(
-		context.Background(),
-		"SELECT data FROM campaigns WHERE id = 1",
+		"SELECT data FROM campaigns WHERE user_id = ?",
+		userID,
 	).Scan(&data)
 
 	w.Header().Set("Content-Type", "application/json")
 
-	if err == pgx.ErrNoRows {
+	if err == sql.ErrNoRows {
 		w.Write([]byte(`{"entries":[],"categories":{}}`))
 		return
 	}
@@ -32,11 +30,12 @@ func GetCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(data)
+	w.Write([]byte(data))
 }
 
-// PutCampaign saves the full campaign, replacing any existing data.
 func PutCampaign(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+
 	var campaign models.Campaign
 	if err := json.NewDecoder(r.Body).Decode(&campaign); err != nil {
 		http.Error(w, "invalid JSON body", http.StatusBadRequest)
@@ -49,11 +48,11 @@ func PutCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Conn.Exec(context.Background(), `
-		INSERT INTO campaigns (id, data, updated_at)
-		VALUES (1, $1, NOW())
-		ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()
-	`, data)
+	_, err = db.Conn.Exec(`
+		INSERT INTO campaigns (user_id, data, updated_at)
+		VALUES (?, ?, CURRENT_TIMESTAMP)
+		ON CONFLICT (user_id) DO UPDATE SET data = excluded.data, updated_at = CURRENT_TIMESTAMP
+	`, userID, string(data))
 
 	if err != nil {
 		http.Error(w, "failed to save campaign", http.StatusInternalServerError)

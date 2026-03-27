@@ -1,20 +1,20 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
 
 	"exceldm/db"
 	"exceldm/handlers"
+	"exceldm/middleware"
 )
 
 func main() {
 	if err := db.Connect(); err != nil {
 		log.Fatal(err)
 	}
-	defer db.Conn.Close(context.Background())
+	defer db.Conn.Close()
 
 	if err := db.Init(); err != nil {
 		log.Fatal("failed to initialise database:", err)
@@ -22,11 +22,15 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// API routes — Go 1.22+ method-prefixed pattern syntax
-	mux.HandleFunc("GET /api/campaigns", handlers.GetCampaign)
-	mux.HandleFunc("PUT /api/campaigns", handlers.PutCampaign)
+	// Public auth routes
+	mux.HandleFunc("POST /api/register", handlers.Register)
+	mux.HandleFunc("POST /api/login", handlers.Login)
 
-	// Serve the frontend from the project root
+	// Protected campaign routes
+	mux.Handle("GET /api/campaigns", middleware.Auth(http.HandlerFunc(handlers.GetCampaign)))
+	mux.Handle("PUT /api/campaigns", middleware.Auth(http.HandlerFunc(handlers.PutCampaign)))
+
+	// Serve frontend from project root
 	mux.Handle("/", http.FileServer(http.Dir("../")))
 
 	fmt.Println("Server running on http://localhost:8080")

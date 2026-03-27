@@ -6,6 +6,7 @@ import { saveData, loadData, openDB } from "./localStorage.js";
 import { currentTab, initTabs } from "./tabs.js";
 import { addHotkeys } from "./hotkeys.js";
 import{ updateFilter } from "./filter.js";
+import { getToken, initAuth, showAuthModal } from "./auth.js";
 
 //State
 export let excelDM = new EntryManager();
@@ -50,8 +51,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   addHotkeys();
   initTabs(tabNames);
 
-  await openDB();
-  await loadData(); //calls newCurrent() when done
+  initAuth(loadData); // wire modal buttons; on success → load campaign
+
+  if (getToken()) {
+    await loadData(); // already logged in
+  } else {
+    showAuthModal();
+  }
 
   
   

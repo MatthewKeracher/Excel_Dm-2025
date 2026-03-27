@@ -1,40 +1,39 @@
 package db
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
-	"os"
-
-	"github.com/jackc/pgx/v5"
+	_ "modernc.org/sqlite"
 )
 
-var Conn *pgx.Conn
+var Conn *sql.DB
 
-// Connect opens a connection to Postgres.
-// Reads DATABASE_URL from the environment, falling back to a local dev default.
 func Connect() error {
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		dsn = "postgres://postgres:password@localhost:5432/exceldm?sslmode=disable"
-	}
-
-	conn, err := pgx.Connect(context.Background(), dsn)
+	database, err := sql.Open("sqlite", "./exceldm.db")
 	if err != nil {
-		return fmt.Errorf("unable to connect to database: %w", err)
+		return fmt.Errorf("unable to open database: %w", err)
 	}
-
-	Conn = conn
+	Conn = database
 	return nil
 }
 
-// Init creates the campaigns table if it does not already exist.
-// When user support is added, a user_id column will be added here.
 func Init() error {
-	_, err := Conn.Exec(context.Background(), `
+	_, err := Conn.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			id            INTEGER PRIMARY KEY AUTOINCREMENT,
+			email         TEXT UNIQUE NOT NULL,
+			password_hash TEXT        NOT NULL,
+			created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+		)
+	`)
+	if err != nil {
+		return err
+	}
+	_, err = Conn.Exec(`
 		CREATE TABLE IF NOT EXISTS campaigns (
-			id         SERIAL PRIMARY KEY,
-			data       JSONB        NOT NULL,
-			updated_at TIMESTAMPTZ  DEFAULT NOW()
+			user_id    INTEGER PRIMARY KEY REFERENCES users(id),
+			data       TEXT     NOT NULL,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		)
 	`)
 	return err
