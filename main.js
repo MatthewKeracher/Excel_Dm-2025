@@ -25,13 +25,14 @@ export function reCurrent() {
 }
 
 export function newCurrent(entry = excelDM.entries.find(e => e.current === true)) {
-  
+
   if(entry === undefined){entry = excelDM.entries[0]}
+  if(entry === undefined) return;
 
   if(current?.current){
   current.current = false;
   }
-  
+
   current = entry;
   current.current = true;
   HexToMap(entry);
@@ -85,7 +86,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   //Refresh Canvas on Window Resize
   window.addEventListener("resize", () => {
-    newCurrent(current);
+    if (current && !Array.isArray(current)) newCurrent(current);
   });
 
 

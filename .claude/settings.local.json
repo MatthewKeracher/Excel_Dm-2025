@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find C:/Users/Matthew/Documents/GitHub/Excel_Dm-2025 -type f -name README* -o -name *.md -o -name .cursorrules)"
+    ]
+  }
+}

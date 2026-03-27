@@ -23,6 +23,7 @@ export function initButtons() {
 }
 
 export async function newFile() {
+  if (!confirm("Start a new file? Unsaved changes will be lost.")) return;
   //excelDM.deleteAll();
   await loadExtData("./Excel_DM.json", true);
   newCurrent();
