@@ -13,7 +13,7 @@ Backend owns: data persistence, user authentication, authorization (JWT middlewa
 Created an Alpine Linux 3.21 Incus container named `exceldm` on heimvon. Compiled `exceldm-linux-amd64` binary and copied frontend files into `/opt/exceldm/exceldm/` inside the container, with the binary in a `backend/` subdirectory so `../` correctly resolves to the frontend root. Configured an OpenRC service (`/etc/init.d/exceldm`) that starts on boot (`rc-update add exceldm default`). Logs go to `/var/log/exceldm/app.log`. Exposed via an Incus proxy device on host port `8081` → container port `8080`. `JWT_SECRET` passed via the init script environment. SQLite DB lives inside the container at the binary's working directory.
 
 ## ✅ Use Cloudflare tunnels to make it available online
-Installed `cloudflared` manually inside the `exceldm` container (not in Alpine repos — downloaded binary directly). Authenticated with `cloudflared tunnel login`, created a named tunnel (`cloudflared tunnel create exceldm`), and wrote a `config.yml` pointing at `localhost:8080`. Added a CNAME DNS record via `cloudflared tunnel route dns exceldm excel-dm.com` (first deleted conflicting A records in the Cloudflare dashboard). Installed as an OpenRC service with `cloudflared service install` and enabled at boot with `rc-update add cloudflared default`. App is live at `https://excel-dm.com` with automatic HTTPS — no port forwarding or public IP needed.
+Installed `cloudflared` manually inside the `exceldm` container (not in Alpine repos — downloaded binary directly). Authenticated with `cloudflared tunnel login`, created a named tunnel (`cloudflared tunnel create exceldm`), and wrote a `config.yml` pointing at `localhost:8080`. Added a CNAME DNS record via `cloudflared tunnel route dns exceldm excel-dm.com` (first deleted conflicting A records in the Cloudflare dashboard). Installed as an OpenRC service with `cloudflared service install` and enabled at boot with `rc-update add cloudflared default`. App is live at `https://excel-dm.com` and `https://www.excel-dm.com` with automatic HTTPS — no port forwarding or public IP needed.
 
 ## ✅ Public campaigns (Hommlet lives in DB, anyone can load it)
 Added `public_campaigns` table seeded from `Hommlet.json` on first run. Added `GET/PUT /api/public/{name}` endpoints (auth required, any logged-in user can read/write). Renamed the "Demo" button to "Hommlet". Frontend loads from and saves to the shared public campaign via a switchable `apiUrl` in `localStorage.js`. Save button now explicitly flushes to server; Load button renamed to "Add Map" and handles image uploads only.
@@ -21,11 +21,23 @@ Added `public_campaigns` table seeded from `Hommlet.json` on first run. Added `G
 ## ✅ Save/Load buttons use server instead of local files
 Save button triggers an immediate server flush (`saveDataNow`). Load button renamed to "Add Map" and handles image uploads only. DB auto-save (500ms debounce) remains for all other changes.
 
+## ✅ Normalize campaign storage (entries table with FK parent relationships)
+Replaced the single JSON blob per campaign with two normalized tables: `campaigns` (id, owner_id, name, is_public, categories) and `entries` (id, campaign_id, title, type, body, color, image, x, y, coords, pop_out, current_child, parent_id). Parent/child relationships stored as proper FK references instead of array indices. Auto-migrates old blob data on startup. API surface is unchanged — frontend serializes/deserializes to/from the old array-index format transparently. `public_campaigns` table merged into `campaigns` via `is_public` flag. Foundation is now ready for delta saves and WebSocket broadcasting.
+
 ## Real-time collaborative editing via WebSockets
-The entire campaign is one JSON blob — concurrent saves currently use last-write-wins. For proper multi-user editing (e.g. multiple people editing Hommlet at the same time during campaign prep), add WebSocket support:
-- **Backend**: a WebSocket hub per campaign; when a `PUT /api/public/{name}` is received, broadcast the new state to all other connected clients for that campaign
-- **Frontend**: connect to a WebSocket on campaign load; on incoming broadcast, merge the new state into the local `excelDM` and re-render
-- Conflicts still resolve as last-write-wins at the entry level, but users see each other's changes within ~500ms
+With normalized storage in place, concurrent edits can now be handled efficiently:
+- **Backend**: add `github.com/gorilla/websocket`. A hub per campaign tracks connected clients. When a `PUT /api/campaigns/{id}/entries/{id}` delta save arrives, broadcast only the changed entry to all other connected clients
+- **Frontend**: connect to `WS /api/campaigns/{id}/ws` on load; on incoming broadcast, update the matching entry in `excelDM` and call `reCurrent()` to re-render
+- Conflicts resolve as last-write-wins per entry — users see each other's changes within ~500ms
+
+## Delta saves (send only changed entries)
+Currently the full campaign is sent on every save. With the normalized DB:
+- Track dirty entries in a `Set` on the frontend
+- On save: POST new entries (get back server ID), PUT changed entries by ID, DELETE removed entries by ID
+- Requires `Entry.id` to be populated from the server on load and creation
 
 ## Multiple campaigns per user + campaign picker UI
-Add a `name` column to the `campaigns` table and drop the `user_id` primary key constraint so a user can have multiple campaigns. Add `GET /api/campaigns` (list) and `POST /api/campaigns` (create) endpoints. Frontend needs a campaign picker — shown after login — to select, create, or delete campaigns before entering the app.
+The `campaigns` table already supports multiple campaigns per user (`owner_id` + `name`). Next steps:
+- Add `GET /api/campaigns` (list all user campaigns) and `POST /api/campaigns` (create new)
+- Frontend: show a campaign picker after login to select, create, or delete campaigns
+- Currently each user has one personal campaign; picker makes multiple campaigns accessible
