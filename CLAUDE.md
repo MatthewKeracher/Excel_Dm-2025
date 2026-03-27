@@ -43,10 +43,13 @@ bash deploy.sh --backend-only   # rebuild and redeploy only the Go binary
 bash deploy.sh --frontend-only  # redeploy only JS/CSS/HTML/data files
 ```
 
+The app is publicly accessible at `https://excel-dm.com` via a Cloudflare tunnel. `cloudflared` runs as an OpenRC service inside the container alongside the app, routing traffic from Cloudflare's network to `localhost:8080`.
+
 **Service management (via SSH into heimvon):**
 ```
 sudo incus exec exceldm -- rc-service exceldm restart
 sudo incus exec exceldm -- rc-service exceldm status
+sudo incus exec exceldm -- rc-service cloudflared status
 sudo incus exec exceldm -- tail -f /var/log/exceldm/app.log
 ```
 

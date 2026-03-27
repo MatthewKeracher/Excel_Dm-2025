@@ -1,0 +1,7 @@
+tunnel: 0aa9192d-58fd-449c-9623-80ea80f1ade0
+credentials-file: /root/.cloudflared/0aa9192d-58fd-449c-9623-80ea80f1ade0.json
+
+ingress:
+  - hostname: excel-dm.com
+    service: http://localhost:8080
+  - service: http_status:404
