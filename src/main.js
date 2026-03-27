@@ -22,6 +22,9 @@ export function reCurrent() {
   updateFilter();
   loadNoteCards(current);
   loadPopUp();
+  if (current && !Array.isArray(current)) {
+    excelDM.dirtyEntries.add(current);
+  }
   saveData();
 }
 

@@ -21,21 +21,7 @@ export function saveCategories() {
   saveData();
 }
 
-async function pushToServer() {
-  const payload = excelDM.prepareForJSON();
-  payload.categories = excelDM.categories ?? {};
-
-  const res = await fetch(apiUrl, {
-    method: "PUT",
-    headers: { ...authHeaders(), "X-Client-ID": clientId },
-    body: JSON.stringify(payload),
-  });
-
-  if (res.status === 401) {
-    clearToken();
-    showAuthModal();
-  }
-}
+// --- Save logic ---
 
 // _suppressSave prevents a remote update from triggering a re-save loop.
 let _suppressSave = false;
@@ -65,6 +51,96 @@ export async function saveDataNow() {
   }
 }
 
+async function pushToServer() {
+  const dirty = excelDM.dirtyEntries;
+  const deleted = excelDM.deletedServerIds;
+
+  // Nothing to save
+  if (dirty.size === 0 && deleted.size === 0) return;
+
+  // If any dirty entry has no _serverId (new entry), fall back to full PUT
+  const hasNewEntries = [...dirty].some((e) => e._serverId == null);
+
+  if (hasNewEntries) {
+    await putToServer();
+  } else {
+    await patchToServer(dirty, deleted);
+  }
+}
+
+async function putToServer() {
+  const payload = excelDM.prepareForJSON();
+  payload.categories = excelDM.categories ?? {};
+
+  const res = await fetch(apiUrl, {
+    method: "PUT",
+    headers: { ...authHeaders(), "X-Client-ID": clientId },
+    body: JSON.stringify(payload),
+  });
+
+  if (res.status === 401) {
+    clearToken();
+    showAuthModal();
+    return;
+  }
+  if (!res.ok) throw new Error(`PUT failed: HTTP ${res.status}`);
+
+  // Server returns { ids: [...] } in the same order as entries[]
+  const data = await res.json();
+  if (Array.isArray(data.ids)) {
+    data.ids.forEach((id, i) => {
+      if (excelDM.entries[i]) excelDM.entries[i]._serverId = id;
+    });
+  }
+
+  excelDM.clearDirtyState();
+}
+
+async function patchToServer(dirty, deleted) {
+  const updated = [...dirty].map((e) => ({
+    _serverId: e._serverId,
+    title: e.title,
+    type: e.type,
+    category: e.category,
+    body: e.body,
+    color: e.color,
+    image: e.image,
+    x: e.x,
+    y: e.y,
+    coords: e.coords,
+    popOut: e.popOut,
+    currentChild: e.currentChild,
+    parentId: e.parent?._serverId ?? null,
+  }));
+
+  const payload = {
+    updated,
+    deletedIds: [...deleted],
+    categories: excelDM.categories ?? {},
+  };
+
+  const res = await fetch(apiUrl, {
+    method: "PATCH",
+    headers: { ...authHeaders(), "X-Client-ID": clientId },
+    body: JSON.stringify(payload),
+  });
+
+  if (res.status === 401) {
+    clearToken();
+    showAuthModal();
+    return;
+  }
+  if (!res.ok) {
+    // Fall back to full save on any PATCH error
+    await putToServer();
+    return;
+  }
+
+  excelDM.clearDirtyState();
+}
+
+// --- Load logic ---
+
 export async function loadData() {
   try {
     const res = await fetch(apiUrl, { headers: authHeaders() });
@@ -86,6 +162,7 @@ export async function loadData() {
     });
 
     excelDM.prepareFromJSON();
+    excelDM.clearDirtyState();
   } catch (err) {
     console.error("Failed to load:", err);
     excelDM.entries = [];
@@ -94,6 +171,7 @@ export async function loadData() {
 
   connectWS(apiUrl);
   newCurrent();
+  excelDM.clearDirtyState(); // clear dirty set by newCurrent
 }
 
 // --- WebSocket ---
@@ -108,9 +186,15 @@ function connectWS(url) {
   const token = getToken() ?? "";
   const wsUrl = `${proto}//${location.host}${url}/ws?token=${token}&clientId=${clientId}`;
 
+  console.log("[WS] connecting to", wsUrl);
   ws = new WebSocket(wsUrl);
 
+  ws.onopen = () => {
+    console.log("[WS] connected to", wsUrl);
+  };
+
   ws.onmessage = (event) => {
+    console.log("[WS] message received, length=", event.data.length);
     try {
       const data = JSON.parse(event.data);
       applyRemoteUpdate(data);
@@ -119,7 +203,8 @@ function connectWS(url) {
     }
   };
 
-  ws.onclose = () => {
+  ws.onclose = (ev) => {
+    console.log("[WS] closed code=", ev.code, "reason=", ev.reason);
     ws = null;
     // Reconnect after 2s if we haven't intentionally disconnected
     if (wsApiUrl) {
@@ -129,7 +214,8 @@ function connectWS(url) {
     }
   };
 
-  ws.onerror = () => {
+  ws.onerror = (err) => {
+    console.error("[WS] error", err);
     ws?.close();
   };
 }
@@ -151,6 +237,7 @@ function applyRemoteUpdate(data) {
       excelDM.add(new Entry(entryData));
     });
     excelDM.prepareFromJSON();
+    excelDM.clearDirtyState();
     newCurrent();
   } finally {
     _suppressSave = false;

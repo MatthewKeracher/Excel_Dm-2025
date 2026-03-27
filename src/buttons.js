@@ -76,6 +76,7 @@ export async function loadHommlet() {
 
   setApiUrl("/api/public/hommlet");
   newCurrent();
+  excelDM.clearDirtyState();
 }
 
 export async function saveFile() {

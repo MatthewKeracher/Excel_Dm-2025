@@ -3,12 +3,14 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 
 	"exceldm/db"
 )
 
 // responseEntry is the shape the frontend expects for each entry.
 type responseEntry struct {
+	ServerID     int64           `json:"_serverId"`
 	Title        string          `json:"title"`
 	Type         string          `json:"type"`
 	Category     string          `json:"category"`
@@ -28,6 +30,10 @@ type responseEntry struct {
 type campaignResponse struct {
 	Entries    []responseEntry `json:"entries"`
 	Categories json.RawMessage `json:"categories"`
+}
+
+type putCampaignResponse struct {
+	IDs []int64 `json:"ids"`
 }
 
 // serializeCampaign reads normalized entries from the DB and returns the
@@ -85,6 +91,7 @@ func serializeCampaign(campID int, categories string) ([]byte, error) {
 		}
 
 		entries[i] = responseEntry{
+			ServerID:     int64(e.id),
 			Title:        e.title,
 			Type:         e.typ,
 			Category:     e.category,
@@ -111,8 +118,8 @@ func serializeCampaign(campID int, categories string) ([]byte, error) {
 }
 
 // saveEntries replaces all entries for a campaign with the incoming payload.
-// Entries are sent in the frontend's array-index parent format.
-func saveEntries(campID int, rawEntries []json.RawMessage, categories string) error {
+// Returns the DB-assigned IDs in the same order as rawEntries.
+func saveEntries(campID int, rawEntries []json.RawMessage, categories string) ([]int64, error) {
 	type incomingEntry struct {
 		Title        string          `json:"title"`
 		Type         string          `json:"type"`
@@ -131,13 +138,13 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string) er
 	entries := make([]incomingEntry, len(rawEntries))
 	for i, raw := range rawEntries {
 		if err := json.Unmarshal(raw, &entries[i]); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	tx, err := db.Conn.Begin()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer tx.Rollback()
 
@@ -145,11 +152,16 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string) er
 		"UPDATE campaigns SET categories = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
 		categories, campID,
 	); err != nil {
-		return err
+		return nil, err
 	}
 
+	// Null out self-referential parent_id FKs before deleting,
+	// otherwise SQLite's FK enforcement rejects the delete order.
+	if _, err := tx.Exec("UPDATE entries SET parent_id = NULL WHERE campaign_id = ?", campID); err != nil {
+		return nil, err
+	}
 	if _, err := tx.Exec("DELETE FROM entries WHERE campaign_id = ?", campID); err != nil {
-		return err
+		return nil, err
 	}
 
 	indexToID := make(map[int]int64)
@@ -169,7 +181,7 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string) er
 		`, campID, e.Title, e.Type, e.Category, e.Body, e.Color, e.Image,
 			e.X, e.Y, coords, e.PopOut, currentChild)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		id, _ := res.LastInsertId()
 		indexToID[i] = id
@@ -186,7 +198,99 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string) er
 			continue
 		}
 		if _, err := tx.Exec("UPDATE entries SET parent_id = ? WHERE id = ?", parentID, indexToID[i]); err != nil {
+			return nil, err
+		}
+	}
+
+	ids := make([]int64, len(entries))
+	for i := range entries {
+		ids[i] = indexToID[i]
+	}
+
+	return ids, tx.Commit()
+}
+
+// patchEntry is one entry in a delta PATCH request.
+type patchEntry struct {
+	ServerID     int64           `json:"_serverId"`
+	Title        string          `json:"title"`
+	Type         string          `json:"type"`
+	Category     string          `json:"category"`
+	Body         string          `json:"body"`
+	Color        string          `json:"color"`
+	Image        string          `json:"image"`
+	X            float64         `json:"x"`
+	Y            float64         `json:"y"`
+	Coords       json.RawMessage `json:"coords"`
+	PopOut       bool            `json:"popOut"`
+	CurrentChild interface{}     `json:"currentChild"`
+	ParentID     *int64          `json:"parentId"` // server ID, nil = root
+}
+
+// patchPayload is the body of a PATCH /api/campaigns request.
+type patchPayload struct {
+	Updated    []patchEntry    `json:"updated"`
+	DeletedIDs []int64         `json:"deletedIds"`
+	Categories json.RawMessage `json:"categories"`
+}
+
+// patchEntries applies a delta update: updates changed entries, deletes removed ones.
+func patchEntries(campID int, patch patchPayload) error {
+	tx, err := db.Conn.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Update categories if provided
+	if patch.Categories != nil {
+		if _, err := tx.Exec(
+			"UPDATE campaigns SET categories = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+			string(patch.Categories), campID,
+		); err != nil {
 			return err
+		}
+	}
+
+	// Delete entries (campaign_id check prevents cross-campaign tampering)
+	for _, id := range patch.DeletedIDs {
+		if _, err := tx.Exec(
+			"UPDATE entries SET parent_id = NULL WHERE parent_id = ? AND campaign_id = ?", id, campID,
+		); err != nil {
+			return err
+		}
+		if _, err := tx.Exec(
+			"DELETE FROM entries WHERE id = ? AND campaign_id = ?", id, campID,
+		); err != nil {
+			return err
+		}
+	}
+
+	// Update changed entries
+	for _, e := range patch.Updated {
+		coords := "{}"
+		if len(e.Coords) > 0 {
+			coords = string(e.Coords)
+		}
+		currentChild := 0
+		if f, ok := e.CurrentChild.(float64); ok {
+			currentChild = int(f)
+		}
+
+		res, err := tx.Exec(`
+			UPDATE entries
+			SET title=?, type=?, category=?, body=?, color=?, image=?,
+			    x=?, y=?, coords=?, pop_out=?, current_child=?, parent_id=?,
+			    updated_at=CURRENT_TIMESTAMP
+			WHERE id=? AND campaign_id=?
+		`, e.Title, e.Type, e.Category, e.Body, e.Color, e.Image,
+			e.X, e.Y, coords, e.PopOut, currentChild, e.ParentID,
+			e.ServerID, campID)
+		if err != nil {
+			return err
+		}
+		if n, _ := res.RowsAffected(); n == 0 {
+			log.Printf("patchEntries: entry id=%d not found in campaign %d", e.ServerID, campID)
 		}
 	}
 

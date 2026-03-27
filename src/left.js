@@ -165,6 +165,7 @@ export function loadPopUp() {
 
 function makePopOut(entry, coords) {
   entry.popOut = true;
+  excelDM.dirtyEntries.add(entry);
   saveData();
 
   const popOut = makeNoteCard(entry, true);
@@ -180,6 +181,7 @@ function makePopOut(entry, coords) {
   // Make draggable using refactored function
   makeDraggable(popOut, (coords) => {
     entry.coords = coords;
+    excelDM.dirtyEntries.add(entry);
     saveData();
   });
 

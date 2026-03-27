@@ -32,6 +32,8 @@ if $DEPLOY_FRONTEND; then
     echo "==> Copying frontend files to host..."
     ssh "$HOST" "mkdir -p /tmp/exceldm-frontend"
     scp -r index.html src css assets data "$HOST:/tmp/exceldm-frontend/"
+    # Remove Hommlet.json from the temp staging area — it lives in the DB now
+    ssh "$HOST" "rm -f /tmp/exceldm-frontend/data/Hommlet.json"
 
     echo "==> Pushing frontend files into container..."
     ssh "$HOST" "tar -C /tmp/exceldm-frontend -cf - . | sudo incus exec $CONTAINER -- tar -C $REMOTE_DIR -xf - && rm -rf /tmp/exceldm-frontend"

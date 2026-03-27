@@ -4,6 +4,13 @@ import { currentTab } from "./tabs.js";
 export class EntryManager {
   constructor() {
     this.entries = [];
+    this.dirtyEntries = new Set();
+    this.deletedServerIds = new Set();
+  }
+
+  clearDirtyState() {
+    this.dirtyEntries.clear();
+    this.deletedServerIds.clear();
   }
 
   add(entry) {
@@ -94,6 +101,10 @@ export class EntryManager {
   }
 
   deleteEntry(entry) {
+    if (entry._serverId != null) {
+      this.deletedServerIds.add(entry._serverId);
+    }
+    this.dirtyEntries.delete(entry);
     // Remove the entry from the main entries list
     this.entries = this.entries.filter((e) => e !== entry);
 
@@ -174,6 +185,7 @@ export class EntryManager {
 }
 
 export class Entry {
+  _serverId = null;
   category = "";
   title = "";
   type = "";
@@ -190,7 +202,7 @@ export class Entry {
   image = "";
 
   constructor(data = {}) {
-    // this.id = crypto.randomUUID(); // Generates a UUID
+    this._serverId = data._serverId ?? null;
     this.category = data.category || "Uncategorised";
     this.title = data.title || "Untitled Entry";
     this.type = data.type || currentTab;
