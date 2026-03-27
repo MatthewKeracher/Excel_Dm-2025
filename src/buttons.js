@@ -1,6 +1,6 @@
 import { current, excelDM, reCurrent, newCurrent, masterEdit } from "./main.js";
 import { Entry, EntryManager } from "./classes.js";
-import { saveData } from "./localStorage.js";
+import { saveData, saveDataNow } from "./localStorage.js";
 import { currentTab } from "./tabs.js";
 import { returnFiltered } from "./filter.js";
 
@@ -68,97 +68,30 @@ export async function loadHommlet() {
   newCurrent();
 }
 
-export function saveFile(filter = false) {
-  try {
-    let dataToDownload;
-
-    if (filter) {
-      dataToDownload = excelDM.prepareForJSON();
-      dataToDownload = returnFiltered(dataToDownload); // ✅ First get data, then filter
-    } else {
-      dataToDownload = excelDM.prepareForJSON();
-    }
-
-    const jsonString = JSON.stringify(dataToDownload, null, 2); // ✅ Stringify here
-
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const lastPlace = document.getElementById("currentTitle")?.innerHTML;
-    const fileName = `${lastPlace}.json` || "excel_DM.json";
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("Error saving JSON:", err);
-  }
+export async function saveFile() {
+  await saveDataNow();
 }
 
 export function loadFile() {
   const input = document.createElement("input");
   input.type = "file";
-  input.accept = "application/json,.json,image/*"; // Allow both JSON and images
+  input.accept = "image/*";
 
   input.addEventListener("change", () => {
     const file = input.files && input.files[0];
     if (!file) return;
 
-    const fileName = file.name;
-    const fileType = file.type; // e.g. "application/json" or "image/png"
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const buffer = e.target.result;
+      const hex = Array.from(new Uint8Array(buffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
 
-    const ext = fileName.split(".").pop().toLowerCase();
-
-    if (fileType === "application/json" || ext === "json") {
-      // JSON file logic
-      console.clear();
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          let allData = JSON.parse(e.target.result);
-
-          // Clear existing entries in manager
-          excelDM.entries.length = 0;
-
-          // Create Entry instances and add them to manager
-          allData.entries.forEach((data) => {
-            const entry = new Entry(data);
-            excelDM.add(entry);
-          });
-
-          excelDM.prepareFromJSON();
-
-          newCurrent();
-        } catch (err) {
-          console.error("Invalid JSON:", err);
-        }
-      };
-      reader.onerror = () => {
-        console.error("Error reading file:", reader.error);
-      };
-      reader.readAsText(file);
-    } else if (
-      fileType.startsWith("image/") ||
-      ["png", "jpg", "jpeg", "gif", "bmp", "svg"].includes(ext)
-    ) {
-      // Read image as binary
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const buffer = e.target.result; // ArrayBuffer
-        const hex = Array.from(new Uint8Array(buffer))
-          .map((b) => b.toString(16).padStart(2, "0"))
-          .join("");
-
-        current.image = hex;
-        newCurrent(current);
-      };
-      reader.readAsArrayBuffer(file);
-    } else {
-      alert("Unsupported file type.");
-    }
+      current.image = hex;
+      newCurrent(current);
+    };
+    reader.readAsArrayBuffer(file);
   });
 
   input.click();

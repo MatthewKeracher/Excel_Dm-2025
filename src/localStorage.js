@@ -12,28 +12,41 @@ export function saveCategories() {
   saveData();
 }
 
+async function pushToServer() {
+  const payload = excelDM.prepareForJSON();
+  payload.categories = excelDM.categories ?? {};
+
+  const res = await fetch(API_URL, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  if (res.status === 401) {
+    clearToken();
+    showAuthModal();
+  }
+}
+
 let saveTimer = null;
 export function saveData() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     try {
-      const payload = excelDM.prepareForJSON();
-      payload.categories = excelDM.categories ?? {};
-
-      const res = await fetch(API_URL, {
-        method: "PUT",
-        headers: authHeaders(),
-        body: JSON.stringify(payload),
-      });
-
-      if (res.status === 401) {
-        clearToken();
-        showAuthModal();
-      }
+      await pushToServer();
     } catch (err) {
       console.error("Failed to save:", err);
     }
   }, 500);
+}
+
+export async function saveDataNow() {
+  clearTimeout(saveTimer);
+  try {
+    await pushToServer();
+  } catch (err) {
+    console.error("Failed to save:", err);
+  }
 }
 
 export async function loadData() {
