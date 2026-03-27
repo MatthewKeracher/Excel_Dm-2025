@@ -6,23 +6,22 @@ import (
 	"net/http"
 
 	"exceldm/db"
-	"exceldm/middleware"
 )
 
-func GetCampaign(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(middleware.UserIDKey).(int)
+func GetPublicCampaign(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("name")
 
 	var campID int
 	var categories string
 	err := db.Conn.QueryRow(
-		"SELECT id, categories FROM campaigns WHERE owner_id = ? AND is_public = FALSE",
-		userID,
+		"SELECT id, categories FROM campaigns WHERE name = ? AND is_public = TRUE",
+		name,
 	).Scan(&campID, &categories)
 
 	w.Header().Set("Content-Type", "application/json")
 
 	if err == sql.ErrNoRows {
-		w.Write([]byte(`{"entries":[],"categories":{}}`))
+		http.Error(w, "campaign not found", http.StatusNotFound)
 		return
 	}
 	if err != nil {
@@ -39,8 +38,8 @@ func GetCampaign(w http.ResponseWriter, r *http.Request) {
 	w.Write(result)
 }
 
-func PutCampaign(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(middleware.UserIDKey).(int)
+func PutPublicCampaign(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("name")
 
 	var payload struct {
 		Entries    []json.RawMessage `json:"entries"`
@@ -56,25 +55,17 @@ func PutCampaign(w http.ResponseWriter, r *http.Request) {
 		categories = string(payload.Categories)
 	}
 
-	// Find or create the user's personal campaign
 	var campID int
 	err := db.Conn.QueryRow(
-		"SELECT id FROM campaigns WHERE owner_id = ? AND is_public = FALSE",
-		userID,
+		"SELECT id FROM campaigns WHERE name = ? AND is_public = TRUE",
+		name,
 	).Scan(&campID)
 
 	if err == sql.ErrNoRows {
-		result, err := db.Conn.Exec(
-			"INSERT INTO campaigns (owner_id, name, is_public, categories) VALUES (?, 'Campaign', FALSE, ?)",
-			userID, categories,
-		)
-		if err != nil {
-			http.Error(w, "failed to create campaign", http.StatusInternalServerError)
-			return
-		}
-		id, _ := result.LastInsertId()
-		campID = int(id)
-	} else if err != nil {
+		http.Error(w, "campaign not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
 		http.Error(w, "failed to load campaign", http.StatusInternalServerError)
 		return
 	}
