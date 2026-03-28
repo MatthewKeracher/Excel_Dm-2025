@@ -3,7 +3,9 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
+	"strings"
 
 	"exceldm/db"
 )
@@ -30,15 +32,24 @@ type responseEntry struct {
 type campaignResponse struct {
 	Entries    []responseEntry `json:"entries"`
 	Categories json.RawMessage `json:"categories"`
+	Version    int64           `json:"version"`
 }
 
 type putCampaignResponse struct {
 	IDs []int64 `json:"ids"`
 }
 
-// serializeCampaign reads normalized entries from the DB and returns the
-// frontend-compatible JSON (array-index parent references).
-func serializeCampaign(campID int, categories string) ([]byte, error) {
+// serializeCampaign reads the campaign and its entries from the DB and returns
+// frontend-compatible JSON including the current version number.
+func serializeCampaign(campID int) ([]byte, error) {
+	var categories string
+	var version int64
+	if err := db.Conn.QueryRow(
+		"SELECT categories, version FROM campaigns WHERE id = ?", campID,
+	).Scan(&categories, &version); err != nil {
+		return nil, err
+	}
+
 	rows, err := db.Conn.Query(`
 		SELECT id, title, type, category, body, color, image, x, y, coords, pop_out, current_child, parent_id
 		FROM entries WHERE campaign_id = ? ORDER BY id
@@ -57,7 +68,6 @@ func serializeCampaign(campID int, categories string) ([]byte, error) {
 	}
 
 	var entryRows []entryRow
-	idToIndex := map[int]int{}
 
 	for rows.Next() {
 		var e entryRow
@@ -67,7 +77,6 @@ func serializeCampaign(campID int, categories string) ([]byte, error) {
 		); err != nil {
 			return nil, err
 		}
-		idToIndex[e.id] = len(entryRows)
 		entryRows = append(entryRows, e)
 	}
 
@@ -75,9 +84,7 @@ func serializeCampaign(campID int, categories string) ([]byte, error) {
 	for i, e := range entryRows {
 		var parentIdx interface{} = nil
 		if e.parentID.Valid {
-			if idx, ok := idToIndex[int(e.parentID.Int64)]; ok {
-				parentIdx = idx
-			}
+			parentIdx = e.parentID.Int64
 		}
 
 		var currentChild interface{} = nil
@@ -114,12 +121,101 @@ func serializeCampaign(campID int, categories string) ([]byte, error) {
 		cats = json.RawMessage(categories)
 	}
 
-	return json.Marshal(campaignResponse{Entries: entries, Categories: cats})
+	return json.Marshal(campaignResponse{Entries: entries, Categories: cats, Version: version})
+}
+
+// patchDeltaMessage is the WS broadcast payload for a delta (PATCH) save.
+type patchDeltaMessage struct {
+	Type       string          `json:"type"` // always "patch"
+	Updated    []responseEntry `json:"updated"`
+	DeletedIDs []int64         `json:"deletedIds"`
+	Categories json.RawMessage `json:"categories,omitempty"`
+	Version    int64           `json:"version"`
+}
+
+// serializePatchDelta builds a minimal WS broadcast for a PATCH save:
+// only the touched entries + deleted IDs + the committed version (passed in to avoid
+// a race where a concurrent save increments the version before this goroutine reads it).
+func serializePatchDelta(campID int, patch patchPayload, version int64) ([]byte, error) {
+	var categories string
+	if err := db.Conn.QueryRow(
+		"SELECT categories FROM campaigns WHERE id = ?", campID,
+	).Scan(&categories); err != nil {
+		return nil, err
+	}
+
+	updated := make([]responseEntry, 0, len(patch.Updated))
+	if len(patch.Updated) > 0 {
+		// Single IN query instead of one query per entry.
+		placeholders := strings.Repeat("?,", len(patch.Updated))
+		placeholders = placeholders[:len(placeholders)-1]
+		args := make([]interface{}, 0, len(patch.Updated)+1)
+		for _, pe := range patch.Updated {
+			args = append(args, pe.ServerID)
+		}
+		args = append(args, campID)
+
+		rows, err := db.Conn.Query(fmt.Sprintf(`
+			SELECT id, title, type, category, body, color, image, x, y, coords, pop_out, current_child, parent_id
+			FROM entries WHERE id IN (%s) AND campaign_id = ?
+		`, placeholders), args...)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var re responseEntry
+			var parentID sql.NullInt64
+			var coordsStr string
+			var currentChild int
+			if err := rows.Scan(
+				&re.ServerID, &re.Title, &re.Type, &re.Category, &re.Body, &re.Color, &re.Image,
+				&re.X, &re.Y, &coordsStr, &re.PopOut, &currentChild, &parentID,
+			); err != nil {
+				continue
+			}
+			if parentID.Valid {
+				re.Parent = parentID.Int64
+			}
+			if currentChild != 0 {
+				re.CurrentChild = currentChild
+			}
+			coords := json.RawMessage(`{"x":0,"y":0}`)
+			if coordsStr != "" && coordsStr != "{}" {
+				coords = json.RawMessage(coordsStr)
+			}
+			re.Coords = coords
+			re.Children = []interface{}{}
+			updated = append(updated, re)
+		}
+	}
+
+	deletedIDs := patch.DeletedIDs
+	if deletedIDs == nil {
+		deletedIDs = []int64{}
+	}
+
+	msg := patchDeltaMessage{
+		Type:       "patch",
+		Updated:    updated,
+		DeletedIDs: deletedIDs,
+		Version:    version,
+	}
+	if patch.Categories != nil {
+		cats := json.RawMessage(`{}`)
+		if categories != "" && categories != "{}" {
+			cats = json.RawMessage(categories)
+		}
+		msg.Categories = cats
+	}
+
+	return json.Marshal(msg)
 }
 
 // saveEntries replaces all entries for a campaign with the incoming payload.
-// Returns the DB-assigned IDs in the same order as rawEntries.
-func saveEntries(campID int, rawEntries []json.RawMessage, categories string) ([]int64, error) {
+// Returns the DB-assigned IDs in the same order as rawEntries, and the new version.
+func saveEntries(campID int, rawEntries []json.RawMessage, categories string) (ids []int64, version int64, err error) {
 	type incomingEntry struct {
 		Title        string          `json:"title"`
 		Type         string          `json:"type"`
@@ -138,33 +234,38 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string) ([
 	entries := make([]incomingEntry, len(rawEntries))
 	for i, raw := range rawEntries {
 		if err := json.Unmarshal(raw, &entries[i]); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 	}
 
 	tx, err := db.Conn.Begin()
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
-	if _, err := tx.Exec(
-		"UPDATE campaigns SET categories = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+	if err = tx.QueryRow(
+		"UPDATE campaigns SET categories = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version",
 		categories, campID,
-	); err != nil {
-		return nil, err
+	).Scan(&version); err != nil {
+		return nil, 0, err
 	}
 
 	// Null out self-referential parent_id FKs before deleting,
 	// otherwise SQLite's FK enforcement rejects the delete order.
-	if _, err := tx.Exec("UPDATE entries SET parent_id = NULL WHERE campaign_id = ?", campID); err != nil {
-		return nil, err
+	if _, err = tx.Exec("UPDATE entries SET parent_id = NULL WHERE campaign_id = ?", campID); err != nil {
+		return nil, 0, err
 	}
-	if _, err := tx.Exec("DELETE FROM entries WHERE campaign_id = ?", campID); err != nil {
-		return nil, err
+	if _, err = tx.Exec("DELETE FROM entries WHERE campaign_id = ?", campID); err != nil {
+		return nil, 0, err
 	}
 
 	indexToID := make(map[int]int64)
+	var res sql.Result
 	for i, e := range entries {
 		coords := "{}"
 		if len(e.Coords) > 0 {
@@ -175,15 +276,19 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string) ([
 			currentChild = int(f)
 		}
 
-		res, err := tx.Exec(`
+		res, err = tx.Exec(`
 			INSERT INTO entries (campaign_id, title, type, category, body, color, image, x, y, coords, pop_out, current_child)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`, campID, e.Title, e.Type, e.Category, e.Body, e.Color, e.Image,
 			e.X, e.Y, coords, e.PopOut, currentChild)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
-		id, _ := res.LastInsertId()
+		var id int64
+		id, err = res.LastInsertId()
+		if err != nil {
+			return nil, 0, err
+		}
 		indexToID[i] = id
 	}
 
@@ -197,17 +302,18 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string) ([
 		if !ok {
 			continue
 		}
-		if _, err := tx.Exec("UPDATE entries SET parent_id = ? WHERE id = ?", parentID, indexToID[i]); err != nil {
-			return nil, err
+		if _, err = tx.Exec("UPDATE entries SET parent_id = ? WHERE id = ?", parentID, indexToID[i]); err != nil {
+			return nil, 0, err
 		}
 	}
 
-	ids := make([]int64, len(entries))
+	ids = make([]int64, len(entries))
 	for i := range entries {
 		ids[i] = indexToID[i]
 	}
 
-	return ids, tx.Commit()
+	err = tx.Commit()
+	return ids, version, err
 }
 
 // campaignRole returns the effective role of userID in campaign campID:
@@ -268,38 +374,52 @@ type patchPayload struct {
 }
 
 // patchEntries applies a delta update: updates changed entries, deletes removed ones.
-func patchEntries(campID int, patch patchPayload) error {
+// Returns the new campaign version so the broadcast goroutine uses the committed value
+// rather than re-reading from DB (which could race with a concurrent save).
+func patchEntries(campID int, patch patchPayload) (version int64, err error) {
 	tx, err := db.Conn.Begin()
 	if err != nil {
-		return err
+		return 0, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
-	// Update categories if provided
+	// Update categories if provided, and capture the committed version via RETURNING.
 	if patch.Categories != nil {
-		if _, err := tx.Exec(
-			"UPDATE campaigns SET categories = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+		if err = tx.QueryRow(
+			"UPDATE campaigns SET categories = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version",
 			string(patch.Categories), campID,
-		); err != nil {
-			return err
+		).Scan(&version); err != nil {
+			return 0, err
+		}
+	} else {
+		if err = tx.QueryRow(
+			"UPDATE campaigns SET version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version",
+			campID,
+		).Scan(&version); err != nil {
+			return 0, err
 		}
 	}
 
 	// Delete entries (campaign_id check prevents cross-campaign tampering)
 	for _, id := range patch.DeletedIDs {
-		if _, err := tx.Exec(
+		if _, err = tx.Exec(
 			"UPDATE entries SET parent_id = NULL WHERE parent_id = ? AND campaign_id = ?", id, campID,
 		); err != nil {
-			return err
+			return 0, err
 		}
-		if _, err := tx.Exec(
+		if _, err = tx.Exec(
 			"DELETE FROM entries WHERE id = ? AND campaign_id = ?", id, campID,
 		); err != nil {
-			return err
+			return 0, err
 		}
 	}
 
 	// Update changed entries
+	var res sql.Result
 	for _, e := range patch.Updated {
 		coords := "{}"
 		if len(e.Coords) > 0 {
@@ -310,7 +430,7 @@ func patchEntries(campID int, patch patchPayload) error {
 			currentChild = int(f)
 		}
 
-		res, err := tx.Exec(`
+		res, err = tx.Exec(`
 			UPDATE entries
 			SET title=?, type=?, category=?, body=?, color=?, image=?,
 			    x=?, y=?, coords=?, pop_out=?, current_child=?, parent_id=?,
@@ -320,12 +440,13 @@ func patchEntries(campID int, patch patchPayload) error {
 			e.X, e.Y, coords, e.PopOut, currentChild, e.ParentID,
 			e.ServerID, campID)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		if n, _ := res.RowsAffected(); n == 0 {
 			log.Printf("patchEntries: entry id=%d not found in campaign %d", e.ServerID, campID)
 		}
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+	return version, err
 }

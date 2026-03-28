@@ -1,3 +1,6 @@
+import { isViewer } from "./userRole.js";
+import { excelDM } from "./main.js";
+
 export function draw(parent) {
   const children = parent.children.filter(
     (entry) => entry.type === "locations"
@@ -44,6 +47,7 @@ export function draw(parent) {
 
     // Dragging logic
     label.addEventListener("mousedown", (e) => {
+      if (isViewer()) return;
       currentDrag = label;
       offsetX = e.clientX - child.x;
       offsetY = e.clientY - child.y;
@@ -61,6 +65,7 @@ export function draw(parent) {
       function onMouseUp() {
         currentDrag = null;
         label.classList.remove("dragging");
+        excelDM.dirtyEntries.add(child);
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", onMouseUp);
       }
@@ -125,6 +130,18 @@ function resizeCanvases(width, height) {
     canvas.style.height = height + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   });
+
+  // Resizing clears the canvas — always redraw the grid immediately after.
+  drawBackground();
+}
+
+// initMap sets up the ResizeObserver so the grid stays visible whenever
+// the panel is resized (e.g. window resize, first paint).
+export function initMap() {
+  const container = document.querySelector(".middle-right");
+  if (!container) return;
+  resizeCanvases(); // draw grid on initial load
+  new ResizeObserver(() => resizeCanvases()).observe(container);
 }
 
 export function HexToMap(parent) {

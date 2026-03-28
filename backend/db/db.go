@@ -31,6 +31,9 @@ func Init() error {
 	if err := createTables(); err != nil {
 		return err
 	}
+	if err := seedHommlet(); err != nil {
+		return err
+	}
 	backfillHommletOwner()
 	return nil
 }
@@ -193,6 +196,13 @@ func createTables() error {
 		return err
 	}
 
+	// Add version column to campaigns if missing (added post-launch)
+	if ok, _ := hasColumn("campaigns", "version"); !ok {
+		if _, err := Conn.Exec("ALTER TABLE campaigns ADD COLUMN version INTEGER NOT NULL DEFAULT 0"); err != nil {
+			return err
+		}
+	}
+
 	if _, err := Conn.Exec(`
 		CREATE TABLE IF NOT EXISTS entries (
 			id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -210,6 +220,21 @@ func createTables() error {
 			current_child INTEGER NOT NULL DEFAULT 0,
 			parent_id     INTEGER REFERENCES entries(id),
 			updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+		)
+	`); err != nil {
+		return err
+	}
+
+	if _, err := Conn.Exec(`
+		CREATE TABLE IF NOT EXISTS campaign_invites (
+			id          INTEGER PRIMARY KEY AUTOINCREMENT,
+			campaign_id INTEGER NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+			token       TEXT NOT NULL UNIQUE,
+			role        TEXT NOT NULL CHECK(role IN ('editor','viewer')),
+			created_by  INTEGER NOT NULL REFERENCES users(id),
+			expires_at  DATETIME,
+			used_by     INTEGER REFERENCES users(id),
+			created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 		)
 	`); err != nil {
 		return err

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"exceldm/db"
+	"exceldm/middleware"
 	"exceldm/models"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -52,7 +53,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(models.AuthResponse{Token: token})
+	json.NewEncoder(w).Encode(models.AuthResponse{Token: token, Email: req.Email})
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +86,55 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(models.AuthResponse{Token: token})
+	json.NewEncoder(w).Encode(models.AuthResponse{Token: token, Email: req.Email})
+}
+
+func GetAccount(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+
+	var email string
+	if err := db.Conn.QueryRow("SELECT email FROM users WHERE id = ?", userID).Scan(&email); err != nil {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"email": email})
+}
+
+func ChangePassword(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+
+	var req struct {
+		CurrentPassword string `json:"currentPassword"`
+		NewPassword     string `json:"newPassword"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.CurrentPassword == "" || req.NewPassword == "" {
+		http.Error(w, "currentPassword and newPassword required", http.StatusBadRequest)
+		return
+	}
+
+	var storedHash string
+	if err := db.Conn.QueryRow("SELECT password_hash FROM users WHERE id = ?", userID).Scan(&storedHash); err != nil {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(req.CurrentPassword)); err != nil {
+		http.Error(w, "current password is incorrect", http.StatusUnauthorized)
+		return
+	}
+
+	newHash, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, "server error", http.StatusInternalServerError)
+		return
+	}
+	if _, err := db.Conn.Exec("UPDATE users SET password_hash = ? WHERE id = ?", string(newHash), userID); err != nil {
+		http.Error(w, "failed to update password", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func signToken(userID int) (string, error) {

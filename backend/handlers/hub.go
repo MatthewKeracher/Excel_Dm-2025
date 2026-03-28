@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -45,10 +46,19 @@ func (h *hub) unregister(client *wsClient) {
 	}
 }
 
-// broadcast sends data to all clients for a campaign except the one with senderClientID.
-func (h *hub) broadcast(campaignKey, senderClientID string, data []byte) {
+// clientCount returns the number of connected clients for a campaign key.
+func (h *hub) clientCount(campaignKey string) int {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
+	return len(h.campaigns[campaignKey])
+}
+
+// broadcast sends data to all clients for a campaign except the one with senderClientID.
+// If a client's send buffer is full, the connection is closed so it will reconnect
+// and issue a catch-up GET rather than silently falling behind.
+func (h *hub) broadcast(campaignKey, senderClientID string, data []byte) {
+	h.mu.RLock()
+	var overflow []*wsClient
 	for client := range h.campaigns[campaignKey] {
 		if client.clientID == senderClientID {
 			continue
@@ -56,7 +66,16 @@ func (h *hub) broadcast(campaignKey, senderClientID string, data []byte) {
 		select {
 		case client.send <- data:
 		default:
-			// client buffer full; skip this update
+			overflow = append(overflow, client)
 		}
+	}
+	h.mu.RUnlock()
+
+	for _, c := range overflow {
+		log.Printf("WS: send buffer full for client %s, closing to force reconnect", c.clientID)
+		// Closing the send channel is sufficient — writePump will detect ok=false,
+		// send a CloseMessage, and return. readPump's defer then closes the conn.
+		// Calling conn.Close() directly here would race with writePump's final write.
+		h.unregister(c)
 	}
 }

@@ -1,12 +1,13 @@
 import { Entry, EntryManager } from "./classes.js";
 import { loadNoteCards, loadPopUp } from "./left.js";
-import { draw, HexToMap } from "./right.js";
+import { draw, HexToMap, initMap } from "./right.js";
 import { initButtons, loadExtData } from "./buttons.js";
 import { saveData, loadData, openDB } from "./localStorage.js";
 import { currentTab, initTabs } from "./tabs.js";
 import { addHotkeys } from "./hotkeys.js";
 import { updateFilter } from "./filter.js";
-import { getToken, initAuth, showAuthModal } from "./auth.js";
+import { getToken, initAuth, showAuthModal, ensureEmail, updateAccountDisplay } from "./auth.js";
+import { isSuppressSave } from "./sync.js";
 
 //State
 export let excelDM = new EntryManager();
@@ -22,7 +23,7 @@ export function reCurrent() {
   updateFilter();
   loadNoteCards(current);
   loadPopUp();
-  if (current && !Array.isArray(current)) {
+  if (current && !Array.isArray(current) && !isSuppressSave()) {
     excelDM.dirtyEntries.add(current);
   }
   saveData();
@@ -53,15 +54,35 @@ window.addEventListener("DOMContentLoaded", async () => {
   initButtons();
   addHotkeys();
   initTabs(tabNames);
+  initMap();
 
-  const { showCampaignPicker } = await import("./campaigns.js");
+  const inviteMatch = window.location.pathname.match(/^\/invite\/([0-9a-f]+)$/i);
 
-  initAuth(showCampaignPicker); // wire modal buttons; on success → show campaign picker
-
-  if (getToken()) {
-    await showCampaignPicker(); // already logged in
+  if (inviteMatch) {
+    const token = inviteMatch[1];
+    const { handleInviteFlow } = await import("./campaigns.js");
+    initAuth(async () => {
+      updateAccountDisplay(await ensureEmail());
+      handleInviteFlow(token);
+    });
+    if (getToken()) {
+      updateAccountDisplay(await ensureEmail());
+      await handleInviteFlow(token);
+    } else {
+      showAuthModal();
+    }
   } else {
-    showAuthModal();
+    const { showCampaignPicker } = await import("./campaigns.js");
+    initAuth(async () => {
+      updateAccountDisplay(await ensureEmail());
+      showCampaignPicker();
+    });
+    if (getToken()) {
+      updateAccountDisplay(await ensureEmail());
+      await showCampaignPicker();
+    } else {
+      showAuthModal();
+    }
   }
 
   
@@ -88,10 +109,11 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
     excelDM.add(newEntry);
-    current.parentOf(excelDM.n(newName));
+    if (!Array.isArray(current)) current.parentOf(excelDM.n(newName));
 
+    excelDM.dirtyEntries.add(newEntry);
     // Redraw all notes (as DOM elements)
-    reCurrent(current);
+    reCurrent();
 
   });
 

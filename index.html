@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <base href="/" />
   <title>Excel_DM</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
   <link rel="stylesheet" href="css/style.css" />
@@ -38,12 +39,14 @@
 
     
     <div class="header-btns">
+      <span id="sync-status" class="sync-status"></span>
       <button title="Add New Note" id="btn-add">Add</button>
-      <button title="Spare a Coin." id="btn-donate">Donate</button> 
+      <button title="Spare a Coin." id="btn-donate">Donate</button>
       <button title="Switch campaign world" id="btn-new">Worlds</button>
       <button title="Save to server" id="btn-save">Save</button>
       <button title="Load map image" id="btn-load">Add Map</button>
-      <button title="Log out" id="btn-logout">Logout</button>
+      <button title="Account settings" id="btn-account">Account</button>
+      <button title="Log out" id="btn-logout" style="display:none">Logout</button>
     </div>
      
   </div>

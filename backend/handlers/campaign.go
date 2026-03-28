@@ -81,7 +81,12 @@ func CreateCampaign(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to create campaign", http.StatusInternalServerError)
 		return
 	}
-	id, _ := result.LastInsertId()
+	id, err := result.LastInsertId()
+	if err != nil {
+		log.Printf("CreateCampaign LastInsertId error: %v", err)
+		http.Error(w, "failed to create campaign", http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]int64{"id": id})
@@ -107,14 +112,7 @@ func GetCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var categories string
-	if err := db.Conn.QueryRow("SELECT categories FROM campaigns WHERE id = ?", campID).Scan(&categories); err != nil {
-		log.Printf("GetCampaign query error (campID=%d): %v", campID, err)
-		http.Error(w, "failed to load campaign", http.StatusInternalServerError)
-		return
-	}
-
-	result, err := serializeCampaign(campID, categories)
+	result, err := serializeCampaign(campID)
 	if err != nil {
 		log.Printf("GetCampaign serialize error (campID=%d): %v", campID, err)
 		http.Error(w, "failed to serialize campaign", http.StatusInternalServerError)
@@ -159,7 +157,7 @@ func PutCampaign(w http.ResponseWriter, r *http.Request) {
 		categories = string(payload.Categories)
 	}
 
-	ids, err := saveEntries(campID, payload.Entries, categories)
+	ids, version, err := saveEntries(campID, payload.Entries, categories)
 	if err != nil {
 		log.Printf("PutCampaign saveEntries error (campID=%d): %v", campID, err)
 		http.Error(w, "failed to save campaign", http.StatusInternalServerError)
@@ -167,12 +165,20 @@ func PutCampaign(w http.ResponseWriter, r *http.Request) {
 	}
 
 	senderClientID := r.Header.Get("X-Client-ID")
-	go func() {
-		data, err := serializeCampaign(campID, categories)
-		if err == nil {
-			globalHub.broadcast(fmt.Sprintf("campaign:%d", campID), senderClientID, data)
+	go func(v int64) {
+		campaignKey := fmt.Sprintf("campaign:%d", campID)
+		// Send a compact reload signal instead of the full campaign payload.
+		// Receiving clients will issue a GET to fetch the current state themselves,
+		// avoiding pushing potentially many MB over the WS send buffer.
+		msg, err := json.Marshal(map[string]interface{}{"type": "reload", "version": v})
+		if err != nil {
+			log.Printf("PUT broadcast marshal error (campID=%d): %v", campID, err)
+			return
 		}
-	}()
+		n := globalHub.clientCount(campaignKey)
+		log.Printf("PUT broadcast campID=%d v=%d clients=%d (reload signal)", campID, n, v)
+		globalHub.broadcast(campaignKey, senderClientID, msg)
+	}(version)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(putCampaignResponse{IDs: ids})
@@ -204,29 +210,25 @@ func PatchCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var categories string
-	if err := db.Conn.QueryRow("SELECT categories FROM campaigns WHERE id = ?", campID).Scan(&categories); err != nil {
-		log.Printf("PatchCampaign query error (campID=%d): %v", campID, err)
-		http.Error(w, "failed to load campaign", http.StatusInternalServerError)
-		return
-	}
-	if patch.Categories != nil {
-		categories = string(patch.Categories)
-	}
-
-	if err := patchEntries(campID, patch); err != nil {
+	version, err := patchEntries(campID, patch)
+	if err != nil {
 		log.Printf("PatchCampaign error (campID=%d): %v", campID, err)
 		http.Error(w, "failed to patch campaign", http.StatusInternalServerError)
 		return
 	}
 
 	senderClientID := r.Header.Get("X-Client-ID")
-	go func() {
-		data, err := serializeCampaign(campID, categories)
-		if err == nil {
-			globalHub.broadcast(fmt.Sprintf("campaign:%d", campID), senderClientID, data)
+	go func(p patchPayload, v int64) {
+		campaignKey := fmt.Sprintf("campaign:%d", campID)
+		data, err := serializePatchDelta(campID, p, v)
+		if err != nil {
+			log.Printf("broadcast serialize error (campID=%d): %v", campID, err)
+			return
 		}
-	}()
+		n := globalHub.clientCount(campaignKey)
+		log.Printf("PATCH broadcast campID=%d v=%d clients=%d bytes=%d (delta)", campID, v, n, len(data))
+		globalHub.broadcast(campaignKey, senderClientID, data)
+	}(patch, version)
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -282,6 +284,159 @@ func AddCampaignMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// RenameCampaign updates the campaign name (admin only).
+func RenameCampaign(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+	campID, ok := parseCampID(r)
+	if !ok {
+		http.Error(w, "invalid campaign id", http.StatusBadRequest)
+		return
+	}
+	role, err := campaignRole(userID, campID)
+	if err != nil || role != "admin" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	var req struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Name == "" {
+		http.Error(w, "name required", http.StatusBadRequest)
+		return
+	}
+	if _, err := db.Conn.Exec("UPDATE campaigns SET name = ? WHERE id = ?", req.Name, campID); err != nil {
+		log.Printf("RenameCampaign error (campID=%d): %v", campID, err)
+		http.Error(w, "failed to rename campaign", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// DeleteCampaign deletes a campaign and all its entries (admin only).
+func DeleteCampaign(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+	campID, ok := parseCampID(r)
+	if !ok {
+		http.Error(w, "invalid campaign id", http.StatusBadRequest)
+		return
+	}
+	role, err := campaignRole(userID, campID)
+	if err != nil || role != "admin" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+
+	tx, err := db.Conn.Begin()
+	if err != nil {
+		http.Error(w, "failed to delete campaign", http.StatusInternalServerError)
+		return
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if _, err = tx.Exec("UPDATE entries SET parent_id = NULL WHERE campaign_id = ?", campID); err != nil {
+		http.Error(w, "failed to delete campaign", http.StatusInternalServerError)
+		return
+	}
+	if _, err = tx.Exec("DELETE FROM entries WHERE campaign_id = ?", campID); err != nil {
+		http.Error(w, "failed to delete campaign", http.StatusInternalServerError)
+		return
+	}
+	if _, err = tx.Exec("DELETE FROM campaign_members WHERE campaign_id = ?", campID); err != nil {
+		http.Error(w, "failed to delete campaign", http.StatusInternalServerError)
+		return
+	}
+	if _, err = tx.Exec("DELETE FROM campaigns WHERE id = ?", campID); err != nil {
+		http.Error(w, "failed to delete campaign", http.StatusInternalServerError)
+		return
+	}
+	if err = tx.Commit(); err != nil {
+		http.Error(w, "failed to delete campaign", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ListCampaignMembers returns all explicit members of a campaign (admin only).
+func ListCampaignMembers(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+	campID, ok := parseCampID(r)
+	if !ok {
+		http.Error(w, "invalid campaign id", http.StatusBadRequest)
+		return
+	}
+	role, err := campaignRole(userID, campID)
+	if err != nil || role != "admin" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+
+	rows, err := db.Conn.Query(`
+		SELECT u.id, u.email, cm.role
+		FROM campaign_members cm
+		JOIN users u ON u.id = cm.user_id
+		WHERE cm.campaign_id = ?
+		ORDER BY u.email
+	`, campID)
+	if err != nil {
+		log.Printf("ListCampaignMembers error (campID=%d): %v", campID, err)
+		http.Error(w, "failed to list members", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	type member struct {
+		ID    int    `json:"id"`
+		Email string `json:"email"`
+		Role  string `json:"role"`
+	}
+	var members []member
+	for rows.Next() {
+		var m member
+		if err := rows.Scan(&m.ID, &m.Email, &m.Role); err != nil {
+			continue
+		}
+		members = append(members, m)
+	}
+	if members == nil {
+		members = []member{}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(members)
+}
+
+// RemoveCampaignMember removes a user from a campaign (admin only).
+func RemoveCampaignMember(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+	campID, ok := parseCampID(r)
+	if !ok {
+		http.Error(w, "invalid campaign id", http.StatusBadRequest)
+		return
+	}
+	role, err := campaignRole(userID, campID)
+	if err != nil || role != "admin" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	targetID, err := strconv.Atoi(r.PathValue("userId"))
+	if err != nil || targetID <= 0 {
+		http.Error(w, "invalid user id", http.StatusBadRequest)
+		return
+	}
+	if _, err := db.Conn.Exec(
+		"DELETE FROM campaign_members WHERE campaign_id = ? AND user_id = ?",
+		campID, targetID,
+	); err != nil {
+		log.Printf("RemoveCampaignMember error: %v", err)
+		http.Error(w, "failed to remove member", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 

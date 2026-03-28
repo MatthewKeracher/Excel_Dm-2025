@@ -12,7 +12,22 @@
       "Bash(\"/c/Program Files/Go/bin/go.exe\" get github.com/jackc/pgx/v5)",
       "Bash(\"/c/Program Files/Go/bin/go.exe\" build ./...)",
       "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -c \"CREATE DATABASE exceldm;\" 2>&1)",
-      "Bash(\"/c/Program Files/Go/bin/go.exe\" get github.com/golang-jwt/jwt/v5 golang.org/x/crypto)"
+      "Bash(\"/c/Program Files/Go/bin/go.exe\" get github.com/golang-jwt/jwt/v5 golang.org/x/crypto)",
+      "Bash(ssh:*)",
+      "Bash(while read:*)",
+      "Bash(do wc:*)",
+      "Bash(done)",
+      "Bash(bash deploy.sh --frontend-only 2>&1)",
+      "Bash(bash deploy.sh --frontend-only)",
+      "Bash(go build:*)",
+      "Bash(bash deploy.sh --backend-only)",
+      "Bash(bash deploy.sh)",
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "mcp__puppeteer__puppeteer_fill",
+      "mcp__puppeteer__puppeteer_click",
+      "mcp__puppeteer__puppeteer_evaluate",
+      "Bash(scp \"C:\\\\Users\\\\Matthew\\\\Documents\\\\GitHub\\\\Excel_Dm-2025\\\\data\\\\Hommlet.json\" matthew@heimvon.little-lenok.ts.net:/tmp/Hommlet.json)"
     ]
   }
 }

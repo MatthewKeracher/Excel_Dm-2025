@@ -1,17 +1,18 @@
 import { current, excelDM, reCurrent, newCurrent, masterEdit } from "./main.js";
 import { Entry, EntryManager } from "./classes.js";
 import { saveData, saveDataNow, disconnectWS } from "./localStorage.js";
-import { authHeaders, clearToken, showAuthModal } from "./auth.js";
+import { authHeaders, clearToken, showAuthModal, showAccountModal } from "./auth.js";
 import { currentTab } from "./tabs.js";
 import { returnFiltered } from "./filter.js";
 export function initButtons() {
   const buttons = {
-    "btn-new": newFile,
-    "btn-save": saveFile,
-    "btn-donate": donate,
-    "btn-load": loadFile,
-    "btn-add": addEntry,
-    "btn-logout": logout,
+    "btn-new":     newFile,
+    "btn-save":    saveFile,
+    "btn-donate":  donate,
+    "btn-load":    loadFile,
+    "btn-add":     addEntry,
+    "btn-logout":  logout,
+    "btn-account": showAccountModal,
   };
 
   Object.entries(buttons).forEach(([id, handler]) => {
@@ -94,17 +95,23 @@ export function addEntry() {
   const newName = `_${dateTime}`;
 
   let newEntry = new Entry({
-    category: current.category,
+    category: Array.isArray(current) ? "Uncategorised" : current.category,
     title: newName,
   });
 
   excelDM.add(newEntry);
 
-  if (currentTab === "locations") {
+  if (currentTab === "locations" && !Array.isArray(current)) {
     current.parentOf(excelDM.n(newName));
   }
 
-  reCurrent(current);
+  // Mark newEntry dirty so pushToServer sees _serverId==null → uses PUT (full broadcast)
+  excelDM.dirtyEntries.add(newEntry);
+  if (Array.isArray(current)) {
+    newCurrent(newEntry); // Empty campaign: make the new entry current so draw() works
+  } else {
+    reCurrent();
+  }
 }
 
 //Managing External and Older Data

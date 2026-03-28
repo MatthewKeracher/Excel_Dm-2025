@@ -1,4 +1,4 @@
-import { reCurrent } from "./main.js";
+import { reCurrent, excelDM } from "./main.js";
 
 export function loadEditor(
   entry,
@@ -71,6 +71,7 @@ export function loadEditor(
     // Remove editor element
     currentEditor.remove();
 
+    excelDM.dirtyEntries.add(entry);
     reCurrent();
   });
 

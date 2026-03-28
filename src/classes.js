@@ -1,4 +1,3 @@
-import { reCurrent, newCurrent, current, excelDM } from "./main.js";
 import { currentTab } from "./tabs.js";
 
 export class EntryManager {
@@ -73,7 +72,7 @@ export class EntryManager {
     return Copy;
   }
 
-  deleteAll() {
+  deleteAll(newCurrentFn) {
     this.entries.splice(0, this.entries.length);
     // Add some entries, including nested ones as desired
     this.add(
@@ -95,7 +94,7 @@ export class EntryManager {
 
     this.n("Excel_DM").parentOf(this.n("Welcome to Excel_DM!"));
 
-    newCurrent(this.entries[0]);
+    newCurrentFn?.(this.entries[0]);
 
     return this.entries;
   }
@@ -127,6 +126,17 @@ export class EntryManager {
     });
   }
 
+  // Reset parent Entry-object refs back to raw server IDs and clear children.
+  // Called before re-running prepareFromJSON after a delta WS update.
+  resetParentLinks() {
+    this.entries.forEach((e) => {
+      if (e.parent != null && typeof e.parent === "object") {
+        e.parent = e.parent._serverId ?? null;
+      }
+      e.children = [];
+    });
+  }
+
   prepareFromJSON() {
     const hasChildren = this.entries.some(
       (e) => Array.isArray(e.children) && e.children.length > 0
@@ -149,36 +159,25 @@ export class EntryManager {
         });
       });
     } else if (hasParent && !hasChildren) {
-      // New data: rebuild children from parent
-      // Clear existing children arrays
+      // New data: rebuild children from parent (parent field is a server ID)
       this.entries.forEach((entry) => {
         entry.children = [];
       });
 
-      // For every entry with a parent index, replace index with parent entry AND add to children
-      this.entries.forEach((entry, entryIndex) => {
-        const parentIndex = entry.parent;
-        if (
-          parentIndex !== null &&
-          parentIndex !== undefined &&
-          Number.isInteger(parentIndex) &&
-          parentIndex >= 0 &&
-          parentIndex < this.entries.length
-        ) {
-          // 1. Replace index with actual parent entry reference
-          entry.parent = this.entries[parentIndex];
+      const serverIdMap = new Map(
+        this.entries.filter((e) => e._serverId != null).map((e) => [e._serverId, e])
+      );
 
-          // 2. Add this entry to parent's children array
-          const parent = entry.parent;
-          if (!Array.isArray(parent.children)) {
-            parent.children = [];
-          }
-          if (!parent.children.includes(entry)) {
-            parent.children.push(entry);
-          }
-        } else {
-          // console.log(entry.title, parentIndex);
-        }
+      this.entries.forEach((entry) => {
+        const parentId = entry.parent;
+        if (parentId == null || !Number.isInteger(parentId)) return;
+
+        const parentEntry = serverIdMap.get(parentId);
+        if (!parentEntry) return;
+
+        entry.parent = parentEntry;
+        if (!Array.isArray(parentEntry.children)) parentEntry.children = [];
+        if (!parentEntry.children.includes(entry)) parentEntry.children.push(entry);
       });
     } // If both present, assume data is consistent
   }

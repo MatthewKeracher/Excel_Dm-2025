@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -12,7 +13,22 @@ import (
 )
 
 var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool { return true },
+	CheckOrigin: func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			return true // same-origin or non-browser client
+		}
+		// Always allow localhost for dev
+		if strings.HasPrefix(origin, "http://localhost") || strings.HasPrefix(origin, "https://localhost") {
+			return true
+		}
+		// Allow the configured production origin
+		if allowed := os.Getenv("ALLOWED_ORIGIN"); allowed != "" && origin == allowed {
+			return true
+		}
+		log.Printf("WS: rejected origin %q", origin)
+		return false
+	},
 }
 
 // ServeCampaignWS handles WebSocket connections for a campaign by numeric ID.
