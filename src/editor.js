@@ -1,4 +1,5 @@
 import { reCurrent, excelDM } from "./main.js";
+import { loadSnippets, addSnippet, updateSnippet, deleteSnippet } from "./snippets.js";
 
 export function loadEditor(
   entry,
@@ -37,6 +38,10 @@ export function loadEditor(
   const toolbarActions = document.createElement("div");
   toolbarActions.className = "editor-toolbar-actions";
 
+  const snippetToggleBtn = document.createElement("button");
+  snippetToggleBtn.title = "Toggle Snippet Library";
+  snippetToggleBtn.textContent = "📋";
+
   const saveBtn = document.createElement("button");
   saveBtn.title = "Save Entry";
   saveBtn.textContent = "Save";
@@ -58,6 +63,7 @@ export function loadEditor(
     category.textContent = newCategory;
 
     currentEditor.remove();
+    snippetPanel.remove();
     excelDM.dirtyEntries.add(entry);
     reCurrent();
   });
@@ -70,10 +76,12 @@ export function loadEditor(
     if (event.shiftKey || confirm("Close Editor without Saving?")) {
       isEditing = false;
       currentEditor.remove();
+      snippetPanel.remove();
       reCurrent();
     }
   });
 
+  toolbarActions.appendChild(snippetToggleBtn);
   toolbarActions.appendChild(saveBtn);
   toolbarActions.appendChild(exitBtn);
   toolbarTop.appendChild(toolbarTitle);
@@ -218,15 +226,160 @@ export function loadEditor(
   textarea.className = "notecard-body editing";
   textarea.value = body.dataset.fullText;
 
-  // Add inputs to editor first
+  // ── Snippet panel ──
+  const snippetPanel = document.createElement("div");
+  snippetPanel.className = "snippet-panel";
+  snippetPanel.style.display = "none";
+
+  const snippetPanelHeader = document.createElement("div");
+  snippetPanelHeader.className = "snippet-panel-header";
+  const snippetPanelTitle = document.createElement("span");
+  snippetPanelTitle.textContent = "Snippets";
+  const snippetPanelClose = document.createElement("button");
+  snippetPanelClose.className = "snippet-panel-close";
+  snippetPanelClose.textContent = "×";
+  snippetPanelClose.title = "Close panel";
+  snippetPanelHeader.appendChild(snippetPanelTitle);
+  snippetPanelHeader.appendChild(snippetPanelClose);
+
+  const snippetList = document.createElement("div");
+  snippetList.className = "snippet-list";
+
+  const snippetFooter = document.createElement("div");
+  snippetFooter.className = "snippet-panel-footer";
+  const snippetAddBtn = document.createElement("button");
+  snippetAddBtn.className = "snippet-add-btn";
+  snippetAddBtn.textContent = "+ New Snippet";
+  snippetFooter.appendChild(snippetAddBtn);
+
+  snippetPanel.appendChild(snippetPanelHeader);
+  snippetPanel.appendChild(snippetList);
+  snippetPanel.appendChild(snippetFooter);
+
+  // Render the snippet list
+  function renderSnippetList() {
+    snippetList.innerHTML = "";
+    const snippets = loadSnippets();
+    if (snippets.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "snippet-empty";
+      empty.textContent = "No snippets yet.";
+      snippetList.appendChild(empty);
+      return;
+    }
+    snippets.forEach(snippet => {
+      const item = document.createElement("div");
+      item.className = "snippet-item";
+
+      const nameBtn = document.createElement("button");
+      nameBtn.className = "snippet-insert-btn";
+      nameBtn.textContent = snippet.name;
+      nameBtn.title = "Insert at cursor";
+      nameBtn.addEventListener("click", () => {
+        codeArea.replaceRange(snippet.template, codeArea.getCursor());
+        codeArea.focus();
+      });
+
+      const actions = document.createElement("div");
+      actions.className = "snippet-item-actions";
+
+      const editBtn2 = document.createElement("button");
+      editBtn2.className = "snippet-action-btn";
+      editBtn2.textContent = "✎";
+      editBtn2.title = "Edit snippet";
+      editBtn2.addEventListener("click", () => showSnippetForm(snippet));
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "snippet-action-btn";
+      delBtn.textContent = "✕";
+      delBtn.title = "Delete snippet";
+      delBtn.addEventListener("click", () => {
+        if (confirm(`Delete snippet "${snippet.name}"?`)) {
+          deleteSnippet(snippet.id);
+          renderSnippetList();
+        }
+      });
+
+      actions.appendChild(editBtn2);
+      actions.appendChild(delBtn);
+      item.appendChild(nameBtn);
+      item.appendChild(actions);
+      snippetList.appendChild(item);
+    });
+  }
+
+  // Inline add/edit form at bottom of panel
+  function showSnippetForm(existing = null) {
+    let form = snippetPanel.querySelector(".snippet-form");
+    if (form) form.remove();
+
+    form = document.createElement("div");
+    form.className = "snippet-form";
+
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = "snippet-form-name";
+    nameInput.placeholder = "Snippet name…";
+    nameInput.value = existing?.name ?? "";
+
+    const templateArea = document.createElement("textarea");
+    templateArea.className = "snippet-form-template";
+    templateArea.placeholder = "Markdown template…";
+    templateArea.value = existing?.template ?? "";
+
+    const formActions = document.createElement("div");
+    formActions.className = "snippet-form-actions";
+
+    const formSave = document.createElement("button");
+    formSave.textContent = "Save";
+    formSave.className = "snippet-form-save";
+    formSave.addEventListener("click", () => {
+      const name = nameInput.value.trim();
+      const template = templateArea.value;
+      if (!name) return;
+      if (existing) {
+        updateSnippet(existing.id, name, template);
+      } else {
+        addSnippet(name, template);
+      }
+      form.remove();
+      renderSnippetList();
+    });
+
+    const formCancel = document.createElement("button");
+    formCancel.textContent = "Cancel";
+    formCancel.className = "snippet-form-cancel";
+    formCancel.addEventListener("click", () => form.remove());
+
+    formActions.appendChild(formSave);
+    formActions.appendChild(formCancel);
+    form.appendChild(nameInput);
+    form.appendChild(templateArea);
+    form.appendChild(formActions);
+    snippetPanel.appendChild(form);
+    nameInput.focus();
+  }
+
+  snippetAddBtn.addEventListener("click", () => showSnippetForm());
+  snippetPanelClose.addEventListener("click", () => {
+    snippetPanel.style.display = "none";
+  });
+
+  snippetToggleBtn.addEventListener("click", () => {
+    const isOpen = snippetPanel.style.display !== "none";
+    snippetPanel.style.display = isOpen ? "none" : "flex";
+    if (!isOpen) renderSnippetList();
+  });
+
+  // Add inputs to editor
   currentEditor.appendChild(toolbar);
   currentEditor.appendChild(categoryInput);
   currentEditor.appendChild(titleInput);
   currentEditor.appendChild(textarea);
-  //makeDraggable(currentEditor); //buggy
 
-  // Attach editor to DOM first so CodeMirror can size correctly
+  // Attach editor and panel to body (panel is independent, floats to the right)
   document.body.appendChild(currentEditor);
+  document.body.appendChild(snippetPanel);
 
   // Turn textarea into CodeMirror
   codeArea = CodeMirror.fromTextArea(textarea, {

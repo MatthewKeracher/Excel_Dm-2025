@@ -19,6 +19,7 @@ function isModalOpen() {
 
 function isEditing(event) {
   const activeElement = document.activeElement;
+  if (activeElement?.closest(".snippet-panel")) return true;
   if (!activeElement?.classList.contains("editing")) return false;
 
   if (event.key === "Escape") {
