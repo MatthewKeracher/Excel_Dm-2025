@@ -1,5 +1,6 @@
 import { reCurrent, excelDM } from "./main.js";
 import { loadSnippets, addSnippet, updateSnippet, deleteSnippet } from "./snippets.js";
+import { render as renderMacro } from "./macroEngine.js";
 
 export function loadEditor(
   entry,
@@ -276,7 +277,7 @@ export function loadEditor(
       nameBtn.textContent = snippet.name;
       nameBtn.title = "Insert at cursor";
       nameBtn.addEventListener("click", () => {
-        codeArea.replaceRange(snippet.template, codeArea.getCursor());
+        codeArea.replaceRange(renderMacro(snippet.template), codeArea.getCursor());
         codeArea.focus();
       });
 
@@ -324,7 +325,7 @@ export function loadEditor(
 
     const templateArea = document.createElement("textarea");
     templateArea.className = "snippet-form-template";
-    templateArea.placeholder = "Markdown template…";
+    templateArea.placeholder = "Markdown template…\nExpressions: {{roll(3d6)}}  {{ran(1,20)}}  {{pick(\"a\",\"b\")}}";
     templateArea.value = existing?.template ?? "";
 
     const formActions = document.createElement("div");

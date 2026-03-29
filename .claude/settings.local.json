@@ -27,7 +27,9 @@
       "mcp__puppeteer__puppeteer_fill",
       "mcp__puppeteer__puppeteer_click",
       "mcp__puppeteer__puppeteer_evaluate",
-      "Bash(scp \"C:\\\\Users\\\\Matthew\\\\Documents\\\\GitHub\\\\Excel_Dm-2025\\\\data\\\\Hommlet.json\" matthew@heimvon.little-lenok.ts.net:/tmp/Hommlet.json)"
+      "Bash(scp \"C:\\\\Users\\\\Matthew\\\\Documents\\\\GitHub\\\\Excel_Dm-2025\\\\data\\\\Hommlet.json\" matthew@heimvon.little-lenok.ts.net:/tmp/Hommlet.json)",
+      "Bash(scp:*)",
+      "Bash(node:*)"
     ]
   }
 }

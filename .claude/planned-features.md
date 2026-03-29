@@ -1,5 +1,8 @@
 # Planned Features
 
+## users like me, sa, should be viewer on all worlds created
+
+
 ## Homepage / Notice Board (empty state)
 
 Show useful content in the main area when no world is open (no campaign loaded, left panel and map are empty).
@@ -22,111 +25,129 @@ Designate one Entry as the homepage. Reuses all existing notecard/editor machine
 
 ---
 
-## Editor Visual Rework
-
-Affects `src/editor.js` and `css/editor.css`. Functionality unchanged.
-
-### 1. Colour scheme
-- Background: `#000`
-- Border/accent: `#115926` (logo green)
-- Toolbar: `#115926` background, cream/white text
-- Cursor: `#d8d83c`
-- Review all CodeMirror syntax highlight colours for contrast on black (`cm-tag`, `cm-quote` most at risk)
-
-### 2. Toolbar new buttons
-Add: Italic (`*text*`), Heading (`## ` at line start), Inline code (`` `code` ``), Horizontal rule (`---`), Link (`[text](url)`)
-Add visual separator between formatting group and Save/Exit group
-Replace mixed emoji/symbol icons with consistent text labels
-
-### 3. Toolbar layout
-Split into two rows: title + Save/Exit on top row; all formatting buttons on second row
-
-### 4. cm-tag contrast
-`<p>`, `<br>`, `<div>` etc. — shift from magenta to `#d8d83c` yellow to stay on-theme and readable on black
-
----
-
 ## Editor Snippet & Macro Library
 
-A collapsible panel to the right of the CodeMirror editor. Holds two kinds of entries:
+### ✅ Phase 1 — Static snippets (complete)
+- `📋` toggle button in editor toolbar
+- Snippet panel floats to the right of the editor as a separate fixed element
+- `src/snippets.js` — CRUD on personal localStorage library
+- Click snippet → inserts at cursor in CodeMirror
+- Inline add/edit/delete form
+- Seeded defaults: Ability Score Table, HP/AC/Move, Boxed Text, Table Skeleton
+- Excluded from global hotkey/search listener
 
-- **Snippet** — static markdown inserted as-is (boxed text div, table skeleton, etc.)
-- **Macro** — a markdown template with `{{ }}` expression placeholders evaluated at insert time (ability score table with rolled stats, random name picker, etc.)
+### ✅ Phase 2 — Macro expressions (complete)
+- `src/macroEngine.js` — safe `{{ }}` template renderer, no eval
+- `{{roll(3d6)}}` — sum of dice (any XdY notation)
+- `{{ran(min, max)}}` — random integer in range
+- `{{pick("a","b","c")}}` — random choice from list
+- Unrecognised expressions left as-is rather than erroring
+- Default Ability Score Table upgraded to use `{{roll(3d6)}}` per stat
+- Version migration: existing users' default snippets auto-upgraded, custom snippets preserved
 
-```
-┌─────────────────────┬──────────────────┐
-│  Toolbar         📋 │  Snippets     ×  │
-├─────────────────────┤──────────────────│
-│                     │  [Ability Table] │
-│   CodeMirror        │  [HP / AC Block] │
-│                     │  [Boxed Text]    │
-│                     │  + New           │
-└─────────────────────┴──────────────────┘
-```
+### Phase 3 — `prompt()` expressions
+Before inserting, collect `prompt(...)` values via a small inline form in the panel.
+Useful for `{{prompt("NPC name")}}` in character sheet templates.
 
-### Template syntax
+### Phase 3 — `prompt()` expressions
+Before inserting, collect `prompt(...)` values via a small inline form in the panel.
+Useful for `{{prompt("NPC name")}}` in character sheet templates.
 
-`{{ }}` placeholders in otherwise normal markdown, evaluated at click time:
-
-```markdown
-| Ability | Score |
-|:-------:|:-----:|
-| Str     | {{roll(3d6)}} |
-| Dex     | {{roll(3d6)}} |
-| Int     | {{roll(3d6)}} |
-| Wis     | {{roll(3d6)}} |
-| Con     | {{roll(3d6)}} |
-| Cha     | {{roll(3d6)}} |
-```
-
-### Expression whitelist (no eval — custom parser)
-
-| Expression | Result |
-|---|---|
-| `roll(3d6)` | sum of dice |
-| `ran(min, max)` | integer in range |
-| `pick("a","b","c")` | random choice from list |
-| `prompt("label")` | collects user input before inserting (Phase 3) |
-
-### Storage: hybrid approach
-
-- **Personal library** — `localStorage` key `exceldm:snippets`. Per-user, works across all campaigns.
-- **Campaign library** — future: `snippets JSON` column on campaigns, synced via WS like `tabs`. Shared between collaborators.
-- Start with personal only; add "Share to campaign" action in Phase 4.
-
-Each entry:
-```js
-{ id: "uuid", name: "Ability Table", template: "…", tags: [] }
-```
-
-### Seeded defaults (ship on first load)
-- Ability score table with `{{roll(3d6)}}` per stat
-- Simple stat line (`| HP | AC | Move |`)
-- Boxed text div (`<div class="boxed-text">…</div>`)
-- Basic markdown table skeleton
-
-### New files
-- `src/snippets.js` — CRUD on personal library (localStorage)
-- `src/macroEngine.js` — `render(template) → string`; scans `{{ }}`, evaluates against whitelist, returns completed markdown
-
-### Implementation phases
-
-**Phase 1 — Static snippets** (no expressions)
-- `📋` toggle button in `toolbarTop`
-- Panel DOM built inside `editor.js`, flex column, same `#34514e` theme
-- `snippets.js` loads/saves from localStorage
-- Click → `codeArea.replaceRange(snippet.template, codeArea.getCursor())`
-
-**Phase 2 — Expression evaluation**
-- Add `macroEngine.js` with `roll()`, `ran()`, `pick()`
-- Panel click now calls `macroEngine.render(template)` before inserting
-- Template editor in panel shows `{{ }}` syntax hint
-
-**Phase 3 — `prompt()` expressions**
-- Before inserting, collect `prompt(...)` values via a small inline form in the panel
-- Useful for `{{prompt("NPC name")}}` in character sheet templates
-
-**Phase 4 — Campaign library**
+### Phase 4 — Campaign library
 - `snippets TEXT` column on campaigns table (JSON array)
 - Sync via existing PATCH/WS pipeline like `tabs`
 - Panel shows two sections: "Mine" and "Campaign"
+
+---
+
+## Ruleset Reference Library
+
+Allow campaigns to attach a game ruleset (BFRPG, OSE, 5e, etc.) and browse/insert monsters, spells, and items directly from the snippet panel. Excel_DM remains system-independent — rulesets are optional, pluggable, and per-campaign.
+
+### Existing data (already available)
+`data/BFRPG/` contains:
+- **189 monsters** — full stat tables as markdown + description
+- **69 spells** — range/duration/class/level + description
+- **30 items** — stats + description
+
+All three are in the same `{ title, type, category, body }` format as campaign entries — full stat block insertion is trivially `codeArea.replaceRange(entry.body, cursor)`.
+
+### Architecture
+
+**Rulesets are directories under `data/`**, each with a `manifest.json`:
+```
+data/
+  BFRPG/
+    manifest.json    ← { name, description, version, files: ["monsters","spells","items"] }
+    monsters.json
+    spells.json
+    items.json
+```
+Adding a new system = adding a new folder. No backend code changes needed.
+
+**New API endpoints:**
+```
+GET /api/rulesets                        — list available rulesets (reads data/ dirs)
+GET /api/rulesets/{name}/{file}          — serve a ruleset data file
+```
+
+**Per-campaign ruleset attachment:**
+- Add `ruleset TEXT` column to campaigns (nullable; JSON array for multi-system support later)
+- Campaign settings UI gets a "Ruleset" dropdown populated from `GET /api/rulesets`
+- Synced to all collaborators via the existing PATCH/WS pipeline
+
+**Snippet panel — new "Rules" tab:**
+```
+[ Snippets | Rules ]
+─────────────────────
+  🔍 [search...]
+  ▾ Monsters (189)
+      Ant, Giant         [+] [≡]
+      Basilisk           [+] [≡]
+  ▾ Spells (69)
+  ▾ Items (30)
+```
+- `[+]` inserts full stat block at cursor
+- `[≡]` inserts a one-liner summary (see below)
+- Search filters across all categories in real time
+
+**One-liner format** (parsed from existing markdown tables):
+```
+**Ant, Giant** — HD 4, AC 17, Dmg 2d6, MV 60' *(XP 240)*
+```
+
+### Implementation phases
+
+**Phase A — Data serving + campaign attachment**
+1. Add `ruleset TEXT` to campaigns table (migration)
+2. `GET /api/rulesets` — reads `data/` subdirectories for `manifest.json` files
+3. `GET /api/rulesets/{name}/{file}` — serves the JSON file
+4. Campaign settings: ruleset dropdown; saves via existing `PATCH /api/campaigns/{id}/settings`
+5. `openCampaign()` stores ruleset name in a module-level var; snippet panel reads it
+
+**Phase B — Rules tab in snippet panel**
+1. Add tab bar to snippet panel: "Snippets" | "Rules"
+2. On "Rules" tab open: `fetch(/api/rulesets/{name}/monsters)` etc., cache in memory
+3. Render collapsible sections (Monsters / Spells / Items) with search filter
+4. `[+]` → `codeArea.replaceRange(entry.body, cursor)`
+5. `[≡]` → parse markdown table to extract key stats → insert one-liner
+
+**Phase C — One-liner parser**
+`src/rulesetFormat.js` — `toOneLiner(entry)`:
+- Monsters: extract HD, AC, Damage, Movement from the markdown table
+- Spells: extract Range, Duration, Level, Class from the body
+- Items: extract relevant stat rows
+
+**Phase D — Character generation** *(longer term)*
+Generate a full character entry by class, race, and level using ruleset tables:
+- Roll stats (uses existing `{{roll(3d6)}}` macro engine)
+- Look up HP die by class, racial modifiers
+- Calculate saves, THAC0/attack bonus, spell slots
+- Insert as a formatted notecard body (people entry)
+- Requires adding `classes.json`, `races.json` to each ruleset
+
+### System independence notes
+- Campaigns with no ruleset attached are unaffected — no UI change
+- The "Rules" tab only appears if a ruleset is attached to the campaign
+- A ruleset can be detached without affecting campaign data — entries already inserted stay as markdown text
+- Future systems (OSE, 5e, Cairn, etc.) just need a `manifest.json` + data files in the right format

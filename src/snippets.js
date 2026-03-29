@@ -1,10 +1,12 @@
-const STORAGE_KEY = "exceldm:snippets";
+const STORAGE_KEY   = "exceldm:snippets";
+const VERSION_KEY   = "exceldm:snippets-version";
+const DEFAULTS_VERSION = "2";
 
 const DEFAULTS = [
   {
     id: "default-ability-table",
     name: "Ability Score Table",
-    template: `| Ability | Score |\n|:-------:|:-----:|\n| Str     |       |\n| Dex     |       |\n| Int     |       |\n| Wis     |       |\n| Con     |       |\n| Cha     |       |`,
+    template: `| Ability | Score |\n|:-------:|:-----:|\n| Str     | {{roll(3d6)}} |\n| Dex     | {{roll(3d6)}} |\n| Int     | {{roll(3d6)}} |\n| Wis     | {{roll(3d6)}} |\n| Con     | {{roll(3d6)}} |\n| Cha     | {{roll(3d6)}} |`,
   },
   {
     id: "default-stat-line",
@@ -26,9 +28,20 @@ const DEFAULTS = [
 export function loadSnippets() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      let snippets = JSON.parse(raw);
+      // Migrate built-in defaults when version is stale, preserving custom snippets
+      if (localStorage.getItem(VERSION_KEY) !== DEFAULTS_VERSION) {
+        const custom = snippets.filter(s => !s.id.startsWith("default-"));
+        snippets = [...DEFAULTS, ...custom];
+        saveSnippets(snippets);
+        localStorage.setItem(VERSION_KEY, DEFAULTS_VERSION);
+      }
+      return snippets;
+    }
   } catch {}
   saveSnippets(DEFAULTS);
+  localStorage.setItem(VERSION_KEY, DEFAULTS_VERSION);
   return [...DEFAULTS];
 }
 
