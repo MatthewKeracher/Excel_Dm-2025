@@ -3,6 +3,7 @@ import { authHeaders, clearToken, showAuthModal } from "./auth.js";
 import { setCurrentRole } from "./userRole.js";
 import { initTabs, DEFAULT_TABS } from "./tabs.js";
 import { excelDM } from "./main.js";
+import { fetchRulesets, setCurrentRuleset } from "./ruleset.js";
 
 let modalBuilt = false;
 let currentSettings = null; // { id, name } for the campaign being managed
@@ -75,6 +76,16 @@ function buildModal() {
           </div>
         </div>
 
+        <div class="settings-section">
+          <div class="settings-label">Ruleset</div>
+          <div class="settings-row">
+            <select id="settings-ruleset-select">
+              <option value="">None</option>
+            </select>
+            <button id="settings-ruleset-btn">Save</button>
+          </div>
+        </div>
+
         <div class="settings-section settings-danger-zone">
           <div class="settings-label">Danger Zone</div>
           <button id="settings-delete-btn">Delete Campaign</button>
@@ -106,6 +117,7 @@ function buildModal() {
     if (e.key === "Enter") addMember();
   });
   document.getElementById("invite-generate-btn").addEventListener("click", generateInviteLink);
+  document.getElementById("settings-ruleset-btn").addEventListener("click", saveRuleset);
   document.getElementById("settings-delete-btn").addEventListener("click", deleteCampaign);
 }
 
@@ -178,7 +190,50 @@ async function openSettings(campaign) {
   document.getElementById("settings-name-input").value = campaign.name;
   document.getElementById("settings-error").textContent = "";
   showSettingsView();
-  await refreshMembers();
+  await Promise.all([refreshMembers(), refreshRulesetDropdown()]);
+}
+
+async function refreshRulesetDropdown() {
+  const select = document.getElementById("settings-ruleset-select");
+  try {
+    const rulesets = await fetchRulesets();
+    // Rebuild options, preserving "None"
+    select.innerHTML = '<option value="">None</option>';
+    rulesets.forEach(rs => {
+      const opt = document.createElement("option");
+      opt.value = rs.id;
+      opt.textContent = rs.name;
+      select.appendChild(opt);
+    });
+    // Fetch current ruleset for this campaign from the API
+    const res = await fetch(`/api/campaigns/${currentSettings.id}`, { headers: authHeaders() });
+    if (res.ok) {
+      const data = await res.json();
+      select.value = data.ruleset ?? "";
+    }
+  } catch {}
+}
+
+async function saveRuleset() {
+  const ruleset = document.getElementById("settings-ruleset-select").value;
+  const name = document.getElementById("settings-name-input").value.trim() || currentSettings.name;
+  const errorEl = document.getElementById("settings-error");
+  errorEl.textContent = "";
+  errorEl.style.color = "";
+  try {
+    const res = await fetch(`/api/campaigns/${currentSettings.id}/settings`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({ name, ruleset }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    setCurrentRuleset(ruleset);
+    errorEl.style.color = "#6ecf6e";
+    errorEl.textContent = ruleset ? `✓ Ruleset set to ${ruleset}` : "✓ Ruleset removed";
+    setTimeout(() => { errorEl.textContent = ""; errorEl.style.color = ""; }, 2000);
+  } catch (err) {
+    errorEl.textContent = err.message;
+  }
 }
 
 async function refreshMembers() {

@@ -33,6 +33,7 @@ type campaignResponse struct {
 	Entries    []responseEntry `json:"entries"`
 	Categories json.RawMessage `json:"categories"`
 	Tabs       json.RawMessage `json:"tabs,omitempty"`
+	Ruleset    string          `json:"ruleset,omitempty"`
 	Version    int64           `json:"version"`
 }
 
@@ -44,11 +45,11 @@ type putCampaignResponse struct {
 // frontend-compatible JSON including the current version number.
 func serializeCampaign(campID int) ([]byte, error) {
 	var categories string
-	var tabsNull sql.NullString
+	var tabsNull, rulesetNull sql.NullString
 	var version int64
 	if err := db.Conn.QueryRow(
-		"SELECT categories, tabs, version FROM campaigns WHERE id = ?", campID,
-	).Scan(&categories, &tabsNull, &version); err != nil {
+		"SELECT categories, tabs, ruleset, version FROM campaigns WHERE id = ?", campID,
+	).Scan(&categories, &tabsNull, &rulesetNull, &version); err != nil {
 		return nil, err
 	}
 
@@ -127,7 +128,11 @@ func serializeCampaign(campID int) ([]byte, error) {
 	if tabsNull.Valid && tabsNull.String != "" {
 		tabsJSON = json.RawMessage(tabsNull.String)
 	}
-	return json.Marshal(campaignResponse{Entries: entries, Categories: cats, Tabs: tabsJSON, Version: version})
+	ruleset := ""
+	if rulesetNull.Valid {
+		ruleset = rulesetNull.String
+	}
+	return json.Marshal(campaignResponse{Entries: entries, Categories: cats, Tabs: tabsJSON, Ruleset: ruleset, Version: version})
 }
 
 // patchDeltaMessage is the WS broadcast payload for a delta (PATCH) save.

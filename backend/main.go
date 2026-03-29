@@ -49,6 +49,10 @@ func main() {
 	mux.HandleFunc("GET /api/invites/{token}", handlers.GetInvite)
 	mux.Handle("POST /api/invites/{token}/accept", middleware.Auth(http.HandlerFunc(handlers.AcceptInvite)))
 
+	// Ruleset reference library
+	mux.Handle("GET /api/rulesets", middleware.Auth(http.HandlerFunc(handlers.ListRulesets)))
+	mux.Handle("GET /api/rulesets/{name}/{file}", middleware.Auth(http.HandlerFunc(handlers.GetRulesetFile)))
+
 	// WebSocket (auth via ?token= query param)
 	mux.HandleFunc("GET /api/campaigns/{id}/ws", handlers.ServeCampaignWS)
 

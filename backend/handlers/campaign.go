@@ -292,7 +292,7 @@ func AddCampaignMember(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// RenameCampaign updates the campaign name (admin only).
+// RenameCampaign updates the campaign name and/or ruleset (admin only).
 func RenameCampaign(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(middleware.UserIDKey).(int)
 	campID, ok := parseCampID(r)
@@ -306,16 +306,25 @@ func RenameCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		Name string `json:"name"`
+		Name    string  `json:"name"`
+		Ruleset *string `json:"ruleset"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Name == "" {
 		http.Error(w, "name required", http.StatusBadRequest)
 		return
 	}
-	if _, err := db.Conn.Exec("UPDATE campaigns SET name = ? WHERE id = ?", req.Name, campID); err != nil {
-		log.Printf("RenameCampaign error (campID=%d): %v", campID, err)
-		http.Error(w, "failed to rename campaign", http.StatusInternalServerError)
-		return
+	if req.Ruleset != nil {
+		if _, err := db.Conn.Exec("UPDATE campaigns SET name = ?, ruleset = ? WHERE id = ?", req.Name, *req.Ruleset, campID); err != nil {
+			log.Printf("RenameCampaign error (campID=%d): %v", campID, err)
+			http.Error(w, "failed to update campaign settings", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		if _, err := db.Conn.Exec("UPDATE campaigns SET name = ? WHERE id = ?", req.Name, campID); err != nil {
+			log.Printf("RenameCampaign error (campID=%d): %v", campID, err)
+			http.Error(w, "failed to rename campaign", http.StatusInternalServerError)
+			return
+		}
 	}
 	w.WriteHeader(http.StatusNoContent)
 }

@@ -866,6 +866,16 @@ p {
 
 /* Textarea and input styling etc remain unchanged */
 
+.notecard-body h1,
+.notecard-body h2,
+.notecard-body h3,
+.notecard-body h4 {
+  font-size: 0.95em;
+  font-weight: bold;
+  margin: 0.4em 0 0;
+  color: #000;
+}
+
 .notecard-body {
   max-height: 4.6em;
   overflow-y: hidden;

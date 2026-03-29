@@ -1,6 +1,13 @@
 import { reCurrent, excelDM } from "./main.js";
 import { loadSnippets, addSnippet, updateSnippet, deleteSnippet } from "./snippets.js";
 import { render as renderMacro } from "./macroEngine.js";
+import {
+  getCurrentRuleset, getRulesetData,
+  formatMonsterBlock, formatMonsterOneLiner,
+  formatSpellBlock, formatSpellOneLiner,
+  formatItemBlock, formatItemOneLiner,
+  formatMonsterTable, formatSpellTable, formatItemTable,
+} from "./ruleset.js";
 
 export function loadEditor(
   entry,
@@ -232,15 +239,26 @@ export function loadEditor(
   snippetPanel.className = "snippet-panel";
   snippetPanel.style.display = "none";
 
+  // Panel tab bar
   const snippetPanelHeader = document.createElement("div");
   snippetPanelHeader.className = "snippet-panel-header";
-  const snippetPanelTitle = document.createElement("span");
-  snippetPanelTitle.textContent = "Snippets";
+
+  const tabSnippets = document.createElement("button");
+  tabSnippets.className = "snippet-panel-tab active";
+  tabSnippets.textContent = "Snippets";
+
+  const tabRules = document.createElement("button");
+  tabRules.className = "snippet-panel-tab";
+  tabRules.textContent = "Rules";
+  if (!getCurrentRuleset()) tabRules.style.display = "none";
+
   const snippetPanelClose = document.createElement("button");
   snippetPanelClose.className = "snippet-panel-close";
   snippetPanelClose.textContent = "×";
   snippetPanelClose.title = "Close panel";
-  snippetPanelHeader.appendChild(snippetPanelTitle);
+
+  snippetPanelHeader.appendChild(tabSnippets);
+  snippetPanelHeader.appendChild(tabRules);
   snippetPanelHeader.appendChild(snippetPanelClose);
 
   const snippetList = document.createElement("div");
@@ -253,8 +271,202 @@ export function loadEditor(
   snippetAddBtn.textContent = "+ New Snippet";
   snippetFooter.appendChild(snippetAddBtn);
 
+  // ── Rules pane ──
+  const rulesPane = document.createElement("div");
+  rulesPane.className = "rules-pane";
+  rulesPane.style.display = "none";
+
+  const rulesSearch = document.createElement("input");
+  rulesSearch.type = "text";
+  rulesSearch.className = "rules-search";
+  rulesSearch.placeholder = "Search…";
+
+  const rulesList = document.createElement("div");
+  rulesList.className = "rules-list";
+
+  rulesPane.appendChild(rulesSearch);
+  rulesPane.appendChild(rulesList);
+
+  // Tab switching
+  tabSnippets.addEventListener("click", () => {
+    tabSnippets.classList.add("active");
+    tabRules.classList.remove("active");
+    snippetList.style.display = "";
+    snippetFooter.style.display = "";
+    rulesPane.style.display = "none";
+  });
+
+  tabRules.addEventListener("click", async () => {
+    tabRules.classList.add("active");
+    tabSnippets.classList.remove("active");
+    snippetList.style.display = "none";
+    snippetFooter.style.display = "none";
+    rulesPane.style.display = "flex";
+    await renderRulesPane();
+  });
+
+  // Rules pane rendering
+  let rulesCache = null;
+  let rulesQuery = "";
+
+  async function renderRulesPane() {
+    if (!rulesCache) {
+      rulesList.innerHTML = '<p class="snippet-empty">Loading…</p>';
+      const [monsters, spells, items] = await Promise.all([
+        getRulesetData("monsters"),
+        getRulesetData("spells"),
+        getRulesetData("items"),
+      ]);
+      rulesCache = { monsters, spells, items };
+    }
+    renderRulesSections(rulesQuery);
+  }
+
+  rulesSearch.addEventListener("input", () => {
+    rulesQuery = rulesSearch.value.toLowerCase().trim();
+    if (rulesCache) renderRulesSections(rulesQuery);
+  });
+
+  function renderRulesSections(query) {
+    rulesList.innerHTML = "";
+    const sections = [
+      { label: "Monsters", key: "monsters", groupBy: e => e.family || "Other", formatBlock: formatMonsterBlock, formatLine: formatMonsterOneLiner, formatTable: formatMonsterTable },
+      { label: "Spells",   key: "spells",   groupBy: e => `${e.class} — Level ${e.level}`,  formatBlock: formatSpellBlock,   formatLine: formatSpellOneLiner,  formatTable: formatSpellTable },
+      { label: "Items",    key: "items",    groupBy: e => e.category ? e.category.charAt(0).toUpperCase() + e.category.slice(1) : "Other", formatBlock: formatItemBlock, formatLine: formatItemOneLiner, formatTable: formatItemTable },
+    ];
+
+    // Build a collapsible heading element (collapsed by default unless query is active)
+    function makeHeading(text, depth, startCollapsed) {
+      const el = document.createElement("div");
+      el.className = depth === 0 ? "rules-section-heading" : "rules-subsection-heading";
+      el.textContent = text;
+      if (startCollapsed) el.classList.add("collapsed");
+      return el;
+    }
+
+    function makeEntryRow(entry, formatBlock, formatLine) {
+      const name = entry.name || entry.title || "";
+      const row = document.createElement("div");
+      row.className = "snippet-item";
+
+      const nameEl = document.createElement("span");
+      nameEl.className = "rules-entry-name";
+      nameEl.textContent = name;
+      nameEl.title = formatLine(entry);
+
+      const actions = document.createElement("div");
+      actions.className = "snippet-item-actions";
+
+      const lineBtn = document.createElement("button");
+      lineBtn.className = "snippet-action-btn";
+      lineBtn.textContent = "+";
+      lineBtn.title = "Insert one-liner";
+      lineBtn.addEventListener("click", () => {
+        codeArea.replaceRange(formatLine(entry), codeArea.getCursor());
+        codeArea.focus();
+      });
+
+      const fullBtn = document.createElement("button");
+      fullBtn.className = "snippet-action-btn";
+      fullBtn.textContent = "≡";
+      fullBtn.title = "Insert full stat block";
+      fullBtn.addEventListener("click", () => {
+        codeArea.replaceRange(formatBlock(entry), codeArea.getCursor());
+        codeArea.focus();
+      });
+
+      actions.appendChild(lineBtn);
+      actions.appendChild(fullBtn);
+      row.appendChild(nameEl);
+      row.appendChild(actions);
+      return row;
+    }
+
+    const hasQuery = !!query;
+
+    sections.forEach(({ label, key, groupBy, formatBlock, formatLine, formatTable }) => {
+      let entries = rulesCache[key] ?? [];
+      if (query) {
+        entries = entries.filter(e =>
+          (e.name || e.title || "").toLowerCase().includes(query) ||
+          (e.family || e.category || e.class || "").toLowerCase().includes(query)
+        );
+      }
+      if (entries.length === 0) return;
+
+      // Top-level section
+      const section = document.createElement("div");
+      section.className = "rules-section";
+
+      const heading = makeHeading(`${label} (${entries.length})`, 0, !hasQuery);
+      const sectionBody = document.createElement("div");
+      sectionBody.className = "rules-section-body";
+      if (!hasQuery) sectionBody.style.display = "none";
+
+      heading.addEventListener("click", () => {
+        const isVisible = sectionBody.style.display !== "none";
+        sectionBody.style.display = isVisible ? "none" : "";
+        heading.classList.toggle("collapsed", isVisible);
+      });
+
+      // Group into subsections
+      const groups = new Map();
+      entries.forEach(e => {
+        const g = groupBy(e);
+        if (!groups.has(g)) groups.set(g, []);
+        groups.get(g).push(e);
+      });
+
+      // Sort group keys
+      const sortedGroups = [...groups.keys()].sort((a, b) => a.localeCompare(b));
+
+      sortedGroups.forEach(groupName => {
+        const groupEntries = groups.get(groupName);
+
+        const subHeading = makeHeading(`${groupName} (${groupEntries.length})`, 1, !hasQuery);
+        const subBody = document.createElement("div");
+        subBody.className = "rules-subsection-body";
+        if (!hasQuery) subBody.style.display = "none";
+
+        // Table insert button
+        const tableBtn = document.createElement("button");
+        tableBtn.className = "rules-table-btn";
+        tableBtn.textContent = "⊞";
+        tableBtn.title = "Insert as table";
+        tableBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          codeArea.replaceRange(formatTable(groupEntries), codeArea.getCursor());
+          codeArea.focus();
+        });
+        subHeading.appendChild(tableBtn);
+
+        subHeading.addEventListener("click", () => {
+          const isVisible = subBody.style.display !== "none";
+          subBody.style.display = isVisible ? "none" : "";
+          subHeading.classList.toggle("collapsed", isVisible);
+        });
+
+        groupEntries.forEach(entry => {
+          subBody.appendChild(makeEntryRow(entry, formatBlock, formatLine));
+        });
+
+        sectionBody.appendChild(subHeading);
+        sectionBody.appendChild(subBody);
+      });
+
+      section.appendChild(heading);
+      section.appendChild(sectionBody);
+      rulesList.appendChild(section);
+    });
+
+    if (rulesList.children.length === 0) {
+      rulesList.innerHTML = '<p class="snippet-empty">No results.</p>';
+    }
+  }
+
   snippetPanel.appendChild(snippetPanelHeader);
   snippetPanel.appendChild(snippetList);
+  snippetPanel.appendChild(rulesPane);
   snippetPanel.appendChild(snippetFooter);
 
   // Render the snippet list

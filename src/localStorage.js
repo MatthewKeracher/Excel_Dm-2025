@@ -3,6 +3,7 @@ import { Entry } from "./classes.js";
 import { fetchCampaignData, getApiUrl } from "./sync.js";
 import { connectWS, setLocalVersion } from "./ws.js";
 import { restorePopOuts } from "./popoutState.js";
+import { setCurrentRuleset } from "./ruleset.js";
 
 export { setApiUrl, openDB, saveCategories, saveData, saveDataNow } from "./sync.js";
 export { disconnectWS } from "./ws.js";
@@ -15,6 +16,7 @@ export async function loadData() {
     excelDM.entries.splice(0, excelDM.entries.length);
     excelDM.categories = data.categories ?? {};
     excelDM.tabs = Array.isArray(data.tabs) ? data.tabs : null;
+    setCurrentRuleset(data.ruleset ?? "");
 
     (Array.isArray(data.entries) ? data.entries : []).forEach((entryData) => {
       excelDM.add(new Entry(entryData));

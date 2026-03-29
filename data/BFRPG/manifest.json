@@ -1,0 +1,11 @@
+{
+  "id": "BFRPG",
+  "name": "BFRPG",
+  "description": "Basic Fantasy Role-Playing Game",
+  "version": "1.0",
+  "files": {
+    "monsters": "monsters.json",
+    "spells": "spells.json",
+    "items": "items.json"
+  }
+}

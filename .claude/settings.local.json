@@ -29,7 +29,10 @@
       "mcp__puppeteer__puppeteer_evaluate",
       "Bash(scp \"C:\\\\Users\\\\Matthew\\\\Documents\\\\GitHub\\\\Excel_Dm-2025\\\\data\\\\Hommlet.json\" matthew@heimvon.little-lenok.ts.net:/tmp/Hommlet.json)",
       "Bash(scp:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(cp data/BFRPG/monsters-new.json data/BFRPG/monsters.json)",
+      "Bash(rm data/BFRPG/monsters-new.json)",
+      "Bash(rm data/BFRPG/convert-monsters.js)"
     ]
   }
 }

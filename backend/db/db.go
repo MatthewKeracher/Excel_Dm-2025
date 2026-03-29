@@ -210,6 +210,13 @@ func createTables() error {
 		}
 	}
 
+	// Add ruleset column to campaigns if missing (added post-launch)
+	if ok, _ := hasColumn("campaigns", "ruleset"); !ok {
+		if _, err := Conn.Exec("ALTER TABLE campaigns ADD COLUMN ruleset TEXT"); err != nil {
+			return err
+		}
+	}
+
 	if _, err := Conn.Exec(`
 		CREATE TABLE IF NOT EXISTS entries (
 			id            INTEGER PRIMARY KEY AUTOINCREMENT,
