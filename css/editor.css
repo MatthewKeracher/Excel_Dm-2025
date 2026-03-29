@@ -1,9 +1,10 @@
 /* Editor */
 
 :root {
-  --color-background: rgb(1, 36, 86);
-  --color-border: lime;
-  --color-cursor: hotpink;
+  --color-background: #000;
+  --color-border: #115926;
+  --color-accent: #d8d83c;
+  --color-cursor: #d8d83c;
 }
 
 .editor {
@@ -13,41 +14,111 @@
   display: none;
   font-size: large;
   font-family: monospace;
-  color: var(--color-border);
+  color: #f0e6c8;
   caret-color: var(--color-cursor);
-  caret: 2px solid var(--color-cursor);
   background-color: var(--color-background);
   width: 33%;
   height: 70vh;
   overflow-y: hidden;
   z-index: 999;
   border: 2px solid var(--color-border);
+  border-radius: 4px;
 }
+
+/* ── Toolbar ── */
 
 .editor-toolbar {
   height: auto;
-  font-weight: bold;
-  color: black;
   background-color: var(--color-border);
   border-bottom: 2px solid var(--color-border);
 }
 
+.editor-toolbar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px;
+}
+
+.editor-toolbar-title {
+  font-weight: bold;
+  font-size: 0.85em;
+  color: #fff;
+  padding: 2px 4px;
+  letter-spacing: 0.03em;
+}
+
+.editor-toolbar-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.editor-toolbar-actions button {
+  background: rgba(0,0,0,0.25);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 0.85em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.editor-toolbar-actions button:hover {
+  background: rgba(0,0,0,0.5);
+}
+
+.editor-toolbar-format {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 6px;
+  background: rgba(0,0,0,0.2);
+  border-top: 1px solid rgba(255,255,255,0.15);
+  flex-wrap: wrap;
+}
+
+.editor-toolbar-format button {
+  background: rgba(0,0,0,0.25);
+  color: #f0e6c8;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 3px;
+  padding: 2px 7px;
+  font-size: 0.82em;
+  font-family: monospace;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.editor-toolbar-format button:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.editor-toolbar-separator {
+  width: 1px;
+  height: 18px;
+  background: rgba(255,255,255,0.3);
+  margin: 0 3px;
+}
+
+/* ── Inputs ── */
+
 .editor-title {
-  left: 10px;
   width: 100%;
   font-size: 1.2em;
   font-weight: bold;
   font-family: inherit;
   padding: 6px 10px;
   border: none;
-  border-bottom: 2px #000000;
+  border-bottom: 1px solid var(--color-border);
   box-sizing: border-box;
   outline: none;
   background-color: var(--color-background);
-  color: var(--color-border);
-  transition:
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
+  color: var(--color-accent);
 }
 
 .editor-category {
@@ -56,16 +127,12 @@
   font-family: inherit;
   font-size: large;
   padding: 6px 10px;
-  border: none;
-  border-bottom: 2px #000000;
   box-sizing: border-box;
   outline: none;
   background-color: transparent;
-  color: var(--color-cursor);
-  border-bottom: 2px solid var(--color-border);
-  transition:
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
+  color: #aaa;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .notecard-category.editing:focus {
@@ -74,9 +141,11 @@
   background-color: transparent;
 }
 
+/* ── CodeMirror ── */
+
 .CodeMirror {
   height: auto;
-  color: var(--color-border);
+  color: #f0e6c8;
   background: var(--color-background);
   padding: 5px;
   padding-bottom: 15px;
@@ -84,101 +153,73 @@
 
 .CodeMirror-code {
   font-size: 16px;
-  caret-color: var(--color-border);
+  caret-color: var(--color-cursor);
 }
 
 .CodeMirror-scroll {
   overflow-y: auto !important;
   height: 100vh;
-  max-height: 60vh;    /* Leave room for title/category inputs */
+  max-height: 60vh;
 }
 
-/* CodeMirror uses custom cursor elements, not native caret */
 .CodeMirror-cursor {
-  border-left: 3px solid white !important;
+  border-left: 3px solid var(--color-cursor) !important;
   background-color: transparent !important;
 }
 
-/* Ensure cursor shows when focused */
 .CodeMirror-focused .CodeMirror-cursor {
   border-left-color: var(--color-cursor) !important;
 }
 
 .CodeMirror-gutters {
-  background: var(--color-background) !important;
-  border-right: transparent !important;
+  background: #0a0a0a !important;
+  border-right: 1px solid var(--color-border) !important;
 }
 
 .CodeMirror-linenumber {
-  color: whitesmoke !important;
+  color: #555 !important;
 }
 
 .CodeMirror-gutter-background {
-  background: black !important;
+  background: #0a0a0a !important;
 }
 
-/* Markdown syntax highlighting colors in CodeMirror */
-.cm-header-1 {
-  color: #ff0 !important;
-} /* # headers */
-.cm-header-2 {
-  color: #ff0 !important;
-} /* ## headers */
-.cm-header-3 {
-  color: #ff0 !important;
-} /* ### headers */
+/* ── Markdown syntax highlighting ── */
 
-.cm-strong {
-  color: #fff !important;
-} /* **bold** */
-.cm-em {
-  color: #0ff !important;
-} /* *italic* */
+.cm-header-1,
+.cm-header-2,
+.cm-header-3 { color: var(--color-accent) !important; }
 
-.cm-link {
-  color: #0f0 !important;
-} /* [links] */
-.cm-variable-2 {
-  color: #ff8080 !important;
-} /* inline code `code` */
+.cm-strong     { color: #fff !important; }
+.cm-em         { color: #7ecfcf !important; }
+.cm-link       { color: #6ecf6e !important; }
+.cm-variable-2 { color: #ff8080 !important; }
+.cm-hr         { color: #555 !important; }
+.cm-quote      { color: #888 !important; }
+.cm-list       { color: #f0e6c8 !important; }
+.cm-number     { color: #ffa500 !important; }
+.cm-tag        { color: var(--color-accent) !important; }
+.cm-attribute  { color: #88d4e8 !important; }  /* attribute names e.g. class= */
+.cm-string     { color: #ffaa66 !important; }  /* attribute values e.g. "boxed-text" */
+.cm-bracket    { color: #aaa !important; }     /* < > brackets */
 
-.cm-hr {
-  color: #888 !important;
-} /* --- hr lines */
-.cm-quote {
-  color: #7f7f7f !important;
-} /* > blockquotes */
+.CodeMirror   { color: #f0e6c8 !important; }
 
-.cm-list {
-  color: var(--color-border) !important;
-} /* - lists */
-.cm-number {
-  color: #ffa500 !important;
-} /* numbers */
+/* ── Selection ── */
 
-.CodeMirror {
-  color: var(--color-border) !important; /* fallback plain text */
-}
-
-.cm-tag {
-  color: #ff00ff !important; /* <p>, <br>, <div> etc - magenta */
-}
-
-/* Selected/highlighted text in CodeMirror */
 .CodeMirror-selected {
   background: var(--color-border) !important;
-  color: black !important;
 }
 
 .CodeMirror-focused .CodeMirror-selected {
-  background: rgba(255, 105, 180, 0.603) !important;
-  color: black !important;
+  background: rgba(17, 89, 38, 0.5) !important;
 }
 
-/* Ensure text stays black on selection */
 .CodeMirror-selected * {
-  color: black !important;
+  color: #fff !important;
 }
+
+/* ── Filter modal (shares editor.css) ── */
 
 .filter {
   position: fixed;
@@ -188,7 +229,7 @@
   display: none;
   font-size: large;
   font-family: monospace;
-  color: var(--color-border);
+  color: #f0e6c8;
   background-color: var(--color-background);
   width: 500px;
   height: auto;
@@ -204,13 +245,13 @@
   border-bottom: 3px solid var(--color-border);
   padding: 10px;
   font-size: x-large;
-  color: var(--color-border);
+  color: #f0e6c8;
   font-family: monospace;
 }
 
 .filter-categories :hover {
   background-color: var(--color-border);
-  color: var(--color-background);
+  color: #fff;
 }
 
 .filter hr {
@@ -218,4 +259,3 @@
   border-top: 2px dotted var(--color-border);
   margin: 5px 0;
 }
-

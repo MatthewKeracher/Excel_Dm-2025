@@ -1,5 +1,6 @@
 import { isViewer } from "./userRole.js";
 import { excelDM } from "./main.js";
+import { saveData } from "./localStorage.js";
 
 export function draw(parent) {
   const children = parent.children.filter(
@@ -66,6 +67,7 @@ export function draw(parent) {
         currentDrag = null;
         label.classList.remove("dragging");
         excelDM.dirtyEntries.add(child);
+        saveData();
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", onMouseUp);
       }

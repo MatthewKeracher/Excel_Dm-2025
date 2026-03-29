@@ -1,0 +1,230 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What This Project Is
+
+Excel_DM is a browser-based Dungeon Master planning tool. It is a **vanilla JavaScript single-page application** served by a Go backend. The backend handles auth, persistence, and real-time collaboration; the frontend has no build step.
+
+## Running the App
+
+### Locally
+
+1. Start the Go backend (serves the frontend too):
+   ```
+   cd backend && go run .
+   ```
+2. Open `http://localhost:8080` in a browser.
+3. Register an account via the login modal, then create or open a campaign world.
+
+The only npm dependency is `marked` (markdown parser), also loaded via CDN. CodeMirror is loaded from CDN as well.
+
+### Production (heimvon)
+
+The app runs inside an Alpine Linux Incus container named `exceldm` on `heimvon`. The Go binary is compiled for `linux/amd64` and runs as an OpenRC service. It is exposed on the host at port `8081` via an Incus proxy device.
+
+**Container layout:**
+```
+/opt/exceldm/exceldm/
+  backend/exceldm      ← compiled binary
+  index.html
+  src/
+  css/
+  assets/
+  data/
+```
+
+The binary runs from `backend/` so that `../` resolves to the frontend root.
+
+**Deploy script:** `deploy.sh` at the project root handles building and deploying in one command:
+```
+bash deploy.sh                  # deploy everything
+bash deploy.sh --backend-only   # rebuild and redeploy only the Go binary
+bash deploy.sh --frontend-only  # redeploy only JS/CSS/HTML/data files
+```
+
+**IMPORTANT — stop the service before deploying** to avoid "text file busy" errors:
+```
+ssh matthew@heimvon.little-lenok.ts.net "sudo incus exec exceldm -- rc-service exceldm stop"
+bash deploy.sh
+```
+The deploy script restarts the service automatically at the end.
+
+The app is publicly accessible at `https://excel-dm.com` via a Cloudflare tunnel. `cloudflared` runs as an OpenRC service inside the container alongside the app, routing traffic from Cloudflare's network to `localhost:8080`.
+
+**Service management (via SSH into heimvon):**
+```
+ssh matthew@heimvon.little-lenok.ts.net
+sudo incus exec exceldm -- rc-service exceldm restart
+sudo incus exec exceldm -- rc-service exceldm status
+sudo incus exec exceldm -- rc-service cloudflared status
+sudo incus exec exceldm -- tail -f /var/log/exceldm/app.log
+```
+
+## Architecture
+
+### Backend (`backend/`)
+
+Go HTTP server using `net/http` and SQLite (`modernc.org/sqlite` — pure Go, no CGo).
+
+| File | Role |
+|------|------|
+| `backend/main.go` | Server entry point; registers routes; serves frontend |
+| `backend/db/db.go` | Opens `exceldm.db`; creates/migrates tables; seeds Hommlet; backfills owner |
+| `backend/models/` | Shared structs: `Campaign`, `RegisterRequest`, `LoginRequest`, `AuthResponse` |
+| `backend/handlers/auth.go` | `POST /api/register`, `POST /api/login`, `GET /api/account`, `PATCH /api/account/password` |
+| `backend/handlers/campaign.go` | Campaign CRUD handlers (see API Routes below) |
+| `backend/handlers/helpers.go` | `serializeCampaign`, `saveEntries`, `patchEntries`, `campaignRole` |
+| `backend/handlers/invite.go` | Invite link creation (`CreateInvite`), lookup (`GetInvite`), acceptance (`AcceptInvite`) |
+| `backend/handlers/ws.go` | WebSocket upgrade; `ServeCampaignWS`; hub broadcast |
+| `backend/handlers/hub.go` | In-memory WebSocket hub; keyed by `campaign:{id}` |
+| `backend/middleware/auth.go` | JWT Bearer token validation; injects `userID` into request context |
+
+### API Routes
+
+```
+POST /api/register                           — create account
+POST /api/login                              — get JWT
+
+GET  /api/account                            — get current user email
+PATCH /api/account/password                  — change password
+
+GET  /api/campaigns                          — list campaigns user owns, is member of, or that are public
+POST /api/campaigns                          — create a new named campaign (caller becomes admin/owner)
+
+GET  /api/campaigns/{id}                     — load campaign (any role)
+PUT  /api/campaigns/{id}                     — replace all entries (editor or admin)
+PATCH /api/campaigns/{id}                    — delta update: upsert changed entries, delete removed (editor or admin)
+PATCH /api/campaigns/{id}/settings           — rename campaign (admin only)
+DELETE /api/campaigns/{id}                   — delete campaign (admin only)
+GET  /api/campaigns/{id}/members             — list members and roles (admin only)
+POST /api/campaigns/{id}/members             — add a user by email with role editor|viewer (admin only)
+DELETE /api/campaigns/{id}/members/{userId}  — remove a member (admin only)
+POST /api/campaigns/{id}/invites             — create a shareable invite link (admin only)
+
+GET  /api/invites/{token}                    — look up invite info, no auth required
+POST /api/invites/{token}/accept             — accept invite, adds caller as member (auth required)
+
+GET  /api/campaigns/{id}/ws?token=JWT&clientId=X  — WebSocket for real-time sync
+
+GET  /invite/{token}                         — serves index.html so the SPA can handle the invite route
+```
+
+**Auth flow:** register/login → JWT stored in browser `localStorage` → every API request sends `Authorization: Bearer <token>` → middleware validates and injects user ID.
+
+### Database Schema
+
+```sql
+users            (id, email, password_hash, created_at)
+
+campaigns        (id, owner_id→users, name, is_public, categories JSON, version INTEGER, updated_at)
+
+campaign_members (campaign_id→campaigns, user_id→users, role CHECK IN ('admin','editor','viewer'))
+                 PRIMARY KEY (campaign_id, user_id)
+
+entries          (id, campaign_id→campaigns, title, type, category, body, color, image,
+                  x, y, coords JSON, pop_out, current_child, parent_id→entries, updated_at)
+
+campaign_invites (id, campaign_id→campaigns, token TEXT UNIQUE, role, created_by→users, used_by→users)
+```
+
+**`campaigns.version`** is incremented on every PUT or PATCH save. The frontend tracks `localVersion` and uses it to discard stale WebSocket messages.
+
+**Roles:**
+- `admin` — owner of the campaign (set in `campaigns.owner_id`); can add/remove members, create invites, rename/delete
+- `editor` — can save changes; also the implicit role for any logged-in user on a public campaign
+- `viewer` — read-only; edit/delete/color/lock buttons are hidden in the UI
+
+**Public campaigns:** `is_public = TRUE` grants all logged-in users `editor` access. The Hommlet demo campaign is public. `backfillHommletOwner()` runs on every startup to assign ownership to `matthewkeracher94@gmail.com` once that account exists.
+
+**Invite links:** a single-use token (hex-encoded random bytes) stored in `campaign_invites`. `GetInvite` is public; `AcceptInvite` requires auth and marks the token used. If the accepting user is already the admin, the member row is skipped.
+
+**Schema migration:** `db.Init()` calls `migrateIfNeeded()` which detects the old blob-based schema and migrates automatically. `createTables()` also adds `campaigns.version` and `campaign_invites` via `ALTER TABLE` / `CREATE TABLE IF NOT EXISTS` — safe to run repeatedly.
+
+### Frontend State
+
+All runtime state lives in `src/main.js`:
+- `excelDM` — global `EntryManager` instance (the data store)
+- `current` — the currently selected `Entry`
+- `currentTab` — active category tab string
+- `masterEdit` — boolean flag (currently always `true`)
+
+### Data Model (`src/classes.js`)
+
+- **`Entry`** — represents one game object (location, NPC, quest, etc.). Has `title`, `type`, `body` (markdown), `category`, `parent`/`children` for hierarchy, canvas `x`/`y` for map positioning, `popOut`/`coords` for floating windows (per-user local state, not synced).
+- **`EntryManager`** — holds all entries; exposes `add`, `n` (find by title), `prepareFromJSON`, `resetParentLinks`, and delta-save tracking (`dirtyEntries`, `deletedServerIds`).
+
+### Frontend Module Responsibilities
+
+| File | Role |
+|------|------|
+| `src/main.js` | App init, global state, `reCurrent()` and `newCurrent()` orchestrators |
+| `src/classes.js` | `Entry` and `EntryManager` data classes |
+| `src/auth.js` | Auth modal, account modal (change password), `initAuth()`, `authHeaders()`, `ensureEmail()`, token helpers |
+| `src/localStorage.js` | Thin re-export facade over `sync.js` + `ws.js`; implements `loadData()` |
+| `src/sync.js` | HTTP persistence — `saveData()` (debounced PATCH), `saveDataNow()`, `fetchCampaignData()`, PUT/PATCH with 3-attempt retry; `clientId`; `suppressSave` flag |
+| `src/ws.js` | WebSocket lifecycle — `connectWS()`, `disconnectWS()`, delta/full-replace handling, exponential backoff reconnection, version conflict detection |
+| `src/syncState.js` | Sync status indicator (`#sync-status` DOM element); manages `httpState` (idle/saving/retrying/saved/error) and `wsState` (disconnected/connecting/connected/reconnecting/updating) |
+| `src/syncLog.js` | In-memory ring buffer of last 50 sync events; exposed as `window.__syncLog()` for debugging |
+| `src/campaigns.js` | Campaign picker modal — list, create, open worlds, manage members/invites; shown after login |
+| `src/notecard.js` | Notecard factory — `makeNoteCard()`, `makePopOut()`, `loadPopUp()`; all button creation and card assembly |
+| `src/dragging.js` | `makeDraggable()` — mouse drag logic for pop-out windows; calls save callback on mouseup |
+| `src/popoutState.js` | Per-user pop-out window state persisted in browser `localStorage` (keyed by server entry ID); `setPopOut()`, `clearPopOut()`, `restorePopOuts()` — not synced to server |
+| `src/userRole.js` | Role state — `setCurrentRole()`, `getCurrentRole()`, `isViewer()`, `isAdmin()` |
+| `src/left.js` | Renders note cards in the left sidebar using `notecard.js`; card click, delete, navigation |
+| `src/right.js` | Canvas map — draws grid and draggable location labels; `initMap()`, `draw()`, `HexToMap()` |
+| `src/buttons.js` | Header button handlers: Worlds, Save, Add Map, Add, Donate |
+| `src/tabs.js` | Tab bar — switches `currentTab`, triggers re-render |
+| `src/editor.js` | CodeMirror-based modal editor for entry markdown content |
+| `src/filter.js` | Category filter UI and compiled filter state |
+| `src/hotkeys.js` | Keyboard shortcuts (arrows, Tab, Escape, search) |
+
+### App Startup Flow
+
+1. `DOMContentLoaded` fires in `main.js`
+2. `initButtons()`, `addHotkeys()`, `initTabs()`, `initMap()` wire up UI
+3. Check for `/invite/{token}` URL path:
+   - If present: dynamically import `campaigns.js`, call `handleInviteFlow(token)` after auth
+   - Otherwise: dynamically import `campaigns.js`, call `showCampaignPicker()` after auth
+4. `initAuth(callback)` wires the login modal; on success → `callback()`
+5. If already logged in (JWT in `localStorage`), `ensureEmail()` fetches user email and `showCampaignPicker()` / `handleInviteFlow()` is called immediately
+6. User selects or creates a campaign → `openCampaign(id, name)` calls `setApiUrl('/api/campaigns/{id}')` then `loadData()`
+7. `loadData()` fetches `GET /api/campaigns/{id}`, populates `excelDM`, restores pop-out state, connects WebSocket
+
+**Circular dependency note:** `main.js` ↔ `localStorage.js` ↔ various modules form cycles that are safe because `classes.js` evaluates first. `campaigns.js` must be loaded via dynamic `import()` (not a static import) to avoid breaking the ES module evaluation order.
+
+### Rendering Pattern
+
+User action → update `excelDM` or `current` → call `reCurrent()` in `main.js` → `reCurrent()` calls `draw()`, `updateFilter()`, `loadNoteCards()`, `loadPopUp()`, then `saveData()`. `saveData()` is debounced 500 ms and sends a `PATCH` request with only dirty/deleted entries. If any dirty entry lacks a `_serverId` (new entry), it falls back to a full `PUT`.
+
+`reCurrent()` skips marking `current` as dirty when `isSuppressSave()` is true (set during WebSocket-triggered updates to prevent re-save loops).
+
+### Real-time Collaboration
+
+After loading a campaign, `localStorage.js` opens a WebSocket via `ws.js` to `/api/campaigns/{id}/ws?token=JWT&clientId=X`.
+
+**Message types from server:**
+- `{ type: "patch", version, updated: [...], deletedIds: [...] }` — delta update; applies only changed entries, skips locally dirty ones
+- `{ type: "reload", version }` — signals a full PUT happened; client fetches current state via `GET` rather than pushing the full payload over WS
+
+**Version tracking:** each campaign has a monotonically incrementing `version` (incremented server-side on every save). The frontend tracks `localVersion` and discards any WS message whose version is ≤ local.
+
+**Conflict handling:** on a full replace, any locally dirty entries are flushed via `saveDataNow()` before applying the remote state. For delta patches, dirty entries are skipped in `applyDelta()` and kept locally.
+
+**Reconnection:** `ws.js` reconnects with exponential backoff (up to 30 s) on disconnect. On reconnect, if there are no pending local edits, it catches up by issuing a fresh `GET`.
+
+**Pop-out state** (`popOut`, `coords`) is per-user local state stored in browser `localStorage` via `popoutState.js` — it is stripped from all PUT/PATCH payloads and restored from `localStorage` after every WS update.
+
+### Cache Busting
+
+`Cache-Control: no-store` is set only for the `/invite/{token}` SPA route. All other static files are served by `http.FileServer` without special cache headers — Cloudflare's edge cache behaviour applies. When deploying JS/CSS/HTML changes, use `bash deploy.sh --frontend-only` which will cause Cloudflare to serve fresh files after cache expiry.
+
+### Data Files
+
+- `data/Excel_DM.json` — blank campaign template (unused now that campaigns are DB-backed)
+- `data/Hommlet.json` — large demo campaign (~8.7MB); seeded into DB once, not re-served as a file
+- `data/BFRPG/` — reference data for monsters, spells, and items
+
+### Entry Types
+
+The seven tabs/types: `locations`, `people`, `quests`, `monsters`, `spells`, `items`, `misc`

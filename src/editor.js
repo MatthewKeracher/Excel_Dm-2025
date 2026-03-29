@@ -22,36 +22,27 @@ export function loadEditor(
   currentEditor.classList.add("editor");
   currentEditor.style.display = "block";
 
-  //Toolbar -- Top Ribbon of Editor
+  // ── Toolbar ──
   const toolbar = document.createElement("div");
   toolbar.className = "editor-toolbar";
 
-  const toolbarContainer = document.createElement("div");
-  toolbarContainer.style.display = "flex";
-  toolbarContainer.style.justifyContent = "space-between";
-  toolbarContainer.style.alignItems = "center";
-  toolbarContainer.style.position = "relative";
+  // Row 1: title + save/exit
+  const toolbarTop = document.createElement("div");
+  toolbarTop.className = "editor-toolbar-top";
 
   const toolbarTitle = document.createElement("div");
+  toolbarTitle.className = "editor-toolbar-title";
   toolbarTitle.textContent = "Notecard HTML/MD Editor";
-  toolbarTitle.style.padding = "5px";
-  toolbarContainer.appendChild(toolbarTitle);
-  toolbar.appendChild(toolbarContainer);
 
-  //Toolbar Buttons Container
-  const toolbarBtns = document.createElement("div");
-  toolbarBtns.className = "buttons-top-right";
+  const toolbarActions = document.createElement("div");
+  toolbarActions.className = "editor-toolbar-actions";
 
-  //Save Button
   const saveBtn = document.createElement("button");
-  saveBtn.className = "save-btn";
   saveBtn.title = "Save Entry";
-  saveBtn.innerHTML = "💾";
+  saveBtn.textContent = "Save";
 
   saveBtn.addEventListener("click", () => {
-    // Save and close
     isEditing = false;
-    currentEditor.remove();
 
     const newText = codeArea.getValue().trim();
     body.dataset.fullText = newText;
@@ -62,132 +53,152 @@ export function loadEditor(
     entry.title = newTitle;
     title.textContent = newTitle;
 
-    const newCategory = currentEditor
-      .querySelector(".editor-category")
-      .value.trim();
+    const newCategory = currentEditor.querySelector(".editor-category").value.trim();
     entry.category = newCategory;
     category.textContent = newCategory;
 
-    // Remove editor element
     currentEditor.remove();
-
     excelDM.dirtyEntries.add(entry);
     reCurrent();
   });
 
-  //Exit Button
   const exitBtn = document.createElement("button");
-  exitBtn.className = "delete-btn";
   exitBtn.title = "Close Editor";
-  exitBtn.innerHTML = "❌";
+  exitBtn.textContent = "✕";
 
   exitBtn.addEventListener("click", (event) => {
-    if (event.shiftKey || confirm(`Close Editor without Saving?`)) {
+    if (event.shiftKey || confirm("Close Editor without Saving?")) {
       isEditing = false;
       currentEditor.remove();
       reCurrent();
     }
   });
 
-  //Insert Table Button
-  const tableBtn = document.createElement("button");
-  tableBtn.className = "table-btn";
-  tableBtn.title = "Insert Table";
-  tableBtn.innerHTML = "⚖";
+  toolbarActions.appendChild(saveBtn);
+  toolbarActions.appendChild(exitBtn);
+  toolbarTop.appendChild(toolbarTitle);
+  toolbarTop.appendChild(toolbarActions);
 
-  tableBtn.addEventListener("click", () => {
-    const tableMarkdown = `| Header 1 | Header 2 | Header 3 |\n|:---------|:---------|:---------|\n| Data 1   | Data 2   | Data 3   |\n| Data 1   | Data 2   | Data 3   |\n\n`;
+  // Row 2: formatting buttons
+  const toolbarFormat = document.createElement("div");
+  toolbarFormat.className = "editor-toolbar-format";
+
+  function makeFormatBtn(label, title) {
+    const btn = document.createElement("button");
+    btn.title = title;
+    btn.textContent = label;
+    return btn;
+  }
+
+  function wrapInline(before, after) {
     const doc = codeArea.getDoc();
+    const from = doc.getCursor("from");
+    const to   = doc.getCursor("to");
+    const isEmpty = from.line === to.line && from.ch === to.ch;
+    if (isEmpty) {
+      doc.replaceRange(before + after, from);
+      doc.setCursor(from.line, from.ch + before.length);
+    } else {
+      doc.replaceRange(before + doc.getRange(from, to) + after, from, to);
+    }
+    codeArea.focus();
+  }
+
+  function wrapBlock(before, after) {
+    const doc = codeArea.getDoc();
+    const from = doc.getCursor("from");
+    const to   = doc.getCursor("to");
+    const isEmpty = from.line === to.line && from.ch === to.ch;
+    if (isEmpty) {
+      doc.replaceRange(before + after, from);
+    } else {
+      doc.replaceRange(before + "\n" + doc.getRange(from, to) + "\n" + after, from, to);
+    }
+    codeArea.focus();
+  }
+
+  // Bold
+  const boldBtn = makeFormatBtn("B", "Bold");
+  boldBtn.style.fontWeight = "bold";
+  boldBtn.addEventListener("click", () => wrapInline("<b>", "</b>"));
+
+  // Italic
+  const italicBtn = makeFormatBtn("I", "Italic");
+  italicBtn.style.fontStyle = "italic";
+  italicBtn.addEventListener("click", () => wrapInline("*", "*"));
+
+  // Heading
+  const headingBtn = makeFormatBtn("H4", "Heading (####)");
+  headingBtn.addEventListener("click", () => {
+    const doc    = codeArea.getDoc();
     const cursor = doc.getCursor();
-    doc.replaceRange(tableMarkdown, cursor);
-    codeArea.focus();
-  });
-
-  // Insert Bold <b> Button
-  const boldBtn = document.createElement("button");
-  boldBtn.className = "bold-btn";
-  boldBtn.title = "Bold Text";
-  boldBtn.innerHTML = "𝐁"; // or "B" or "𝗕"
-
-  boldBtn.addEventListener("click", () => {
-    const doc = codeArea.getDoc();
-    const from = doc.getCursor("from");
-    const to = doc.getCursor("to");
-
-    if (from.line === to.line && from.ch === to.ch) {
-      // No selection, insert empty bold tags
-      doc.replaceRange("<b></b>", from);
-      // Position cursor inside tags
-      doc.setCursor(from.line, from.ch + 3);
-    } else {
-      // Wrap selected text in <b>
-      const selectedText = doc.getRange(from, to);
-      doc.replaceRange(`<b>${selectedText}</b>`, from, to);
+    const line   = doc.getLine(cursor.line);
+    if (!line.startsWith("#### ")) {
+      doc.replaceRange("#### ", { line: cursor.line, ch: 0 });
     }
-
     codeArea.focus();
   });
 
-  //Insert Paragraph <p>
-  const pBtn = document.createElement("button");
-  pBtn.className = "p-btn";
-  pBtn.title = "Insert Paragraph";
-  pBtn.innerHTML = "¶";
+  // Inline code
+  const codeBtn = makeFormatBtn("`code`", "Inline Code");
+  codeBtn.addEventListener("click", () => wrapInline("`", "`"));
 
-  pBtn.addEventListener("click", () => {
+  // Paragraph
+  const pBtn = makeFormatBtn("¶", "Paragraph");
+  pBtn.addEventListener("click", () => wrapInline("<p>", "</p>"));
+
+  // Boxed text
+  const boxBtn = makeFormatBtn("▣ Box", "Boxed Text");
+  boxBtn.addEventListener("click", () => wrapBlock('<div class="boxed-text">', "</div>"));
+
+  // Table
+  const tableBtn = makeFormatBtn("⊞ Table", "Insert Table");
+  tableBtn.addEventListener("click", () => {
     const doc = codeArea.getDoc();
-    const from = doc.getCursor("from");
-    const to = doc.getCursor("to");
-
-    // If text is selected, wrap it in <p>
-    if (from.line === to.line && from.ch === to.ch) {
-      // No selection, insert empty paragraph
-      doc.replaceRange("\n<p></p>", from);
-    } else {
-      // Wrap selected text
-      const selectedText = doc.getRange(from, to);
-      doc.replaceRange(`<p>${selectedText}</p>`, from, to);
-    }
-
+    doc.replaceRange(
+      `| Header 1 | Header 2 | Header 3 |\n|:---------|:---------|:---------|\n| Data 1   | Data 2   | Data 3   |\n| Data 1   | Data 2   | Data 3   |\n\n`,
+      doc.getCursor(),
+    );
     codeArea.focus();
   });
 
-  // Insert Boxed Text Button
-  const boxBtn = document.createElement("button");
-  boxBtn.className = "box-btn";
-  boxBtn.title = "Boxed Text";
-  boxBtn.innerHTML = "🔲";
-
-  boxBtn.addEventListener("click", () => {
+  // Horizontal rule
+  const hrBtn = makeFormatBtn("— HR", "Horizontal Rule");
+  hrBtn.addEventListener("click", () => {
     const doc = codeArea.getDoc();
-    const from = doc.getCursor("from");
-    const to = doc.getCursor("to");
-
-    if (from.line === to.line && from.ch === to.ch) {
-      // No selection, insert empty boxed div
-      doc.replaceRange('<div class="boxed-text"></div>', from);
-      // Position cursor inside div
-      doc.setCursor(from.line, from.ch + 19);
-    } else {
-      // Wrap selected text in boxed div
-      const selectedText = doc.getRange(from, to);
-      doc.replaceRange(
-        `<div class="boxed-text">\n${selectedText}\n</div>`,
-        from,
-        to,
-      );
-    }
-
+    doc.replaceRange("\n---\n", doc.getCursor());
     codeArea.focus();
   });
 
-  toolbarBtns.appendChild(boxBtn);
-  toolbarBtns.appendChild(boldBtn);
-  toolbarBtns.appendChild(pBtn);
-  toolbarBtns.appendChild(tableBtn);
-  toolbarBtns.appendChild(saveBtn);
-  toolbarBtns.appendChild(exitBtn);
-  toolbarContainer.appendChild(toolbarBtns);
+  // Link
+  const linkBtn = makeFormatBtn("[url]", "Insert Link");
+  linkBtn.addEventListener("click", () => {
+    const doc  = codeArea.getDoc();
+    const from = doc.getCursor("from");
+    const to   = doc.getCursor("to");
+    const isEmpty = from.line === to.line && from.ch === to.ch;
+    const text = isEmpty ? "text" : doc.getRange(from, to);
+    const snippet = `[${text}](url)`;
+    doc.replaceRange(snippet, from, isEmpty ? from : to);
+    codeArea.focus();
+  });
+
+  const sep = document.createElement("div");
+  sep.className = "editor-toolbar-separator";
+
+  toolbarFormat.appendChild(boldBtn);
+  toolbarFormat.appendChild(italicBtn);
+  toolbarFormat.appendChild(headingBtn);
+  toolbarFormat.appendChild(codeBtn);
+  toolbarFormat.appendChild(pBtn);
+  toolbarFormat.appendChild(sep);
+  toolbarFormat.appendChild(boxBtn);
+  toolbarFormat.appendChild(tableBtn);
+  toolbarFormat.appendChild(hrBtn);
+  toolbarFormat.appendChild(linkBtn);
+
+  toolbar.appendChild(toolbarTop);
+  toolbar.appendChild(toolbarFormat);
 
   // Title input
   const titleInput = document.createElement("input");

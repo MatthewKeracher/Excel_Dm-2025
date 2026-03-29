@@ -102,7 +102,7 @@ function buildAccountModal() {
   modal.innerHTML = `
     <div id="account-box">
       <button id="account-close-btn" title="Close">✕</button>
-      <h2>Account</h2>
+      <img src="/assets/logo.gif" alt="Excel DM" class="account-logo" />
       <p id="account-email-display" class="account-email"></p>
 
       <div class="account-section">
