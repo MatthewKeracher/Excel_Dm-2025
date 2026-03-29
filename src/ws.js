@@ -132,6 +132,10 @@ async function applyRemoteUpdate(data) {
     } else {
       excelDM.entries.splice(0, excelDM.entries.length);
       excelDM.categories = data.categories ?? {};
+      if (Array.isArray(data.tabs)) {
+        excelDM.tabs = data.tabs;
+        document.dispatchEvent(new CustomEvent("exceldm:tabs-updated"));
+      }
       (Array.isArray(data.entries) ? data.entries : []).forEach((entryData) => {
         excelDM.add(new Entry(entryData));
       });
@@ -192,5 +196,9 @@ function applyDelta(data) {
 
   if (data.categories != null) {
     excelDM.categories = data.categories;
+  }
+  if (Array.isArray(data.tabs)) {
+    excelDM.tabs = data.tabs;
+    document.dispatchEvent(new CustomEvent("exceldm:tabs-updated"));
   }
 }

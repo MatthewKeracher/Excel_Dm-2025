@@ -32,6 +32,7 @@ type responseEntry struct {
 type campaignResponse struct {
 	Entries    []responseEntry `json:"entries"`
 	Categories json.RawMessage `json:"categories"`
+	Tabs       json.RawMessage `json:"tabs,omitempty"`
 	Version    int64           `json:"version"`
 }
 
@@ -43,10 +44,11 @@ type putCampaignResponse struct {
 // frontend-compatible JSON including the current version number.
 func serializeCampaign(campID int) ([]byte, error) {
 	var categories string
+	var tabsNull sql.NullString
 	var version int64
 	if err := db.Conn.QueryRow(
-		"SELECT categories, version FROM campaigns WHERE id = ?", campID,
-	).Scan(&categories, &version); err != nil {
+		"SELECT categories, tabs, version FROM campaigns WHERE id = ?", campID,
+	).Scan(&categories, &tabsNull, &version); err != nil {
 		return nil, err
 	}
 
@@ -121,7 +123,11 @@ func serializeCampaign(campID int) ([]byte, error) {
 		cats = json.RawMessage(categories)
 	}
 
-	return json.Marshal(campaignResponse{Entries: entries, Categories: cats, Version: version})
+	var tabsJSON json.RawMessage
+	if tabsNull.Valid && tabsNull.String != "" {
+		tabsJSON = json.RawMessage(tabsNull.String)
+	}
+	return json.Marshal(campaignResponse{Entries: entries, Categories: cats, Tabs: tabsJSON, Version: version})
 }
 
 // patchDeltaMessage is the WS broadcast payload for a delta (PATCH) save.
@@ -130,6 +136,7 @@ type patchDeltaMessage struct {
 	Updated    []responseEntry `json:"updated"`
 	DeletedIDs []int64         `json:"deletedIds"`
 	Categories json.RawMessage `json:"categories,omitempty"`
+	Tabs       json.RawMessage `json:"tabs,omitempty"`
 	Version    int64           `json:"version"`
 }
 
@@ -138,9 +145,10 @@ type patchDeltaMessage struct {
 // a race where a concurrent save increments the version before this goroutine reads it).
 func serializePatchDelta(campID int, patch patchPayload, version int64) ([]byte, error) {
 	var categories string
+	var tabsNull sql.NullString
 	if err := db.Conn.QueryRow(
-		"SELECT categories FROM campaigns WHERE id = ?", campID,
-	).Scan(&categories); err != nil {
+		"SELECT categories, tabs FROM campaigns WHERE id = ?", campID,
+	).Scan(&categories, &tabsNull); err != nil {
 		return nil, err
 	}
 
@@ -209,13 +217,16 @@ func serializePatchDelta(campID int, patch patchPayload, version int64) ([]byte,
 		}
 		msg.Categories = cats
 	}
+	if patch.Tabs != nil && tabsNull.Valid && tabsNull.String != "" {
+		msg.Tabs = json.RawMessage(tabsNull.String)
+	}
 
 	return json.Marshal(msg)
 }
 
 // saveEntries replaces all entries for a campaign with the incoming payload.
 // Returns the DB-assigned IDs in the same order as rawEntries, and the new version.
-func saveEntries(campID int, rawEntries []json.RawMessage, categories string) (ids []int64, version int64, err error) {
+func saveEntries(campID int, rawEntries []json.RawMessage, categories string, tabs string) (ids []int64, version int64, err error) {
 	type incomingEntry struct {
 		Title        string          `json:"title"`
 		Type         string          `json:"type"`
@@ -248,11 +259,20 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string) (i
 		}
 	}()
 
-	if err = tx.QueryRow(
-		"UPDATE campaigns SET categories = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version",
-		categories, campID,
-	).Scan(&version); err != nil {
-		return nil, 0, err
+	if tabs != "" {
+		if err = tx.QueryRow(
+			"UPDATE campaigns SET categories = ?, tabs = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version",
+			categories, tabs, campID,
+		).Scan(&version); err != nil {
+			return nil, 0, err
+		}
+	} else {
+		if err = tx.QueryRow(
+			"UPDATE campaigns SET categories = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version",
+			categories, campID,
+		).Scan(&version); err != nil {
+			return nil, 0, err
+		}
 	}
 
 	// Null out self-referential parent_id FKs before deleting,
@@ -371,6 +391,7 @@ type patchPayload struct {
 	Updated    []patchEntry    `json:"updated"`
 	DeletedIDs []int64         `json:"deletedIds"`
 	Categories json.RawMessage `json:"categories"`
+	Tabs       json.RawMessage `json:"tabs,omitempty"`
 }
 
 // patchEntries applies a delta update: updates changed entries, deletes removed ones.
@@ -387,21 +408,27 @@ func patchEntries(campID int, patch patchPayload) (version int64, err error) {
 		}
 	}()
 
-	// Update categories if provided, and capture the committed version via RETURNING.
-	if patch.Categories != nil {
-		if err = tx.QueryRow(
-			"UPDATE campaigns SET categories = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version",
-			string(patch.Categories), campID,
-		).Scan(&version); err != nil {
-			return 0, err
-		}
-	} else {
-		if err = tx.QueryRow(
-			"UPDATE campaigns SET version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version",
-			campID,
-		).Scan(&version); err != nil {
-			return 0, err
-		}
+	// Update categories and/or tabs, capturing the new version via RETURNING.
+	hasCats := patch.Categories != nil
+	hasTabs := patch.Tabs != nil
+	var updateQuery string
+	var updateArgs []interface{}
+	switch {
+	case hasCats && hasTabs:
+		updateQuery = "UPDATE campaigns SET categories = ?, tabs = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version"
+		updateArgs = []interface{}{string(patch.Categories), string(patch.Tabs), campID}
+	case hasCats:
+		updateQuery = "UPDATE campaigns SET categories = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version"
+		updateArgs = []interface{}{string(patch.Categories), campID}
+	case hasTabs:
+		updateQuery = "UPDATE campaigns SET tabs = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version"
+		updateArgs = []interface{}{string(patch.Tabs), campID}
+	default:
+		updateQuery = "UPDATE campaigns SET version = version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING version"
+		updateArgs = []interface{}{campID}
+	}
+	if err = tx.QueryRow(updateQuery, updateArgs...).Scan(&version); err != nil {
+		return 0, err
 	}
 
 	// Delete entries (campaign_id check prevents cross-campaign tampering)

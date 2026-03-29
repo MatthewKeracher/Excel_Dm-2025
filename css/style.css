@@ -478,6 +478,7 @@
 :root {
   --color-notecard: rgb(234, 227, 211); /* pick your colors */
   --color-notecard-darker: color-mix(in srgb, var(--color-notecard), black 20%);
+  --toolbar-height: 54px;
 }
 
 #logoContainer {
@@ -529,19 +530,27 @@ header {
   align-items: center;
   background: #34514e;
   color: #fff;
-  padding: 10px 20px;
+  padding: 0 20px;
   border-bottom: 3px solid #d8d83c;
+  height: var(--toolbar-height);
+  box-sizing: border-box;
 }
 
 .tabs {
   display: flex;
-  max-width: 500px;
-  width: 30vw;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
   margin-bottom: 0;
+  scrollbar-width: none; /* Firefox */
+}
+
+.tabs::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .tab-button {
-  flex: 1;
+  flex: 0 0 auto;
   padding: 5px 10px;
   cursor: pointer;
   background: #34514e;
@@ -552,6 +561,7 @@ header {
   font-family: "Soutane", sans-serif;
   font-size: 1.1em;
   color: #d8d83c;
+  white-space: nowrap;
 }
 
 .tab-button.active {
@@ -561,6 +571,38 @@ header {
 
 .tab-panel {
   background-color: transparent;
+}
+
+.tab-remove-btn {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.75em;
+  color: #888;
+  line-height: 1;
+  padding: 0 1px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.tab-remove-btn:hover {
+  color: #ff6b6b;
+}
+
+.tab-add-btn {
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px dashed #555;
+  border-radius: 0;
+  font-size: 1.1em;
+  color: #888;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-add-btn:hover {
+  color: #d8d83c;
+  border-color: #d8d83c;
 }
 
 .header-left,
@@ -624,6 +666,29 @@ header {
   text-align: center;
   font-family: "SoutaneBlack", sans-serif;
   font-size: larger;
+}
+
+#currentTitle {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  padding: 0 12px;
+  pointer-events: none;
+  white-space: nowrap;
+  color: #d8d83c;
+  font-family: "SoutaneBlack", sans-serif;
+  font-size: larger;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--toolbar-height);
+}
+
+.title-torch {
+  height: 100%;
+  width: auto;
 }
 
 .sync-status {
@@ -1085,8 +1150,10 @@ body[data-role="viewer"] .header-btns::before {
 }
 
 .account-email {
-  color: #aaa;
-  font-size: 0.9em;
+  color: #f0e6c8;
+  font-family: "SoutaneBlack", serif;
+  font-size: 1.2em;
+  text-align: center;
   margin: 0 0 20px;
 }
 
@@ -1096,7 +1163,7 @@ body[data-role="viewer"] .header-btns::before {
   right: 14px;
   background: transparent;
   border: none;
-  color: #d8d83c;
+  color: #115926;
   font-size: 1.1em;
   cursor: pointer;
 }
@@ -1105,6 +1172,7 @@ body[data-role="viewer"] .header-btns::before {
   margin-top: 16px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
 }
 
@@ -1114,40 +1182,42 @@ body[data-role="viewer"] .header-btns::before {
   border: 1px solid #555;
   border-radius: 4px;
   color: #f0e6c8;
+  font-family: "SoutaneBlack", serif;
   font-size: 0.95em;
   width: 100%;
   box-sizing: border-box;
 }
 
 .account-section input:focus {
-  border-color: #d8d83c;
+  border-color: #115926;
   outline: none;
 }
 
 #account-save-btn,
 #account-logout-btn {
-  background: #447e78;
-  color: #d8d83c;
-  border: 1px solid #d8d83c;
+  background: #000;
+  color: #115926;
+  border: 1px solid #115926;
   border-radius: 4px;
   padding: 6px 14px;
+  font-family: "SoutaneBlack", serif;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, box-shadow 0.1s, transform 0.1s ease;
-  align-self: flex-start;
+  align-self: center;
 }
 
 #account-save-btn:hover,
 #account-logout-btn:hover {
-  background: #5aa887;
+  background: #0d1f17;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   transform: translateY(-2px);
 }
 
 #account-save-btn:active,
 #account-logout-btn:active {
-  background: #3a695f;
+  background: #000;
   box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   transform: translateY(0);
 }

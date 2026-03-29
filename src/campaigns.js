@@ -1,6 +1,8 @@
 import { setApiUrl, loadData } from "./localStorage.js";
 import { authHeaders, clearToken, showAuthModal } from "./auth.js";
 import { setCurrentRole } from "./userRole.js";
+import { initTabs, DEFAULT_TABS } from "./tabs.js";
+import { excelDM } from "./main.js";
 
 let modalBuilt = false;
 let currentSettings = null; // { id, name } for the campaign being managed
@@ -340,6 +342,7 @@ async function openCampaign(id, name, role = "editor") {
   const headerLeft = document.querySelector(".header-left");
   if (headerLeft) headerLeft.textContent = name;
   await loadData();
+  initTabs(excelDM.tabs ?? DEFAULT_TABS);
 }
 
 async function createCampaign() {

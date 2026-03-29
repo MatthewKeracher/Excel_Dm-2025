@@ -15,7 +15,8 @@ export let current = [];
 export let masterEdit = true; //For Editing Demo File
 
 //tab names
-export const tabNames = ["locations", "people", "quests", "monsters", "spells", "items", "misc"];
+export let tabNames = ["locations", "people", "quests", "monsters", "spells", "items", "misc"];
+export const LOCKED_TABS = ["locations", "people", "quests"];
 
 
 export function reCurrent() {
@@ -44,7 +45,7 @@ export function newCurrent(entry = excelDM.entries.find(e => e.current === true)
   reCurrent();
 
   const currentTitle = document.getElementById("currentTitle");
-  currentTitle.innerHTML = current.title;
+  currentTitle.innerHTML = `<img src="/assets/torch.gif" class="title-torch" alt="">${current.title}<img src="/assets/torch.gif" class="title-torch" alt="">`;
 }
 
 

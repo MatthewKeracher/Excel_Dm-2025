@@ -2,7 +2,7 @@
 
 :root {
   --color-background: #000;
-  --color-border: #115926;
+  --color-border: #34514e;
   --color-accent: #d8d83c;
   --color-cursor: #d8d83c;
 }
@@ -12,14 +12,15 @@
   top: 10%;
   left: 35%;
   display: none;
+  flex-direction: column;
   font-size: large;
   font-family: monospace;
   color: #f0e6c8;
   caret-color: var(--color-cursor);
   background-color: var(--color-background);
   width: 33%;
-  height: 70vh;
-  overflow-y: hidden;
+  height: 80vh;
+  overflow: hidden;
   z-index: 999;
   border: 2px solid var(--color-border);
   border-radius: 4px;
@@ -144,7 +145,9 @@
 /* ── CodeMirror ── */
 
 .CodeMirror {
-  height: auto;
+  flex: 1;
+  min-height: 0;
+  height: 100% !important;
   color: #f0e6c8;
   background: var(--color-background);
   padding: 5px;
@@ -158,8 +161,8 @@
 
 .CodeMirror-scroll {
   overflow-y: auto !important;
-  height: 100vh;
-  max-height: 60vh;
+  height: 100% !important;
+  max-height: none !important;
 }
 
 .CodeMirror-cursor {

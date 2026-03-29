@@ -14,6 +14,7 @@ export async function loadData() {
 
     excelDM.entries.splice(0, excelDM.entries.length);
     excelDM.categories = data.categories ?? {};
+    excelDM.tabs = Array.isArray(data.tabs) ? data.tabs : null;
 
     (Array.isArray(data.entries) ? data.entries : []).forEach((entryData) => {
       excelDM.add(new Entry(entryData));

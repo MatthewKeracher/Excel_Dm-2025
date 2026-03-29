@@ -203,6 +203,13 @@ func createTables() error {
 		}
 	}
 
+	// Add tabs column to campaigns if missing (added post-launch)
+	if ok, _ := hasColumn("campaigns", "tabs"); !ok {
+		if _, err := Conn.Exec("ALTER TABLE campaigns ADD COLUMN tabs TEXT"); err != nil {
+			return err
+		}
+	}
+
 	if _, err := Conn.Exec(`
 		CREATE TABLE IF NOT EXISTS entries (
 			id            INTEGER PRIMARY KEY AUTOINCREMENT,

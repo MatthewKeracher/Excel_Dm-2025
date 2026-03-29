@@ -83,12 +83,12 @@ async function pushToServer() {
   const dirty = excelDM.dirtyEntries;
   const deleted = excelDM.deletedServerIds;
 
-  if (dirty.size === 0 && deleted.size === 0) return;
+  if (dirty.size === 0 && deleted.size === 0 && !excelDM.dirtyMeta) return;
 
   setHttpState("saving");
 
   const hasNewEntries = [...dirty].some((e) => e._serverId == null);
-  syncLog("PUSH", `dirty=${dirty.size} deleted=${deleted.size} method=${hasNewEntries ? "PUT" : "PATCH"}`);
+  syncLog("PUSH", `dirty=${dirty.size} deleted=${deleted.size} meta=${excelDM.dirtyMeta} method=${hasNewEntries ? "PUT" : "PATCH"}`);
 
   if (hasNewEntries) {
     await putToServer();
@@ -101,9 +101,11 @@ async function putToServer() {
   // Bug 1: snapshot before the fetch so edits that arrive during the await are not lost
   const dirtySnapshot = new Set(excelDM.dirtyEntries);
   const deletedSnapshot = new Set(excelDM.deletedServerIds);
+  const metaSnapshot = excelDM.dirtyMeta;
 
   const payload = excelDM.prepareForJSON();
   payload.categories = excelDM.categories ?? {};
+  if (Array.isArray(excelDM.tabs)) payload.tabs = excelDM.tabs;
   // Strip per-user local state — coords (pop-out position) and popOut are not synced
   if (Array.isArray(payload.entries)) {
     payload.entries.forEach((e) => { delete e.popOut; delete e.coords; });
@@ -135,6 +137,7 @@ async function putToServer() {
   // Only remove what was in the snapshot — preserve any edits made during the fetch
   dirtySnapshot.forEach((e) => excelDM.dirtyEntries.delete(e));
   deletedSnapshot.forEach((id) => excelDM.deletedServerIds.delete(id));
+  if (metaSnapshot) excelDM.dirtyMeta = false;
   syncLog("PUT OK", `${data.ids?.length ?? 0} entries`);
   setHttpState("saved");
 }
@@ -143,6 +146,7 @@ async function patchToServer(dirty, deleted) {
   // Bug 1: snapshot before the fetch so edits that arrive during the await are not lost
   const dirtySnapshot = new Set(dirty);
   const deletedSnapshot = new Set(deleted);
+  const metaSnapshot = excelDM.dirtyMeta;
 
   const updated = [...dirtySnapshot].map((e) => ({
     _serverId: e._serverId,
@@ -164,6 +168,7 @@ async function patchToServer(dirty, deleted) {
     deletedIds: [...deletedSnapshot],
     categories: excelDM.categories ?? {},
   };
+  if (metaSnapshot && Array.isArray(excelDM.tabs)) payload.tabs = excelDM.tabs;
 
   const res = await fetch(apiUrl, {
     method: "PATCH",
@@ -185,6 +190,7 @@ async function patchToServer(dirty, deleted) {
   // Only remove what was in the snapshot — preserve any edits made during the fetch.
   dirtySnapshot.forEach((e) => excelDM.dirtyEntries.delete(e));
   deletedSnapshot.forEach((id) => excelDM.deletedServerIds.delete(id));
+  if (metaSnapshot) excelDM.dirtyMeta = false;
   syncLog("PATCH OK", `${updated.length} updated, ${deletedSnapshot.size} deleted`);
   setHttpState("saved");
 }

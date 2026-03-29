@@ -146,6 +146,7 @@ func PutCampaign(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
 		Entries    []json.RawMessage `json:"entries"`
 		Categories json.RawMessage   `json:"categories"`
+		Tabs       json.RawMessage   `json:"tabs"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "invalid JSON body", http.StatusBadRequest)
@@ -156,8 +157,12 @@ func PutCampaign(w http.ResponseWriter, r *http.Request) {
 	if payload.Categories != nil {
 		categories = string(payload.Categories)
 	}
+	tabs := ""
+	if payload.Tabs != nil {
+		tabs = string(payload.Tabs)
+	}
 
-	ids, version, err := saveEntries(campID, payload.Entries, categories)
+	ids, version, err := saveEntries(campID, payload.Entries, categories, tabs)
 	if err != nil {
 		log.Printf("PutCampaign saveEntries error (campID=%d): %v", campID, err)
 		http.Error(w, "failed to save campaign", http.StatusInternalServerError)

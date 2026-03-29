@@ -20,7 +20,7 @@ export function loadEditor(
   // Create editor container
   currentEditor = document.createElement("div");
   currentEditor.classList.add("editor");
-  currentEditor.style.display = "block";
+  currentEditor.style.display = "flex";
 
   // ── Toolbar ──
   const toolbar = document.createElement("div");

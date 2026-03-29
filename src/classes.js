@@ -5,11 +5,14 @@ export class EntryManager {
     this.entries = [];
     this.dirtyEntries = new Set();
     this.deletedServerIds = new Set();
+    this.tabs = null;      // null = use DEFAULT_TABS
+    this.dirtyMeta = false; // true when tabs changed and need saving
   }
 
   clearDirtyState() {
     this.dirtyEntries.clear();
     this.deletedServerIds.clear();
+    this.dirtyMeta = false;
   }
 
   add(entry) {
