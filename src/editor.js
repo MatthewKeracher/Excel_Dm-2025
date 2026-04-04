@@ -8,6 +8,7 @@ import {
   formatItemBlock, formatItemOneLiner,
   formatMonsterTable, formatSpellTable, formatItemTable,
   generateNPC, generateNPCBlock,
+  generateGem, generateJewelry, generateMagicItem, generateSpellScroll, generatePotion,
 } from "./ruleset.js";
 
 export function loadEditor(
@@ -250,7 +251,7 @@ export function loadEditor(
 
   const tabRules = document.createElement("button");
   tabRules.className = "snippet-panel-tab";
-  tabRules.textContent = "Rules";
+  tabRules.textContent = getCurrentRuleset() || "Rules";
   if (!getCurrentRuleset()) tabRules.style.display = "none";
 
   const snippetPanelClose = document.createElement("button");
@@ -332,7 +333,7 @@ export function loadEditor(
   function renderRulesSections(query) {
     rulesList.innerHTML = "";
     const sections = [
-      { label: "Monsters", key: "monsters", groupBy: e => e.family || "Other", formatBlock: formatMonsterBlock, formatLine: formatMonsterOneLiner, formatTable: formatMonsterTable },
+      { label: "Monsters", key: "monsters", groupBy: e => e.family || "Other", formatBlock: e => formatMonsterBlock(e, rulesCache?.monsters), formatLine: e => formatMonsterOneLiner(e, rulesCache?.spells, rulesCache?.monsters), formatTable: formatMonsterTable },
       { label: "Spells",   key: "spells",   groupBy: e => `${e.class} — Level ${e.level}`,  formatBlock: formatSpellBlock,   formatLine: formatSpellOneLiner,  formatTable: formatSpellTable },
       { label: "Items",    key: "items",    groupBy: e => e.category ? e.category.charAt(0).toUpperCase() + e.category.slice(1) : "Other", formatBlock: formatItemBlock, formatLine: formatItemOneLiner, formatTable: formatItemTable },
     ];
@@ -538,6 +539,98 @@ export function loadEditor(
         sectionBody.appendChild(subHeading);
         sectionBody.appendChild(subBody);
       });
+
+      section.appendChild(heading);
+      section.appendChild(sectionBody);
+      rulesList.appendChild(section);
+    }
+
+    // Treasure section — always shown in Rules tab (no query filter needed)
+    if (!query) {
+      const section = document.createElement("div");
+      section.className = "rules-section";
+
+      const heading = makeHeading("Treasure", 0, true);
+      const sectionBody = document.createElement("div");
+      sectionBody.className = "rules-section-body";
+      sectionBody.style.display = "none";
+
+      heading.addEventListener("click", () => {
+        const isVisible = sectionBody.style.display !== "none";
+        sectionBody.style.display = isVisible ? "none" : "";
+        heading.classList.toggle("collapsed", isVisible);
+      });
+
+      function makeTreasureRow(label, rollFn) {
+        const row = document.createElement("div");
+        row.className = "snippet-item";
+
+        const nameEl = document.createElement("span");
+        nameEl.className = "rules-entry-name";
+        nameEl.textContent = label;
+
+        const actions = document.createElement("div");
+        actions.className = "snippet-item-actions";
+
+        const btn = document.createElement("button");
+        btn.className = "snippet-action-btn";
+        btn.textContent = "⚄";
+        btn.title = `Roll ${label}`;
+        btn.addEventListener("click", () => {
+          codeArea.replaceRange(rollFn(), codeArea.getCursor());
+          codeArea.focus();
+        });
+
+        actions.appendChild(btn);
+        row.appendChild(nameEl);
+        row.appendChild(actions);
+        return row;
+      }
+
+      // Gems
+      const gemsHeading = makeHeading("Gems", 1, false);
+      const gemsBody = document.createElement("div");
+      gemsBody.className = "rules-subsection-body";
+      gemsHeading.addEventListener("click", () => {
+        const v = gemsBody.style.display !== "none";
+        gemsBody.style.display = v ? "none" : "";
+        gemsHeading.classList.toggle("collapsed", v);
+      });
+      gemsBody.appendChild(makeTreasureRow("Roll Gem", generateGem));
+
+      // Jewelry
+      const jewHeading = makeHeading("Jewelry", 1, false);
+      const jewBody = document.createElement("div");
+      jewBody.className = "rules-subsection-body";
+      jewHeading.addEventListener("click", () => {
+        const v = jewBody.style.display !== "none";
+        jewBody.style.display = v ? "none" : "";
+        jewHeading.classList.toggle("collapsed", v);
+      });
+      jewBody.appendChild(makeTreasureRow("Roll Jewelry", generateJewelry));
+
+      // Magic Items
+      const magicHeading = makeHeading("Magic Items", 1, false);
+      const magicBody = document.createElement("div");
+      magicBody.className = "rules-subsection-body";
+      magicHeading.addEventListener("click", () => {
+        const v = magicBody.style.display !== "none";
+        magicBody.style.display = v ? "none" : "";
+        magicHeading.classList.toggle("collapsed", v);
+      });
+      magicBody.appendChild(makeTreasureRow("Any", () => generateMagicItem("any", rulesCache?.spells)));
+      magicBody.appendChild(makeTreasureRow("Weapon or Armor", () => generateMagicItem("weaponOrArmor", rulesCache?.spells)));
+      magicBody.appendChild(makeTreasureRow("Any Exc. Weapons", () => generateMagicItem("anyExcWeapons", rulesCache?.spells)));
+      magicBody.appendChild(makeTreasureRow("Mage Scroll", () => generateSpellScroll("Mage", rulesCache?.spells)));
+      magicBody.appendChild(makeTreasureRow("Cleric Scroll", () => generateSpellScroll("Cleric", rulesCache?.spells)));
+      magicBody.appendChild(makeTreasureRow("Potion", () => generatePotion()));
+
+      sectionBody.appendChild(gemsHeading);
+      sectionBody.appendChild(gemsBody);
+      sectionBody.appendChild(jewHeading);
+      sectionBody.appendChild(jewBody);
+      sectionBody.appendChild(magicHeading);
+      sectionBody.appendChild(magicBody);
 
       section.appendChild(heading);
       section.appendChild(sectionBody);
