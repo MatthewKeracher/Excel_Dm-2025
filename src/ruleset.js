@@ -6,11 +6,24 @@ import { authHeaders } from "./auth.js";
 
 let currentRuleset = "";
 const cache = {};
+let moduleCache = null;
 
 export function setCurrentRuleset(name) {
   if (name !== currentRuleset) {
     currentRuleset = name ?? "";
+    moduleCache = null;
     Object.keys(cache).forEach(k => delete cache[k]);
+  }
+}
+
+export async function loadRulesetModule() {
+  if (!currentRuleset) return null;
+  if (moduleCache) return moduleCache;
+  try {
+    moduleCache = await import(`/src/rulesets/${currentRuleset}/index.js`);
+    return moduleCache;
+  } catch {
+    return null;
   }
 }
 
@@ -38,21 +51,3 @@ export async function getRulesetData(category) {
   }
 }
 
-// ── Temporary re-exports ──────────────────────────────────────────────────────
-// editor.js currently imports everything from this file.
-// These re-exports will be removed in Phase 4 when editor.js is refactored
-// to dynamically import the ruleset module directly.
-
-export {
-  formatMonsterBlock, formatMonsterOneLiner, formatMonsterTable,
-  formatSpellBlock, formatSpellOneLiner, formatSpellTable,
-  formatItemBlock, formatItemOneLiner, formatItemTable,
-} from "./rulesets/BFRPG/formatters.js";
-
-export {
-  generateNPC, generateNPCBlock,
-} from "./rulesets/BFRPG/npc.js";
-
-export {
-  generateGem, generateJewelry, generateMagicItem, generatePotion, generateSpellScroll,
-} from "./rulesets/BFRPG/treasure.js";

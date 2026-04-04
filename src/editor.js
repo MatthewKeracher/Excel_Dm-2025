@@ -1,15 +1,7 @@
 import { reCurrent, excelDM } from "./main.js";
 import { loadSnippets, addSnippet, updateSnippet, deleteSnippet } from "./snippets.js";
 import { render as renderMacro } from "./macroEngine.js";
-import {
-  getCurrentRuleset, getRulesetData,
-  formatMonsterBlock, formatMonsterOneLiner,
-  formatSpellBlock, formatSpellOneLiner,
-  formatItemBlock, formatItemOneLiner,
-  formatMonsterTable, formatSpellTable, formatItemTable,
-  generateNPC, generateNPCBlock,
-  generateGem, generateJewelry, generateMagicItem, generateSpellScroll, generatePotion,
-} from "./ruleset.js";
+import { getCurrentRuleset, getRulesetData, loadRulesetModule } from "./ruleset.js";
 
 export function loadEditor(
   entry,
@@ -309,18 +301,17 @@ export function loadEditor(
 
   // Rules pane rendering
   let rulesCache = null;
+  let rulesetModule = null;
   let rulesQuery = "";
 
   async function renderRulesPane() {
     if (!rulesCache) {
       rulesList.innerHTML = '<p class="snippet-empty">Loading…</p>';
-      const [monsters, spells, items, classes] = await Promise.all([
-        getRulesetData("monsters"),
-        getRulesetData("spells"),
-        getRulesetData("items"),
-        getRulesetData("classes"),
-      ]);
-      rulesCache = { monsters, spells, items, classes };
+      [rulesetModule] = await Promise.all([loadRulesetModule()]);
+      const keys = rulesetModule ? rulesetModule.sections.map(s => s.key) : [];
+      const uniqueKeys = [...new Set([...keys, "classes"])];
+      const results = await Promise.all(uniqueKeys.map(k => getRulesetData(k)));
+      rulesCache = Object.fromEntries(uniqueKeys.map((k, i) => [k, results[i]]));
     }
     renderRulesSections(rulesQuery);
   }
@@ -332,11 +323,7 @@ export function loadEditor(
 
   function renderRulesSections(query) {
     rulesList.innerHTML = "";
-    const sections = [
-      { label: "Monsters", key: "monsters", groupBy: e => e.family || "Other", formatBlock: e => formatMonsterBlock(e, rulesCache?.monsters), formatLine: e => formatMonsterOneLiner(e, rulesCache?.spells, rulesCache?.monsters), formatTable: formatMonsterTable },
-      { label: "Spells",   key: "spells",   groupBy: e => `${e.class} — Level ${e.level}`,  formatBlock: formatSpellBlock,   formatLine: formatSpellOneLiner,  formatTable: formatSpellTable },
-      { label: "Items",    key: "items",    groupBy: e => e.category ? e.category.charAt(0).toUpperCase() + e.category.slice(1) : "Other", formatBlock: formatItemBlock, formatLine: formatItemOneLiner, formatTable: formatItemTable },
-    ];
+    const sections = rulesetModule?.sections ?? [];
 
     // Build a collapsible heading element (collapsed by default unless query is active)
     function makeHeading(text, depth, startCollapsed) {
@@ -387,7 +374,9 @@ export function loadEditor(
 
     const hasQuery = !!query;
 
-    sections.forEach(({ label, key, groupBy, formatBlock, formatLine, formatTable }) => {
+    sections.forEach(({ label, key, groupBy, formatBlock: rawFormatBlock, formatLine: rawFormatLine, formatTable }) => {
+      const formatBlock = e => rawFormatBlock(e, rulesCache);
+      const formatLine  = e => rawFormatLine(e, rulesCache);
       let entries = rulesCache[key] ?? [];
       if (query) {
         entries = entries.filter(e =>
@@ -510,7 +499,7 @@ export function loadEditor(
           genBtn.textContent = "+";
           genBtn.title = "Insert one-liner NPC";
           genBtn.addEventListener("click", () => {
-            const line = generateNPC(cls, levelData.level);
+            const line = rulesetModule?.generateNPC?.(cls, levelData.level);
             if (line) {
               codeArea.replaceRange(line, codeArea.getCursor());
               codeArea.focus();
@@ -522,7 +511,7 @@ export function loadEditor(
           blockBtn.textContent = "≡";
           blockBtn.title = "Insert full character sheet";
           blockBtn.addEventListener("click", () => {
-            const block = generateNPCBlock(cls, levelData.level);
+            const block = rulesetModule?.generateNPCBlock?.(cls, levelData.level);
             if (block) {
               codeArea.replaceRange(block, codeArea.getCursor());
               codeArea.focus();
@@ -545,8 +534,8 @@ export function loadEditor(
       rulesList.appendChild(section);
     }
 
-    // Treasure section — always shown in Rules tab (no query filter needed)
-    if (!query) {
+    // Treasure section — driven by rulesetModule.generators
+    if (!query && rulesetModule?.generators?.length) {
       const section = document.createElement("div");
       section.className = "rules-section";
 
@@ -587,50 +576,21 @@ export function loadEditor(
         return row;
       }
 
-      // Gems
-      const gemsHeading = makeHeading("Gems", 1, false);
-      const gemsBody = document.createElement("div");
-      gemsBody.className = "rules-subsection-body";
-      gemsHeading.addEventListener("click", () => {
-        const v = gemsBody.style.display !== "none";
-        gemsBody.style.display = v ? "none" : "";
-        gemsHeading.classList.toggle("collapsed", v);
+      rulesetModule.generators.forEach(({ label, rows }) => {
+        const subHeading = makeHeading(label, 1, false);
+        const subBody = document.createElement("div");
+        subBody.className = "rules-subsection-body";
+        subHeading.addEventListener("click", () => {
+          const v = subBody.style.display !== "none";
+          subBody.style.display = v ? "none" : "";
+          subHeading.classList.toggle("collapsed", v);
+        });
+        rows.forEach(({ label: rowLabel, fn }) => {
+          subBody.appendChild(makeTreasureRow(rowLabel, () => fn(rulesCache)));
+        });
+        sectionBody.appendChild(subHeading);
+        sectionBody.appendChild(subBody);
       });
-      gemsBody.appendChild(makeTreasureRow("Roll Gem", generateGem));
-
-      // Jewelry
-      const jewHeading = makeHeading("Jewelry", 1, false);
-      const jewBody = document.createElement("div");
-      jewBody.className = "rules-subsection-body";
-      jewHeading.addEventListener("click", () => {
-        const v = jewBody.style.display !== "none";
-        jewBody.style.display = v ? "none" : "";
-        jewHeading.classList.toggle("collapsed", v);
-      });
-      jewBody.appendChild(makeTreasureRow("Roll Jewelry", generateJewelry));
-
-      // Magic Items
-      const magicHeading = makeHeading("Magic Items", 1, false);
-      const magicBody = document.createElement("div");
-      magicBody.className = "rules-subsection-body";
-      magicHeading.addEventListener("click", () => {
-        const v = magicBody.style.display !== "none";
-        magicBody.style.display = v ? "none" : "";
-        magicHeading.classList.toggle("collapsed", v);
-      });
-      magicBody.appendChild(makeTreasureRow("Any", () => generateMagicItem("any", rulesCache?.spells)));
-      magicBody.appendChild(makeTreasureRow("Weapon or Armor", () => generateMagicItem("weaponOrArmor", rulesCache?.spells)));
-      magicBody.appendChild(makeTreasureRow("Any Exc. Weapons", () => generateMagicItem("anyExcWeapons", rulesCache?.spells)));
-      magicBody.appendChild(makeTreasureRow("Mage Scroll", () => generateSpellScroll("Mage", rulesCache?.spells)));
-      magicBody.appendChild(makeTreasureRow("Cleric Scroll", () => generateSpellScroll("Cleric", rulesCache?.spells)));
-      magicBody.appendChild(makeTreasureRow("Potion", () => generatePotion()));
-
-      sectionBody.appendChild(gemsHeading);
-      sectionBody.appendChild(gemsBody);
-      sectionBody.appendChild(jewHeading);
-      sectionBody.appendChild(jewBody);
-      sectionBody.appendChild(magicHeading);
-      sectionBody.appendChild(magicBody);
 
       section.appendChild(heading);
       section.appendChild(sectionBody);
