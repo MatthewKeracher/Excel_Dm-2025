@@ -27,6 +27,7 @@ type responseEntry struct {
 	Parent       interface{}     `json:"parent"`
 	Children     []interface{}   `json:"children"`
 	Current      bool            `json:"current"`
+	Order        int             `json:"order"`
 }
 
 type campaignResponse struct {
@@ -54,7 +55,7 @@ func serializeCampaign(campID int) ([]byte, error) {
 	}
 
 	rows, err := db.Conn.Query(`
-		SELECT id, title, type, category, body, color, image, x, y, coords, pop_out, current_child, parent_id
+		SELECT id, title, type, category, body, color, image, x, y, coords, pop_out, current_child, parent_id, sort_order
 		FROM entries WHERE campaign_id = ? ORDER BY id
 	`, campID)
 	if err != nil {
@@ -63,7 +64,7 @@ func serializeCampaign(campID int) ([]byte, error) {
 	defer rows.Close()
 
 	type entryRow struct {
-		id, currentChild int
+		id, currentChild, sortOrder int
 		title, typ, category, body, color, image, coords string
 		x, y                                             float64
 		popOut                                           bool
@@ -76,7 +77,7 @@ func serializeCampaign(campID int) ([]byte, error) {
 		var e entryRow
 		if err := rows.Scan(
 			&e.id, &e.title, &e.typ, &e.category, &e.body, &e.color, &e.image,
-			&e.x, &e.y, &e.coords, &e.popOut, &e.currentChild, &e.parentID,
+			&e.x, &e.y, &e.coords, &e.popOut, &e.currentChild, &e.parentID, &e.sortOrder,
 		); err != nil {
 			return nil, err
 		}
@@ -116,6 +117,7 @@ func serializeCampaign(campID int) ([]byte, error) {
 			Parent:       parentIdx,
 			Children:     []interface{}{},
 			Current:      false,
+			Order:        e.sortOrder,
 		}
 	}
 
@@ -169,7 +171,7 @@ func serializePatchDelta(campID int, patch patchPayload, version int64) ([]byte,
 		args = append(args, campID)
 
 		rows, err := db.Conn.Query(fmt.Sprintf(`
-			SELECT id, title, type, category, body, color, image, x, y, coords, pop_out, current_child, parent_id
+			SELECT id, title, type, category, body, color, image, x, y, coords, pop_out, current_child, parent_id, sort_order
 			FROM entries WHERE id IN (%s) AND campaign_id = ?
 		`, placeholders), args...)
 		if err != nil {
@@ -184,7 +186,7 @@ func serializePatchDelta(campID int, patch patchPayload, version int64) ([]byte,
 			var currentChild int
 			if err := rows.Scan(
 				&re.ServerID, &re.Title, &re.Type, &re.Category, &re.Body, &re.Color, &re.Image,
-				&re.X, &re.Y, &coordsStr, &re.PopOut, &currentChild, &parentID,
+				&re.X, &re.Y, &coordsStr, &re.PopOut, &currentChild, &parentID, &re.Order,
 			); err != nil {
 				continue
 			}
@@ -245,6 +247,7 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string, ta
 		PopOut       bool            `json:"popOut"`
 		CurrentChild interface{}     `json:"currentChild"`
 		Parent       interface{}     `json:"parent"`
+		Order        int             `json:"order"`
 	}
 
 	entries := make([]incomingEntry, len(rawEntries))
@@ -302,10 +305,10 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string, ta
 		}
 
 		res, err = tx.Exec(`
-			INSERT INTO entries (campaign_id, title, type, category, body, color, image, x, y, coords, pop_out, current_child)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			INSERT INTO entries (campaign_id, title, type, category, body, color, image, x, y, coords, pop_out, current_child, sort_order)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`, campID, e.Title, e.Type, e.Category, e.Body, e.Color, e.Image,
-			e.X, e.Y, coords, e.PopOut, currentChild)
+			e.X, e.Y, coords, e.PopOut, currentChild, e.Order)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -389,6 +392,7 @@ type patchEntry struct {
 	PopOut       bool            `json:"popOut"`
 	CurrentChild interface{}     `json:"currentChild"`
 	ParentID     *int64          `json:"parentId"` // server ID, nil = root
+	Order        int             `json:"order"`
 }
 
 // patchPayload is the body of a PATCH /api/campaigns request.
@@ -466,11 +470,11 @@ func patchEntries(campID int, patch patchPayload) (version int64, err error) {
 			UPDATE entries
 			SET title=?, type=?, category=?, body=?, color=?, image=?,
 			    x=?, y=?, coords=?, pop_out=?, current_child=?, parent_id=?,
-			    updated_at=CURRENT_TIMESTAMP
+			    sort_order=?, updated_at=CURRENT_TIMESTAMP
 			WHERE id=? AND campaign_id=?
 		`, e.Title, e.Type, e.Category, e.Body, e.Color, e.Image,
 			e.X, e.Y, coords, e.PopOut, currentChild, e.ParentID,
-			e.ServerID, campID)
+			e.Order, e.ServerID, campID)
 		if err != nil {
 			return 0, err
 		}

@@ -406,6 +406,7 @@
   cursor: pointer;
   user-select: none;
   letter-spacing: 0.04em;
+  text-align: left;
 }
 
 .rules-section-heading::before {
@@ -429,6 +430,7 @@
   cursor: pointer;
   user-select: none;
   letter-spacing: 0.03em;
+  text-align: left;
 }
 
 .rules-subsection-heading::before {

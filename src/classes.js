@@ -107,26 +107,64 @@ export class EntryManager {
       this.deletedServerIds.add(entry._serverId);
     }
     this.dirtyEntries.delete(entry);
-    // Remove the entry from the main entries list
     this.entries = this.entries.filter((e) => e !== entry);
 
-    // Recount currentChildren length on rootNode.
-    let rootNode = entry.findRootNode();
-    let newNumber = rootNode.getLowestEntry();
-    rootNode.currentChild = newNumber - 1;
-
-    // Remove entry from ALL parents' children lists
+    // Remove entry from all parents' children lists
     this.entries.forEach((parent) => {
       if (parent.children) {
         parent.children = parent.children.filter((child) => child !== entry);
       }
     });
 
-    entry.children.forEach((child) => {
-      if (child.type === "locations") {
-        this.deleteEntry(child);
+    if (entry.type === "quests") {
+      if (entry.parent === null) {
+        // Root quest: wipe the entire objective chain, then shift sort_order
+        this._deleteQuestChain(entry.children);
+        this._renumberQuests(entry.order);
+      } else {
+        // Objective: splice out of chain, re-linking parent to next objective
+        if (entry.children.length > 0) {
+          const next = entry.children[0];
+          entry.parent.children = [next];
+          next.parent = entry.parent;
+          this.dirtyEntries.add(entry.parent);
+          this.dirtyEntries.add(next);
+        }
+        // Clamp root's currentChild to the new chain length
+        const root = entry.findRootNode();
+        const deletedDepth = entry.countParentsUp() - 1;
+        if (root.currentChild !== null && root.currentChild >= deletedDepth) {
+          root.currentChild = deletedDepth > 0 ? deletedDepth - 1 : null;
+          this.dirtyEntries.add(root);
+        }
       }
+    } else {
+      entry.children.forEach((child) => {
+        if (child.type === "locations") {
+          this.deleteEntry(child);
+        }
+      });
+    }
+  }
+
+  _deleteQuestChain(children) {
+    children.forEach((child) => {
+      if (child._serverId != null) {
+        this.deletedServerIds.add(child._serverId);
+      }
+      this.dirtyEntries.delete(child);
+      this.entries = this.entries.filter((e) => e !== child);
+      this._deleteQuestChain(child.children);
     });
+  }
+
+  _renumberQuests(deletedOrder) {
+    this.entries
+      .filter((e) => e.type === "quests" && e.parent === null && e.order > deletedOrder)
+      .forEach((quest) => {
+        quest.order -= 1;
+        this.dirtyEntries.add(quest);
+      });
   }
 
   // Reset parent Entry-object refs back to raw server IDs and clear children.
@@ -202,6 +240,7 @@ export class Entry {
   x = 0;
   y = 0;
   image = "";
+  order = 0;
 
   constructor(data = {}) {
     this._serverId = data._serverId ?? null;
@@ -222,6 +261,7 @@ export class Entry {
     this.current = data.current || false;
     this.x = data.x || this.getMiddle().x;
     this.y = data.y || this.getMiddle().y;
+    this.order = data.order || 0;
   }
 
   getMiddle() {

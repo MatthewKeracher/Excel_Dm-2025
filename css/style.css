@@ -864,6 +864,72 @@ p {
   background-color: #eee;
 }
 
+/* Monster stat block (HTML output from formatMonsterBlock) */
+
+.notecard-body table.monster-stat-block {
+  float: none;
+  width: 100%;
+  margin: 8px 0;
+  border-collapse: collapse;
+}
+
+.notecard-body table.monster-stat-block td {
+  border-bottom: 1px solid #000;
+  padding: 2px 10px 2px 0;
+  vertical-align: middle;
+  font-weight: normal;
+}
+
+.notecard-body table.monster-stat-block td:first-child {
+  width: 40%;
+}
+
+.notecard-body table.monster-stat-block tr.treasure-row td {
+  font-size: 0.9em;
+  color: #444;
+}
+
+.notecard-body table.monster-stat-block td.treasure-item {
+  padding-left: 1.4em;
+}
+
+.notecard-body table.monster-stat-block tr.treasure-section td {
+  font-size: 0.85em;
+  color: #666;
+  padding-left: 0.6em;
+  border-bottom: none;
+  padding-top: 4px;
+}
+
+/* Objectives panel (quest notecards) */
+
+.objectives-panel {
+  margin-top: 8px;
+  border-top: 1px solid rgba(0,0,0,0.15);
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.objective-item {
+  padding: 3px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.88em;
+  color: #333;
+  transition: background 0.1s;
+}
+
+.objective-item:hover {
+  background: rgba(0,0,0,0.08);
+}
+
+.objective-item.objective-current {
+  font-weight: bold;
+  background: rgba(0,0,0,0.1);
+}
+
 /* Textarea and input styling etc remain unchanged */
 
 .notecard-body h1,

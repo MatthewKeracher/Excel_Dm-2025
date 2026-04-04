@@ -217,6 +217,13 @@ func createTables() error {
 		}
 	}
 
+	// Add sort_order column to entries if missing (added post-launch)
+	if ok, _ := hasColumn("entries", "sort_order"); !ok {
+		if _, err := Conn.Exec("ALTER TABLE entries ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0"); err != nil {
+			return err
+		}
+	}
+
 	if _, err := Conn.Exec(`
 		CREATE TABLE IF NOT EXISTS entries (
 			id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -233,6 +240,7 @@ func createTables() error {
 			pop_out       BOOLEAN NOT NULL DEFAULT FALSE,
 			current_child INTEGER NOT NULL DEFAULT 0,
 			parent_id     INTEGER REFERENCES entries(id),
+			sort_order    INTEGER NOT NULL DEFAULT 0,
 			updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP
 		)
 	`); err != nil {

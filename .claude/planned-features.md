@@ -1,5 +1,25 @@
 # Planned Features
 
+##
+
+
+## Character Generation Improvements
+
+Rnadomly gened chaarcters should have buffed prime requisite scores so fighter higher STR, for example. Scores are currently STR, DEX but could be shortened to just S, D (and CHA to CH). If modifier not 0 should show, for ex STR 14 (+2) or INT 8 (-1).
+
+AC and Weapons could itneract with one liners for Weapons and Armour, and could work towards a randomly generated inventory with coins. Spells known could be figured out as well based on spell slots. 
+
+remove #### Ability Scores and #### Saving Throws titles from full char sheet as table headers are self explanatory
+
+What race data is being used?
+
+
+## Items
+starter packs
+
+## Monsters
+Update monsters.json with monster descriptions from oldData.js
+
 ## users like me, sa, should be viewer on all worlds created
 
 
@@ -44,10 +64,6 @@ Designate one Entry as the homepage. Reuses all existing notecard/editor machine
 - Unrecognised expressions left as-is rather than erroring
 - Default Ability Score Table upgraded to use `{{roll(3d6)}}` per stat
 - Version migration: existing users' default snippets auto-upgraded, custom snippets preserved
-
-### Phase 3 — `prompt()` expressions
-Before inserting, collect `prompt(...)` values via a small inline form in the panel.
-Useful for `{{prompt("NPC name")}}` in character sheet templates.
 
 ### Phase 3 — `prompt()` expressions
 Before inserting, collect `prompt(...)` values via a small inline form in the panel.
@@ -118,25 +134,22 @@ GET /api/rulesets/{name}/{file}          — serve a ruleset data file
 
 ### Implementation phases
 
-**Phase A — Data serving + campaign attachment**
-1. Add `ruleset TEXT` to campaigns table (migration)
-2. `GET /api/rulesets` — reads `data/` subdirectories for `manifest.json` files
-3. `GET /api/rulesets/{name}/{file}` — serves the JSON file
-4. Campaign settings: ruleset dropdown; saves via existing `PATCH /api/campaigns/{id}/settings`
-5. `openCampaign()` stores ruleset name in a module-level var; snippet panel reads it
+**✅ Phase A — Data serving + campaign attachment**
+1. `ruleset TEXT` column added to campaigns table (migration in `db.go`)
+2. `GET /api/rulesets` — scans `data/` for subdirectories with `manifest.json`
+3. `GET /api/rulesets/{name}/{file}` — serves JSON file with path-traversal guard
+4. Campaign settings: ruleset dropdown; saved via `PATCH /api/campaigns/{id}/settings`
+5. `loadData()` in `localStorage.js` calls `setCurrentRuleset(data.ruleset)`
 
-**Phase B — Rules tab in snippet panel**
-1. Add tab bar to snippet panel: "Snippets" | "Rules"
-2. On "Rules" tab open: `fetch(/api/rulesets/{name}/monsters)` etc., cache in memory
-3. Render collapsible sections (Monsters / Spells / Items) with search filter
-4. `[+]` → `codeArea.replaceRange(entry.body, cursor)`
-5. `[≡]` → parse markdown table to extract key stats → insert one-liner
+**✅ Phase B — Rules tab in snippet panel**
+1. Tab bar in snippet panel: "Snippets" | "Rules" (Rules hidden when no ruleset set)
+2. On "Rules" tab open: fetches monsters/spells/items, cached in memory per editor session
+3. Collapsible sections (Monsters / Spells / Items) with search filter across all categories
+4. `[+]` → inserts one-liner at cursor; `[≡]` → inserts full stat block
+5. `[⊞]` on subsection heading → inserts entire group as a markdown table
 
-**Phase C — One-liner parser**
-`src/rulesetFormat.js` — `toOneLiner(entry)`:
-- Monsters: extract HD, AC, Damage, Movement from the markdown table
-- Spells: extract Range, Duration, Level, Class from the body
-- Items: extract relevant stat rows
+**✅ Phase C — One-liner and block formatters**
+`src/ruleset.js` — `formatMonsterBlock/OneLiner`, `formatSpellBlock/OneLiner`, `formatItemBlock/OneLiner`, plus `formatMonsterTable`, `formatSpellTable`, `formatItemTable`
 
 **Phase D — Character generation** *(longer term)*
 Generate a full character entry by class, race, and level using ruleset tables:

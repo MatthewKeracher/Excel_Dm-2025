@@ -205,6 +205,60 @@ function createPrevButton(entry, card) {
   return prevbtn;
 }
 
+function createObjectivesButton(entry, card) {
+  const btn = document.createElement("button");
+  btn.className = "objectives-btn";
+  btn.title = "Show Objectives";
+  btn.innerHTML = "≡";
+
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    const existing = card.querySelector(".objectives-panel");
+    if (existing) {
+      existing.remove();
+      return;
+    }
+
+    const root = entry.findRootNode();
+
+    // Walk the chain root → leaf collecting each node and its depth
+    const chain = [];
+    let node = root;
+    let depth = 0;
+    while (node) {
+      chain.push({ node, depth });
+      node = node.children.length > 0 ? node.children[0] : null;
+      depth++;
+    }
+
+    const panel = document.createElement("div");
+    panel.className = "objectives-panel";
+
+    chain.forEach(({ node: obj, depth: d }) => {
+      const item = document.createElement("div");
+      item.className = "objective-item";
+      const currentDepth = root.currentChild ?? 0;
+      if (d === currentDepth) item.classList.add("objective-current");
+      item.textContent = obj.title;
+
+      item.addEventListener("click", (e) => {
+        e.stopPropagation();
+        root.currentChild = d === 0 ? null : d;
+        excelDM.dirtyEntries.add(root);
+        saveData();
+        reCurrent();
+      });
+
+      panel.appendChild(item);
+    });
+
+    card.appendChild(panel);
+  });
+
+  return btn;
+}
+
 function createLockButton(entry) {
   const lockbtn = document.createElement("button");
   lockbtn.className = "lock-btn";
@@ -310,7 +364,7 @@ function createPopOutButton(entry) {
 }
 
 function assembleCard(card, title, body, buttonsContainer, category, buttons, entry) {
-  const { deleteBtn, editBtn, nextBtn, counterBtn, prevbtn, lockbtn, clrbtn, popbtn } = buttons;
+  const { deleteBtn, editBtn, nextBtn, counterBtn, prevbtn, lockbtn, clrbtn, popbtn, objectivesBtn } = buttons;
   const viewer = isViewer();
 
   if (!viewer) {
@@ -322,6 +376,7 @@ function assembleCard(card, title, body, buttonsContainer, category, buttons, en
     buttonsContainer.appendChild(prevbtn);
     buttonsContainer.appendChild(nextBtn);
   } else if (entry.type === "quests") {
+    buttonsContainer.appendChild(objectivesBtn);
     buttonsContainer.appendChild(prevbtn);
     buttonsContainer.appendChild(counterBtn);
     buttonsContainer.appendChild(nextBtn);
@@ -357,17 +412,18 @@ export function makeNoteCard(entry, isPopOut = false) {
   category.className = "notecard-category";
   category.textContent = entry.category || "Uncategorised";
 
-  const deleteBtn  = createDeleteButton(entry);
-  const editBtn    = createEditButton(entry, body, title, category, editState);
-  const nextBtn    = createNextButton(entry, card);
-  const counterBtn = createCounterButton(entry);
-  const prevbtn    = createPrevButton(entry, card);
-  const lockbtn    = createLockButton(entry);
-  const clrbtn     = createColorButton(entry, card);
-  const popbtn     = createPopOutButton(entry);
+  const deleteBtn     = createDeleteButton(entry);
+  const editBtn       = createEditButton(entry, body, title, category, editState);
+  const nextBtn       = createNextButton(entry, card);
+  const counterBtn    = createCounterButton(entry);
+  const prevbtn       = createPrevButton(entry, card);
+  const lockbtn       = createLockButton(entry);
+  const clrbtn        = createColorButton(entry, card);
+  const popbtn        = createPopOutButton(entry);
+  const objectivesBtn = createObjectivesButton(entry, card);
 
   assembleCard(card, title, body, buttonsContainer, category,
-    { deleteBtn, editBtn, nextBtn, counterBtn, prevbtn, lockbtn, clrbtn, popbtn },
+    { deleteBtn, editBtn, nextBtn, counterBtn, prevbtn, lockbtn, clrbtn, popbtn, objectivesBtn },
     entry);
 
   return card;

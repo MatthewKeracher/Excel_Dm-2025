@@ -45,7 +45,7 @@ bash deploy.sh --frontend-only  # redeploy only JS/CSS/HTML/data files
 
 **IMPORTANT — stop the service before deploying** to avoid "text file busy" errors:
 ```
-ssh matthew@heimvon.little-lenok.ts.net "sudo incus exec exceldm -- rc-service exceldm stop"
+ssh matthew@heimvon.zubron-tuna.ts.net "sudo incus exec exceldm -- rc-service exceldm stop"
 bash deploy.sh
 ```
 The deploy script restarts the service automatically at the end.
@@ -54,7 +54,7 @@ The app is publicly accessible at `https://excel-dm.com` via a Cloudflare tunnel
 
 **Service management (via SSH into heimvon):**
 ```
-ssh matthew@heimvon.little-lenok.ts.net
+ssh matthew@heimvon.zubron-tuna.ts.net
 sudo incus exec exceldm -- rc-service exceldm restart
 sudo incus exec exceldm -- rc-service exceldm status
 sudo incus exec exceldm -- rc-service cloudflared status
@@ -75,6 +75,7 @@ Go HTTP server using `net/http` and SQLite (`modernc.org/sqlite` — pure Go, no
 | `backend/handlers/auth.go` | `POST /api/register`, `POST /api/login`, `GET /api/account`, `PATCH /api/account/password` |
 | `backend/handlers/campaign.go` | Campaign CRUD handlers (see API Routes below) |
 | `backend/handlers/helpers.go` | `serializeCampaign`, `saveEntries`, `patchEntries`, `campaignRole` |
+| `backend/handlers/ruleset.go` | `ListRulesets`, `GetRulesetFile` — scans `data/` for ruleset directories |
 | `backend/handlers/invite.go` | Invite link creation (`CreateInvite`), lookup (`GetInvite`), acceptance (`AcceptInvite`) |
 | `backend/handlers/ws.go` | WebSocket upgrade; `ServeCampaignWS`; hub broadcast |
 | `backend/handlers/hub.go` | In-memory WebSocket hub; keyed by `campaign:{id}` |
@@ -102,6 +103,9 @@ POST /api/campaigns/{id}/members             — add a user by email with role e
 DELETE /api/campaigns/{id}/members/{userId}  — remove a member (admin only)
 POST /api/campaigns/{id}/invites             — create a shareable invite link (admin only)
 
+GET  /api/rulesets                           — list available rulesets (scans data/ dirs for manifest.json)
+GET  /api/rulesets/{name}/{file}             — serve a ruleset data file (e.g. /api/rulesets/BFRPG/monsters)
+
 GET  /api/invites/{token}                    — look up invite info, no auth required
 POST /api/invites/{token}/accept             — accept invite, adds caller as member (auth required)
 
@@ -117,7 +121,7 @@ GET  /invite/{token}                         — serves index.html so the SPA ca
 ```sql
 users            (id, email, password_hash, created_at)
 
-campaigns        (id, owner_id→users, name, is_public, categories JSON, version INTEGER, updated_at)
+campaigns        (id, owner_id→users, name, is_public, categories JSON, tabs JSON, ruleset TEXT, version INTEGER, updated_at)
 
 campaign_members (campaign_id→campaigns, user_id→users, role CHECK IN ('admin','editor','viewer'))
                  PRIMARY KEY (campaign_id, user_id)
@@ -139,7 +143,7 @@ campaign_invites (id, campaign_id→campaigns, token TEXT UNIQUE, role, created_
 
 **Invite links:** a single-use token (hex-encoded random bytes) stored in `campaign_invites`. `GetInvite` is public; `AcceptInvite` requires auth and marks the token used. If the accepting user is already the admin, the member row is skipped.
 
-**Schema migration:** `db.Init()` calls `migrateIfNeeded()` which detects the old blob-based schema and migrates automatically. `createTables()` also adds `campaigns.version` and `campaign_invites` via `ALTER TABLE` / `CREATE TABLE IF NOT EXISTS` — safe to run repeatedly.
+**Schema migration:** `db.Init()` calls `migrateIfNeeded()` which detects the old blob-based schema and migrates automatically. `createTables()` also adds `campaigns.version`, `campaigns.tabs`, `campaigns.ruleset`, and `campaign_invites` via `ALTER TABLE` / `CREATE TABLE IF NOT EXISTS` — safe to run repeatedly.
 
 ### Frontend State
 
@@ -166,7 +170,11 @@ All runtime state lives in `src/main.js`:
 | `src/ws.js` | WebSocket lifecycle — `connectWS()`, `disconnectWS()`, delta/full-replace handling, exponential backoff reconnection, version conflict detection |
 | `src/syncState.js` | Sync status indicator (`#sync-status` DOM element); manages `httpState` (idle/saving/retrying/saved/error) and `wsState` (disconnected/connecting/connected/reconnecting/updating) |
 | `src/syncLog.js` | In-memory ring buffer of last 50 sync events; exposed as `window.__syncLog()` for debugging |
-| `src/campaigns.js` | Campaign picker modal — list, create, open worlds, manage members/invites; shown after login |
+| `src/campaigns.js` | Campaign picker modal — list, create, open worlds, manage members/invites/ruleset; shown after login |
+| `src/editor.js` | CodeMirror-based modal editor; snippet panel with "Snippets" and "Rules" tabs |
+| `src/snippets.js` | Personal snippet library in `localStorage` — defaults (treasure tables, magic items, stat blocks), CRUD |
+| `src/macroEngine.js` | Safe `{{ }}` template renderer — `roll(XdY)`, `ran(min,max)`, `pick(...)`, `wtable(...)` |
+| `src/ruleset.js` | Ruleset client — `fetchRulesets()`, `getRulesetData(category)`, format helpers for monsters/spells/items |
 | `src/notecard.js` | Notecard factory — `makeNoteCard()`, `makePopOut()`, `loadPopUp()`; all button creation and card assembly |
 | `src/dragging.js` | `makeDraggable()` — mouse drag logic for pop-out windows; calls save callback on mouseup |
 | `src/popoutState.js` | Per-user pop-out window state persisted in browser `localStorage` (keyed by server entry ID); `setPopOut()`, `clearPopOut()`, `restorePopOuts()` — not synced to server |
@@ -175,7 +183,6 @@ All runtime state lives in `src/main.js`:
 | `src/right.js` | Canvas map — draws grid and draggable location labels; `initMap()`, `draw()`, `HexToMap()` |
 | `src/buttons.js` | Header button handlers: Worlds, Save, Add Map, Add, Donate |
 | `src/tabs.js` | Tab bar — switches `currentTab`, triggers re-render |
-| `src/editor.js` | CodeMirror-based modal editor for entry markdown content |
 | `src/filter.js` | Category filter UI and compiled filter state |
 | `src/hotkeys.js` | Keyboard shortcuts (arrows, Tab, Escape, search) |
 
@@ -223,7 +230,12 @@ After loading a campaign, `localStorage.js` opens a WebSocket via `ws.js` to `/a
 
 - `data/Excel_DM.json` — blank campaign template (unused now that campaigns are DB-backed)
 - `data/Hommlet.json` — large demo campaign (~8.7MB); seeded into DB once, not re-served as a file
-- `data/BFRPG/` — reference data for monsters, spells, and items
+- `data/BFRPG/manifest.json` — ruleset manifest (`id`, `name`, `description`, `version`, `files`)
+- `data/BFRPG/monsters.json` — 189 monsters (structured: `name`, `ac`, `hd`, `attacks`, `damage`, `movement`, `xp`, `family`, `special`, `oneLiner`)
+- `data/BFRPG/spells.json` — 69 spells (structured: `name`, `class`, `level`, `range`, `duration`, `description`, `oneLiner`)
+- `data/BFRPG/items.json` — 30 items (structured: `name`, `category`, `cost`, `weight`, `damage`, `ac`, `size`, `description`, `oneLiner`)
+
+**Adding a new ruleset:** create `data/{Name}/manifest.json` + data JSON files. No backend code changes needed — `ListRulesets` discovers directories automatically.
 
 ### Entry Types
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-HOST="matthew@heimvon.little-lenok.ts.net"
+HOST="matthew@heimvon.zubron-tuna.ts.net"
 CONTAINER="exceldm"
 REMOTE_DIR="/opt/exceldm/exceldm"
 
@@ -42,4 +42,4 @@ fi
 echo "==> Restarting service..."
 ssh "$HOST" "sudo incus exec $CONTAINER -- rc-service exceldm restart"
 
-echo "==> Done! App running at http://heimvon.little-lenok.ts.net:8081"
+echo "==> Done! App running at https://excel-dm.com"

@@ -34,12 +34,7 @@ export function loadNoteCards(data, search = "no") {
 
         entries = updatedEntries;
 
-        entries.sort((a, b) =>
-          a.title.localeCompare(b.title, undefined, {
-            numeric: true,
-            sensitivity: "base",
-          }),
-        );
+        entries.sort((a, b) => a.order - b.order);
 
         break;
 

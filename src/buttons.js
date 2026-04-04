@@ -94,9 +94,18 @@ export function addEntry() {
   const dateTime = new Date().toLocaleString();
   const newName = `_${dateTime}`;
 
+  let nextOrder = 0;
+  if (currentTab === "quests") {
+    const rootQuests = excelDM.entries.filter(
+      (e) => e.type === "quests" && e.parent === null
+    );
+    nextOrder = rootQuests.reduce((max, e) => Math.max(max, e.order), -1) + 1;
+  }
+
   let newEntry = new Entry({
     category: Array.isArray(current) ? "Uncategorised" : current.category,
     title: newName,
+    order: nextOrder,
   });
 
   excelDM.add(newEntry);

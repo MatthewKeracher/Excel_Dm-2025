@@ -7,6 +7,7 @@ import {
   formatSpellBlock, formatSpellOneLiner,
   formatItemBlock, formatItemOneLiner,
   formatMonsterTable, formatSpellTable, formatItemTable,
+  generateNPC, generateNPCBlock,
 } from "./ruleset.js";
 
 export function loadEditor(
@@ -312,12 +313,13 @@ export function loadEditor(
   async function renderRulesPane() {
     if (!rulesCache) {
       rulesList.innerHTML = '<p class="snippet-empty">Loading…</p>';
-      const [monsters, spells, items] = await Promise.all([
+      const [monsters, spells, items, classes] = await Promise.all([
         getRulesetData("monsters"),
         getRulesetData("spells"),
         getRulesetData("items"),
+        getRulesetData("classes"),
       ]);
-      rulesCache = { monsters, spells, items };
+      rulesCache = { monsters, spells, items, classes };
     }
     renderRulesSections(rulesQuery);
   }
@@ -458,6 +460,89 @@ export function loadEditor(
       section.appendChild(sectionBody);
       rulesList.appendChild(section);
     });
+
+    // Classes section
+    let classes = rulesCache.classes ?? [];
+    if (query) {
+      classes = classes.filter(c => c.name.toLowerCase().includes(query));
+    }
+    if (classes.length > 0) {
+      const section = document.createElement("div");
+      section.className = "rules-section";
+
+      const heading = makeHeading(`Classes (${classes.length})`, 0, !hasQuery);
+      const sectionBody = document.createElement("div");
+      sectionBody.className = "rules-section-body";
+      if (!hasQuery) sectionBody.style.display = "none";
+
+      heading.addEventListener("click", () => {
+        const isVisible = sectionBody.style.display !== "none";
+        sectionBody.style.display = isVisible ? "none" : "";
+        heading.classList.toggle("collapsed", isVisible);
+      });
+
+      classes.forEach(cls => {
+        const subHeading = makeHeading(cls.name, 1, !hasQuery);
+        const subBody = document.createElement("div");
+        subBody.className = "rules-subsection-body";
+        if (!hasQuery) subBody.style.display = "none";
+
+        subHeading.addEventListener("click", () => {
+          const isVisible = subBody.style.display !== "none";
+          subBody.style.display = isVisible ? "none" : "";
+          subHeading.classList.toggle("collapsed", isVisible);
+        });
+
+        (cls.levels ?? []).forEach(levelData => {
+          const row = document.createElement("div");
+          row.className = "snippet-item";
+
+          const nameEl = document.createElement("span");
+          nameEl.className = "rules-entry-name";
+          nameEl.textContent = `Level ${levelData.level}`;
+
+          const actions = document.createElement("div");
+          actions.className = "snippet-item-actions";
+
+          const genBtn = document.createElement("button");
+          genBtn.className = "snippet-action-btn";
+          genBtn.textContent = "+";
+          genBtn.title = "Insert one-liner NPC";
+          genBtn.addEventListener("click", () => {
+            const line = generateNPC(cls, levelData.level);
+            if (line) {
+              codeArea.replaceRange(line, codeArea.getCursor());
+              codeArea.focus();
+            }
+          });
+
+          const blockBtn = document.createElement("button");
+          blockBtn.className = "snippet-action-btn";
+          blockBtn.textContent = "≡";
+          blockBtn.title = "Insert full character sheet";
+          blockBtn.addEventListener("click", () => {
+            const block = generateNPCBlock(cls, levelData.level);
+            if (block) {
+              codeArea.replaceRange(block, codeArea.getCursor());
+              codeArea.focus();
+            }
+          });
+
+          actions.appendChild(genBtn);
+          actions.appendChild(blockBtn);
+          row.appendChild(nameEl);
+          row.appendChild(actions);
+          subBody.appendChild(row);
+        });
+
+        sectionBody.appendChild(subHeading);
+        sectionBody.appendChild(subBody);
+      });
+
+      section.appendChild(heading);
+      section.appendChild(sectionBody);
+      rulesList.appendChild(section);
+    }
 
     if (rulesList.children.length === 0) {
       rulesList.innerHTML = '<p class="snippet-empty">No results.</p>';
