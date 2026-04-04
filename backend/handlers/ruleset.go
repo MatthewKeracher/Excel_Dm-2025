@@ -15,6 +15,7 @@ type rulesetManifest struct {
 	Name        string            `json:"name"`
 	Description string            `json:"description"`
 	Version     string            `json:"version"`
+	Module      string            `json:"module,omitempty"`
 	Files       map[string]string `json:"files"`
 }
 
