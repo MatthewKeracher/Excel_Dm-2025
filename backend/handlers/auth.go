@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -32,8 +33,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := db.Conn.Exec(
-		"INSERT INTO users (email, password_hash) VALUES (?, ?)",
-		req.Email, string(hash),
+		"INSERT INTO users (email, password_hash, username) VALUES (?, ?, ?)",
+		req.Email, string(hash), req.Email,
 	)
 	if err != nil {
 		http.Error(w, "email already registered", http.StatusConflict)
@@ -93,13 +94,56 @@ func GetAccount(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(middleware.UserIDKey).(int)
 
 	var email string
-	if err := db.Conn.QueryRow("SELECT email FROM users WHERE id = ?", userID).Scan(&email); err != nil {
+	var username, avatar sql.NullString
+	if err := db.Conn.QueryRow(
+		"SELECT email, COALESCE(username, email), avatar FROM users WHERE id = ?", userID,
+	).Scan(&email, &username, &avatar); err != nil {
 		http.Error(w, "user not found", http.StatusNotFound)
 		return
 	}
 
+	resp := map[string]string{"email": email, "username": username.String, "avatar": avatar.String}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"email": email})
+	json.NewEncoder(w).Encode(resp)
+}
+
+func UpdateUsername(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+
+	var req struct {
+		Username string `json:"username"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Username == "" {
+		http.Error(w, "username is required", http.StatusBadRequest)
+		return
+	}
+
+	_, err := db.Conn.Exec("UPDATE users SET username = ? WHERE id = ?", req.Username, userID)
+	if err != nil {
+		http.Error(w, "username already taken", http.StatusConflict)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func UpdateAvatar(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+
+	var req struct {
+		Avatar string `json:"avatar"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if _, err := db.Conn.Exec("UPDATE users SET avatar = ? WHERE id = ?", req.Avatar, userID); err != nil {
+		http.Error(w, "failed to update avatar", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func ChangePassword(w http.ResponseWriter, r *http.Request) {

@@ -2,6 +2,13 @@ import { isViewer } from "./userRole.js";
 import { excelDM } from "./main.js";
 import { saveData } from "./localStorage.js";
 
+let currentGridType = "hex";
+
+export function setGridType(type) {
+  currentGridType = type;
+  drawBackground();
+}
+
 export function draw(parent) {
   const children = parent.children.filter(
     (entry) => entry.type === "locations"
@@ -79,35 +86,60 @@ export function draw(parent) {
   });
 }
 
+function drawHex(ctx, cx, cy, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 180) * (60 * i + 30); // pointy-top orientation
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.stroke();
+}
+
 function drawBackground() {
-  const canvas = document.getElementById("back-layer");
-  const ctx = canvas.getContext("2d");
+  // back-layer: just the solid green background (CSS handles this via #back-layer background)
+  // grid-layer: grid lines drawn on top of the map
+  const gridCanvas = document.getElementById("grid-layer");
+  const ctx = gridCanvas.getContext("2d");
   const dpr = window.devicePixelRatio || 1;
 
-  const rect = canvas.getBoundingClientRect();
-  const width = rect.width; // CSS px
-  const height = rect.height; // CSS px
+  const rect = gridCanvas.getBoundingClientRect();
+  const width = rect.width;
+  const height = rect.height;
 
-  // drawing buffer already set in resizeCanvases, so just sync transform
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
 
-  const gridSize = 25;
+  if (currentGridType === "none") return;
+
   ctx.strokeStyle = "#d8d83c91";
   ctx.lineWidth = 1;
 
-  ctx.clearRect(0, 0, width, height);
-
-  for (let x = 0.5; x <= width; x += gridSize) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-    ctx.stroke();
-  }
-  for (let y = 0.5; y <= height; y += gridSize) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-    ctx.stroke();
+  if (currentGridType === "square") {
+    const size = 40;
+    for (let x = 0.5; x <= width; x += size) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+    }
+    for (let y = 0.5; y <= height; y += size) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+    }
+  } else {
+    // hex (default) — r ≈ 60px gives ~1 sq inch area at 96 DPI
+    const r = 60;
+    const w = r * Math.sqrt(3);
+    const rowH = r * 1.5;
+    const rows = Math.ceil(height / rowH) + 2;
+    const cols = Math.ceil(width / w) + 2;
+    for (let row = -1; row < rows; row++) {
+      for (let col = -1; col < cols; col++) {
+        const cx = col * w + (row % 2 !== 0 ? w / 2 : 0) + w / 2;
+        const cy = row * rowH + r;
+        drawHex(ctx, cx, cy, r);
+      }
+    }
   }
 }
 
@@ -122,9 +154,10 @@ function resizeCanvases(width, height) {
   }
 
   const imgCanvas = document.getElementById("map-layer");
-  const gridCanvas = document.getElementById("back-layer");
+  const bgCanvas = document.getElementById("back-layer");
+  const gridCanvas = document.getElementById("grid-layer");
 
-  [imgCanvas, gridCanvas].forEach((canvas) => {
+  [bgCanvas, imgCanvas, gridCanvas].forEach((canvas) => {
     const ctx = canvas.getContext("2d");
     canvas.width = width * dpr; // drawing buffer size in device pixels
     canvas.height = height * dpr;

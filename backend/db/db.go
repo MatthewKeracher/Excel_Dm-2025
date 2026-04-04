@@ -217,6 +217,31 @@ func createTables() error {
 		}
 	}
 
+	// Add username column to users if missing (added post-launch)
+	if ok, _ := hasColumn("users", "username"); !ok {
+		if _, err := Conn.Exec("ALTER TABLE users ADD COLUMN username TEXT"); err != nil {
+			return err
+		}
+		// Backfill: set username = email for all existing users
+		if _, err := Conn.Exec("UPDATE users SET username = email WHERE username IS NULL"); err != nil {
+			return err
+		}
+	}
+
+	// Add grid_type column to entries if missing (added post-launch)
+	if ok, _ := hasColumn("entries", "grid_type"); !ok {
+		if _, err := Conn.Exec("ALTER TABLE entries ADD COLUMN grid_type TEXT NOT NULL DEFAULT 'hex'"); err != nil {
+			return err
+		}
+	}
+
+	// Add avatar column to users if missing (added post-launch)
+	if ok, _ := hasColumn("users", "avatar"); !ok {
+		if _, err := Conn.Exec("ALTER TABLE users ADD COLUMN avatar TEXT"); err != nil {
+			return err
+		}
+	}
+
 	// Add sort_order column to entries if missing (added post-launch)
 	if ok, _ := hasColumn("entries", "sort_order"); !ok {
 		if _, err := Conn.Exec("ALTER TABLE entries ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0"); err != nil {
@@ -324,9 +349,9 @@ func migrateBlob(ownerID int, name string, isPublic bool, data string) error {
 		}
 
 		res, err := Conn.Exec(`
-			INSERT INTO entries (campaign_id, title, type, category, body, color, image, x, y, coords, pop_out, current_child)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-		`, campID, e.Title, e.Type, e.Category, e.Body, e.Color, e.Image, e.X, e.Y, coords, e.PopOut, currentChild)
+			INSERT INTO entries (campaign_id, title, type, category, body, color, image, grid_type, x, y, coords, pop_out, current_child)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`, campID, e.Title, e.Type, e.Category, e.Body, e.Color, e.Image, "hex", e.X, e.Y, coords, e.PopOut, currentChild)
 		if err != nil {
 			return err
 		}

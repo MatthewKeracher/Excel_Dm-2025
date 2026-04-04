@@ -1,6 +1,6 @@
 import { Entry, EntryManager } from "./classes.js";
 import { loadNoteCards, loadPopUp } from "./left.js";
-import { draw, HexToMap, initMap } from "./right.js";
+import { draw, HexToMap, initMap, setGridType } from "./right.js";
 import { initButtons, loadExtData } from "./buttons.js";
 import { saveData, loadData, openDB } from "./localStorage.js";
 import { currentTab, initTabs } from "./tabs.js";
@@ -41,6 +41,7 @@ export function newCurrent(entry = excelDM.entries.find(e => e.current === true)
 
   current = entry;
   current.current = true;
+  setGridType(entry.gridType ?? "hex");
   HexToMap(entry);
   reCurrent();
 

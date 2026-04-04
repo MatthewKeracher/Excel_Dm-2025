@@ -438,27 +438,42 @@
 #auth-btns button {
   flex: 1;
   padding: 0.5rem 1rem;
-  background: #447e78;
-  color: #d8d83c;
-  border: 1px solid #d8d83c;
+  background: #000;
+  color: #115926;
+  border: 1px solid #115926;
   border-radius: 4px;
-  font-family: inherit;
-  font-weight: bold;
-  font-size: 1em;
+  font-family: "SoutaneBlack", serif;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
+  transition: background 0.15s, box-shadow 0.1s, transform 0.1s ease;
 }
 
 #auth-btns button:hover {
-  background: #5aa887;
+  background: #0d1f17;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   transform: translateY(-2px);
 }
 
 #auth-btns button:active {
-  background: #3a695f;
+  background: #000;
   box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   transform: translateY(0);
+}
+
+#auth-forgot-btn {
+  background: none;
+  border: none;
+  color: #3a5a55;
+  font-family: "SoutaneBlack", serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  align-self: center;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+#auth-forgot-btn:hover {
+  color: #6ecf6e;
 }
 
 @font-face {
@@ -660,6 +675,45 @@ header {
   background: #3a695f;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   transform: translateY(0);
+}
+
+/* Account button — fixed-size circle, never affects toolbar spacing */
+#btn-account {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  overflow: hidden;
+  background: #0d1a18 !important;
+  border: 2px solid #115926 !important;
+  flex-shrink: 0;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+#btn-account:hover {
+  border-color: #1a7a38 !important;
+  background: #0d1a18 !important;
+  transform: none !important;
+  box-shadow: 0 0 0 2px rgba(26,122,56,0.3) !important;
+}
+
+#btn-account img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+
+#btn-account span.account-initial {
+  font-family: "SoutaneBlack", serif;
+  font-size: 1em;
+  color: #115926;
+  line-height: 1;
 }
 
 .header-center {
@@ -1021,6 +1075,10 @@ textarea.notecard-body:focus {
   background: #3a695f;
 }
 
+#grid-layer {
+  pointer-events: none;
+}
+
 .label-layer {
   position: relative;
   width: 100%;
@@ -1212,25 +1270,14 @@ body[data-role="viewer"] .header-btns::before {
   background: #000;
   border: 1px solid #115926;
   border-radius: 8px;
-  padding: 28px 36px;
-  max-width: 380px;
+  padding: 24px 28px;
+  max-width: 340px;
   width: 90%;
   color: #f0e6c8;
   position: relative;
-}
-
-.account-logo {
-  display: block;
-  width: 100%;
-  margin-bottom: 8px;
-}
-
-.account-email {
-  color: #f0e6c8;
-  font-family: "SoutaneBlack", serif;
-  font-size: 1.2em;
-  text-align: center;
-  margin: 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 #account-close-btn {
@@ -1244,11 +1291,78 @@ body[data-role="viewer"] .header-btns::before {
   cursor: pointer;
 }
 
-.account-section {
-  margin-top: 16px;
+/* Identity row: avatar + name/email */
+#account-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1a2e28;
+}
+
+#account-avatar-area {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid #2a3a38;
+  overflow: hidden;
+  background: #0d1a18;
+  cursor: pointer;
+}
+
+#account-avatar-area:hover {
+  border-color: #115926;
+}
+
+#account-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+#account-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3a5a55;
+  font-size: 1.4em;
+  font-family: "SoutaneBlack", serif;
+}
+
+#account-identity-text {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.account-username-display {
+  font-family: "SoutaneBlack", serif;
+  font-size: 1.1em;
+  color: #f0e6c8;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-email {
+  font-size: 0.78em;
+  color: #5a7a72;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Thumbnail upload row */
+.account-section {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
@@ -1269,8 +1383,202 @@ body[data-role="viewer"] .header-btns::before {
   outline: none;
 }
 
-#account-save-btn,
+#account-avatar-btn,
+#account-avatar-clear-btn {
+  flex: 1;
+  background: #000;
+  color: #115926;
+  border: 1px solid #115926;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-family: "SoutaneBlack", serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#account-avatar-btn:hover { background: #0d1f17; }
+
+#account-avatar-clear-btn {
+  color: #a04040;
+  border-color: #a04040;
+}
+#account-avatar-clear-btn:hover { background: #1f0d0d; }
+
+.account-thumbnail-row {
+  display: flex;
+  gap: 8px;
+}
+
+/* Toggle buttons (Change Username / Change Password) */
+.account-action-btn {
+  width: 100%;
+  background: #000;
+  color: #115926;
+  border: 1px solid #115926;
+  border-radius: 4px;
+  padding: 7px 14px;
+  font-family: "SoutaneBlack", serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.account-action-btn:hover { background: #0d1f17; }
+
+/* Collapsed forms inside expandable sections */
+#account-username-form,
+#account-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+#account-username-btn,
+#account-save-btn {
+  background: #115926;
+  color: #f0e6c8;
+  border: 1px solid #115926;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-family: "SoutaneBlack", serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  align-self: flex-end;
+}
+#account-username-btn:hover,
+#account-save-btn:hover { background: #1a7a38; }
+
 #account-logout-btn {
+  width: 100%;
+  background: #000;
+  color: #555;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 7px 14px;
+  font-family: "SoutaneBlack", serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+#account-logout-btn:hover { background: #1a0d0d; color: #a04040; border-color: #a04040; }
+
+.account-msg {
+  font-size: 0.82em;
+  color: #c44;
+  min-height: 1.1em;
+  margin: 0;
+}
+
+.account-msg-ok {
+  color: #6ecf6e;
+}
+
+/* ── Map Settings Modal ──────────────────────────────────────────────────────── */
+
+#map-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+#map-box {
+  background: #000;
+  border: 1px solid #115926;
+  border-radius: 8px;
+  padding: 28px 36px;
+  max-width: 380px;
+  width: 90%;
+  color: #f0e6c8;
+  position: relative;
+}
+
+#map-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: #115926;
+  font-size: 1.1em;
+  cursor: pointer;
+}
+
+.map-modal-heading {
+  color: #f0e6c8;
+  font-family: "SoutaneBlack", serif;
+  font-size: 1.2em;
+  text-align: center;
+  margin: 0 0 20px;
+}
+
+#map-preview-area {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid #2a3a38;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: #0a0a0a;
+}
+
+#map-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#map-preview-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3a5a55;
+  font-size: 0.85em;
+  font-family: "SoutaneBlack", serif;
+}
+
+#map-grid-selector {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.map-grid-btn {
+  flex: 1;
+  background: #000;
+  color: #115926;
+  border: 1px solid #115926;
+  border-radius: 4px;
+  padding: 6px 0;
+  font-family: "SoutaneBlack", serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.map-grid-btn:hover {
+  background: #0d1f17;
+}
+
+.map-grid-btn-active {
+  background: #115926;
+  color: #f0e6c8;
+}
+
+#map-box .account-section + .account-section {
+  margin-top: 12px;
+}
+
+#map-upload-btn,
+#map-clear-btn {
   background: #000;
   color: #115926;
   border: 1px solid #115926;
@@ -1278,34 +1586,32 @@ body[data-role="viewer"] .header-btns::before {
   padding: 6px 14px;
   font-family: "SoutaneBlack", serif;
   font-size: 0.9rem;
-  font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, box-shadow 0.1s, transform 0.1s ease;
   align-self: center;
+  width: 100%;
 }
 
-#account-save-btn:hover,
-#account-logout-btn:hover {
+#map-upload-btn:hover,
+#map-clear-btn:hover {
   background: #0d1f17;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   transform: translateY(-2px);
 }
 
-#account-save-btn:active,
-#account-logout-btn:active {
+#map-upload-btn:active,
+#map-clear-btn:active {
   background: #000;
   box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   transform: translateY(0);
 }
 
-.account-msg {
-  font-size: 0.85em;
-  color: #c44;
-  min-height: 1.2em;
-  margin: 0;
+#map-clear-btn {
+  color: #a04040;
+  border-color: #a04040;
 }
 
-.account-msg-ok {
-  color: #6ecf6e;
+#map-clear-btn:hover {
+  background: #1f0d0d;
 }
 

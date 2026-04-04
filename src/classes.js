@@ -240,6 +240,7 @@ export class Entry {
   x = 0;
   y = 0;
   image = "";
+  gridType = "hex";
   order = 0;
 
   constructor(data = {}) {
@@ -248,6 +249,7 @@ export class Entry {
     this.title = data.title || "Untitled Entry";
     this.type = data.type || currentTab;
     this.image = data.image || "";
+    this.gridType = data.gridType || "hex";
     this.body = data.body || this.defaultBody();
     this.color = data.color || "";
     this.children = data.children || [];

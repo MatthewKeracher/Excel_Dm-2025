@@ -18,6 +18,7 @@ type Entry struct {
 	Body         string          `json:"body"`
 	Color        string          `json:"color"`
 	Image        string          `json:"image"`
+	GridType     string          `json:"gridType"`
 	X            float64         `json:"x"`
 	Y            float64         `json:"y"`
 	Coords       Coords          `json:"coords"`

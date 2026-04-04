@@ -19,6 +19,7 @@ type responseEntry struct {
 	Body         string          `json:"body"`
 	Color        string          `json:"color"`
 	Image        string          `json:"image"`
+	GridType     string          `json:"gridType"`
 	X            float64         `json:"x"`
 	Y            float64         `json:"y"`
 	Coords       json.RawMessage `json:"coords"`
@@ -55,7 +56,7 @@ func serializeCampaign(campID int) ([]byte, error) {
 	}
 
 	rows, err := db.Conn.Query(`
-		SELECT id, title, type, category, body, color, image, x, y, coords, pop_out, current_child, parent_id, sort_order
+		SELECT id, title, type, category, body, color, image, grid_type, x, y, coords, pop_out, current_child, parent_id, sort_order
 		FROM entries WHERE campaign_id = ? ORDER BY id
 	`, campID)
 	if err != nil {
@@ -65,10 +66,10 @@ func serializeCampaign(campID int) ([]byte, error) {
 
 	type entryRow struct {
 		id, currentChild, sortOrder int
-		title, typ, category, body, color, image, coords string
-		x, y                                             float64
-		popOut                                           bool
-		parentID                                         sql.NullInt64
+		title, typ, category, body, color, image, gridType, coords string
+		x, y                                                        float64
+		popOut                                                      bool
+		parentID                                                    sql.NullInt64
 	}
 
 	var entryRows []entryRow
@@ -76,7 +77,7 @@ func serializeCampaign(campID int) ([]byte, error) {
 	for rows.Next() {
 		var e entryRow
 		if err := rows.Scan(
-			&e.id, &e.title, &e.typ, &e.category, &e.body, &e.color, &e.image,
+			&e.id, &e.title, &e.typ, &e.category, &e.body, &e.color, &e.image, &e.gridType,
 			&e.x, &e.y, &e.coords, &e.popOut, &e.currentChild, &e.parentID, &e.sortOrder,
 		); err != nil {
 			return nil, err
@@ -109,6 +110,7 @@ func serializeCampaign(campID int) ([]byte, error) {
 			Body:         e.body,
 			Color:        e.color,
 			Image:        e.image,
+			GridType:     e.gridType,
 			X:            e.x,
 			Y:            e.y,
 			Coords:       coords,
@@ -171,7 +173,7 @@ func serializePatchDelta(campID int, patch patchPayload, version int64) ([]byte,
 		args = append(args, campID)
 
 		rows, err := db.Conn.Query(fmt.Sprintf(`
-			SELECT id, title, type, category, body, color, image, x, y, coords, pop_out, current_child, parent_id, sort_order
+			SELECT id, title, type, category, body, color, image, grid_type, x, y, coords, pop_out, current_child, parent_id, sort_order
 			FROM entries WHERE id IN (%s) AND campaign_id = ?
 		`, placeholders), args...)
 		if err != nil {
@@ -185,7 +187,7 @@ func serializePatchDelta(campID int, patch patchPayload, version int64) ([]byte,
 			var coordsStr string
 			var currentChild int
 			if err := rows.Scan(
-				&re.ServerID, &re.Title, &re.Type, &re.Category, &re.Body, &re.Color, &re.Image,
+				&re.ServerID, &re.Title, &re.Type, &re.Category, &re.Body, &re.Color, &re.Image, &re.GridType,
 				&re.X, &re.Y, &coordsStr, &re.PopOut, &currentChild, &parentID, &re.Order,
 			); err != nil {
 				continue
@@ -241,6 +243,7 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string, ta
 		Body         string          `json:"body"`
 		Color        string          `json:"color"`
 		Image        string          `json:"image"`
+		GridType     string          `json:"gridType"`
 		X            float64         `json:"x"`
 		Y            float64         `json:"y"`
 		Coords       json.RawMessage `json:"coords"`
@@ -305,9 +308,9 @@ func saveEntries(campID int, rawEntries []json.RawMessage, categories string, ta
 		}
 
 		res, err = tx.Exec(`
-			INSERT INTO entries (campaign_id, title, type, category, body, color, image, x, y, coords, pop_out, current_child, sort_order)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-		`, campID, e.Title, e.Type, e.Category, e.Body, e.Color, e.Image,
+			INSERT INTO entries (campaign_id, title, type, category, body, color, image, grid_type, x, y, coords, pop_out, current_child, sort_order)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`, campID, e.Title, e.Type, e.Category, e.Body, e.Color, e.Image, e.GridType,
 			e.X, e.Y, coords, e.PopOut, currentChild, e.Order)
 		if err != nil {
 			return nil, 0, err
@@ -386,6 +389,7 @@ type patchEntry struct {
 	Body         string          `json:"body"`
 	Color        string          `json:"color"`
 	Image        string          `json:"image"`
+	GridType     string          `json:"gridType"`
 	X            float64         `json:"x"`
 	Y            float64         `json:"y"`
 	Coords       json.RawMessage `json:"coords"`
@@ -468,11 +472,11 @@ func patchEntries(campID int, patch patchPayload) (version int64, err error) {
 
 		res, err = tx.Exec(`
 			UPDATE entries
-			SET title=?, type=?, category=?, body=?, color=?, image=?,
+			SET title=?, type=?, category=?, body=?, color=?, image=?, grid_type=?,
 			    x=?, y=?, coords=?, pop_out=?, current_child=?, parent_id=?,
 			    sort_order=?, updated_at=CURRENT_TIMESTAMP
 			WHERE id=? AND campaign_id=?
-		`, e.Title, e.Type, e.Category, e.Body, e.Color, e.Image,
+		`, e.Title, e.Type, e.Category, e.Body, e.Color, e.Image, e.GridType,
 			e.X, e.Y, coords, e.PopOut, currentChild, e.ParentID,
 			e.Order, e.ServerID, campID)
 		if err != nil {

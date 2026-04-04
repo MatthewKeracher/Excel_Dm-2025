@@ -29,6 +29,8 @@ func main() {
 	// Account management
 	mux.Handle("GET /api/account", middleware.Auth(http.HandlerFunc(handlers.GetAccount)))
 	mux.Handle("PATCH /api/account/password", middleware.Auth(http.HandlerFunc(handlers.ChangePassword)))
+	mux.Handle("PATCH /api/account/avatar", middleware.Auth(http.HandlerFunc(handlers.UpdateAvatar)))
+	mux.Handle("PATCH /api/account/username", middleware.Auth(http.HandlerFunc(handlers.UpdateUsername)))
 
 	// Campaign list and creation
 	mux.Handle("GET /api/campaigns", middleware.Auth(http.HandlerFunc(handlers.ListCampaigns)))
