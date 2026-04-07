@@ -272,6 +272,26 @@ func createTables() error {
 		return err
 	}
 
+	// Add home_poster column to users if missing
+	if ok, _ := hasColumn("users", "home_poster"); !ok {
+		if _, err := Conn.Exec("ALTER TABLE users ADD COLUMN home_poster TEXT"); err != nil {
+			return err
+		}
+	}
+
+	if _, err := Conn.Exec(`
+		CREATE TABLE IF NOT EXISTS home_notices (
+			id         INTEGER PRIMARY KEY AUTOINCREMENT,
+			user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+			title      TEXT NOT NULL DEFAULT '',
+			body       TEXT NOT NULL DEFAULT '',
+			color      TEXT NOT NULL DEFAULT '',
+			sort_order INTEGER NOT NULL DEFAULT 0
+		)
+	`); err != nil {
+		return err
+	}
+
 	if _, err := Conn.Exec(`
 		CREATE TABLE IF NOT EXISTS campaign_invites (
 			id          INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -2,7 +2,7 @@ import { isViewer } from "./userRole.js";
 import { excelDM } from "./main.js";
 import { saveData } from "./localStorage.js";
 
-let currentGridType = "hex";
+let currentGridType = "square";
 
 export function setGridType(type) {
   currentGridType = type;
@@ -10,6 +10,7 @@ export function setGridType(type) {
 }
 
 export function draw(parent) {
+  if (Array.isArray(parent)) return;
   const children = parent.children.filter(
     (entry) => entry.type === "locations"
   );

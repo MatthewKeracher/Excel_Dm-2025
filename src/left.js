@@ -12,6 +12,7 @@ export function loadNoteCards(data, search = "no") {
   if (search === "search") {
     entries = data;
   } else if (search === "no") {
+    if (Array.isArray(data)) return; // home.js handles rendering when no world is open
     switch (currentTab) {
       case "locations":
         entries = data.children.filter((entry) => entry.type === "locations");

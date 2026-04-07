@@ -156,6 +156,7 @@ async function patchToServer(dirty, deleted) {
     body: e.body,
     color: e.color,
     image: e.image,
+    gridType: e.gridType,
     x: e.x,
     y: e.y,
     // coords (pop-out window position) and popOut are per-user local state — not synced

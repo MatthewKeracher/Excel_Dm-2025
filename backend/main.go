@@ -51,6 +51,10 @@ func main() {
 	mux.HandleFunc("GET /api/invites/{token}", handlers.GetInvite)
 	mux.Handle("POST /api/invites/{token}/accept", middleware.Auth(http.HandlerFunc(handlers.AcceptInvite)))
 
+	// Home notice board
+	mux.Handle("GET /api/home", middleware.Auth(http.HandlerFunc(handlers.GetHome)))
+	mux.Handle("PUT /api/home", middleware.Auth(http.HandlerFunc(handlers.SaveHome)))
+
 	// Ruleset reference library
 	mux.Handle("GET /api/rulesets", middleware.Auth(http.HandlerFunc(handlers.ListRulesets)))
 	mux.Handle("GET /api/rulesets/{name}/{file}", middleware.Auth(http.HandlerFunc(handlers.GetRulesetFile)))

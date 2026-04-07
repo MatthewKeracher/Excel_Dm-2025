@@ -5,7 +5,7 @@ import { connectWS, setLocalVersion } from "./ws.js";
 import { restorePopOuts } from "./popoutState.js";
 import { setCurrentRuleset } from "./ruleset.js";
 
-export { setApiUrl, openDB, saveCategories, saveData, saveDataNow } from "./sync.js";
+export { setApiUrl, getApiUrl, openDB, saveCategories, saveData, saveDataNow } from "./sync.js";
 export { disconnectWS } from "./ws.js";
 
 export async function loadData() {

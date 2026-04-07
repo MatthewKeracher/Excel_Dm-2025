@@ -1,20 +1,24 @@
-import { current, excelDM, reCurrent, newCurrent, masterEdit } from "./main.js";
+import { current, excelDM, reCurrent, newCurrent, masterEdit, resetCurrent } from "./main.js";
 import { Entry, EntryManager } from "./classes.js";
-import { saveData, saveDataNow, disconnectWS } from "./localStorage.js";
-import { authHeaders, clearToken, showAuthModal, showAccountModal } from "./auth.js";
+import { saveData, saveDataNow, disconnectWS, setApiUrl } from "./localStorage.js";
+import { authHeaders, clearToken, showAuthModal } from "./auth.js";
 import { setGridType } from "./right.js";
 import { currentTab } from "./tabs.js";
 import { returnFiltered } from "./filter.js";
 export function initButtons() {
   const buttons = {
-    "btn-new":     newFile,
-    "btn-save":    saveFile,
-    "btn-donate":  donate,
-    "btn-load":    loadFile,
-    "btn-add":     addEntry,
-    "btn-logout":  logout,
-    "btn-account": showAccountModal,
+    "btn-save":   saveFile,
+    "btn-donate": donate,
+    "btn-load":   loadFile,
+    "btn-add":    addEntry,
+    "btn-home":   goHome,
+    "btn-logout": logout,
   };
+
+  const accountBtn = document.getElementById("btn-account");
+  if (accountBtn) accountBtn.addEventListener("click", () => {
+    import("./campaigns.js").then(({ showCampaignPicker }) => showCampaignPicker());
+  });
 
   Object.entries(buttons).forEach(([id, handler]) => {
     const btn = document.getElementById(id);
@@ -22,10 +26,6 @@ export function initButtons() {
       btn.addEventListener("click", handler);
     }
   });
-}
-
-export function newFile() {
-  import("./campaigns.js").then(({ showCampaignPicker }) => showCampaignPicker());
 }
 
 export function donate() {
@@ -72,13 +72,26 @@ let mapPreviewUrl = null;
 
 function showMapModal() {
   if (!mapModalBuilt) buildMapModal();
-  const name = current?.title ?? "";
-  document.getElementById("map-modal-title").textContent = name ? `Map — ${name}` : "Map Settings";
-  setMapPreview(current?.image ?? null);
-  const gridType = current?.gridType ?? "hex";
-  document.querySelectorAll(".map-grid-btn").forEach(btn => {
-    btn.classList.toggle("map-grid-btn-active", btn.dataset.grid === gridType);
-  });
+  const isHome = Array.isArray(current);
+  const name = isHome ? "" : (current?.title ?? "");
+  document.getElementById("map-modal-title").textContent = isHome ? "Poster" : (name ? `Map — ${name}` : "Map Settings");
+
+  if (isHome) {
+    import("./home.js").then(({ getHomePoster }) => setMapPreview(getHomePoster()));
+  } else {
+    setMapPreview(current?.image ?? null);
+  }
+
+  const gridSection = document.getElementById("map-grid-section");
+  if (gridSection) gridSection.style.display = isHome ? "none" : "";
+
+  if (!isHome) {
+    const gridType = current?.gridType ?? "hex";
+    document.querySelectorAll(".map-grid-btn").forEach(btn => {
+      btn.classList.toggle("map-grid-btn-active", btn.dataset.grid === gridType);
+    });
+  }
+
   document.getElementById("map-modal").style.display = "flex";
 }
 
@@ -121,7 +134,7 @@ function buildMapModal() {
         <div id="map-preview-placeholder">No map uploaded</div>
       </div>
 
-      <div class="account-section">
+      <div id="map-grid-section" class="account-section">
         <div class="settings-label">Grid</div>
         <div id="map-grid-selector">
           <button class="map-grid-btn" data-grid="hex">Hex</button>
@@ -154,9 +167,14 @@ function buildMapModal() {
       const hex = Array.from(new Uint8Array(e.target.result))
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
-      current.image = hex;
-      setMapPreview(hex);
-      newCurrent(current);
+      if (Array.isArray(current)) {
+        import("./home.js").then(({ setHomePoster }) => setHomePoster(hex));
+        setMapPreview(hex);
+      } else {
+        current.image = hex;
+        setMapPreview(hex);
+        newCurrent(current);
+      }
     };
     reader.readAsArrayBuffer(file);
   });
@@ -184,14 +202,27 @@ function buildMapModal() {
   });
 
   document.getElementById("map-clear-btn").addEventListener("click", () => {
-    current.image = null;
-    setMapPreview(null);
-    newCurrent(current);
+    if (Array.isArray(current)) {
+      import("./home.js").then(({ setHomePoster }) => setHomePoster(null));
+      setMapPreview(null);
+    } else {
+      current.image = null;
+      setMapPreview(null);
+      newCurrent(current);
+    }
   });
 
   modal.addEventListener("click", (e) => {
     if (e.target === modal) modal.style.display = "none";
   });
+}
+
+export async function goHome() {
+  disconnectWS();
+  setApiUrl(null);
+  resetCurrent();
+  const { showHome } = await import("./home.js");
+  showHome();
 }
 
 export function logout() {
@@ -200,7 +231,12 @@ export function logout() {
   showAuthModal();
 }
 
-export function addEntry() {
+export async function addEntry() {
+  if (Array.isArray(current)) {
+    const { addHomeNotice } = await import("./home.js");
+    addHomeNotice();
+    return;
+  }
   const dateTime = new Date().toLocaleString();
   const newName = `_${dateTime}`;
 

@@ -75,6 +75,7 @@ Go HTTP server using `net/http` and SQLite (`modernc.org/sqlite` — pure Go, no
 | `backend/handlers/auth.go` | `POST /api/register`, `POST /api/login`, `GET /api/account`, `PATCH /api/account/password` |
 | `backend/handlers/campaign.go` | Campaign CRUD handlers (see API Routes below) |
 | `backend/handlers/helpers.go` | `serializeCampaign`, `saveEntries`, `patchEntries`, `campaignRole` |
+| `backend/handlers/home.go` | `GetHome`, `SaveHome` — shared notice board notices + per-user map poster |
 | `backend/handlers/ruleset.go` | `ListRulesets`, `GetRulesetFile` — scans `data/` for ruleset directories |
 | `backend/handlers/invite.go` | Invite link creation (`CreateInvite`), lookup (`GetInvite`), acceptance (`AcceptInvite`) |
 | `backend/handlers/ws.go` | WebSocket upgrade; `ServeCampaignWS`; hub broadcast |
@@ -109,6 +110,9 @@ GET  /api/rulesets/{name}/{file}             — serve a ruleset data file (e.g.
 GET  /api/invites/{token}                    — look up invite info, no auth required
 POST /api/invites/{token}/accept             — accept invite, adds caller as member (auth required)
 
+GET  /api/home                               — get shared notice board notices + caller's map poster
+PUT  /api/home                               — replace all notices + update caller's map poster
+
 GET  /api/campaigns/{id}/ws?token=JWT&clientId=X  — WebSocket for real-time sync
 
 GET  /invite/{token}                         — serves index.html so the SPA can handle the invite route
@@ -119,7 +123,7 @@ GET  /invite/{token}                         — serves index.html so the SPA ca
 ### Database Schema
 
 ```sql
-users            (id, email, password_hash, created_at)
+users            (id, email, password_hash, created_at, home_poster TEXT)
 
 campaigns        (id, owner_id→users, name, is_public, categories JSON, tabs JSON, ruleset TEXT, version INTEGER, updated_at)
 
@@ -130,6 +134,10 @@ entries          (id, campaign_id→campaigns, title, type, category, body, colo
                   x, y, coords JSON, pop_out, current_child, parent_id→entries, updated_at)
 
 campaign_invites (id, campaign_id→campaigns, token TEXT UNIQUE, role, created_by→users, used_by→users)
+
+home_notices     (id, user_id→users, title, body, color, sort_order)
+                 Shared notice board shown on the home screen (no campaign open).
+                 All logged-in users see the same notices; only the poster is per-user.
 ```
 
 **`campaigns.version`** is incremented on every PUT or PATCH save. The frontend tracks `localVersion` and uses it to discard stale WebSocket messages.
@@ -170,6 +178,7 @@ All runtime state lives in `src/main.js`:
 | `src/ws.js` | WebSocket lifecycle — `connectWS()`, `disconnectWS()`, delta/full-replace handling, exponential backoff reconnection, version conflict detection |
 | `src/syncState.js` | Sync status indicator (`#sync-status` DOM element); manages `httpState` (idle/saving/retrying/saved/error) and `wsState` (disconnected/connecting/connected/reconnecting/updating) |
 | `src/syncLog.js` | In-memory ring buffer of last 50 sync events; exposed as `window.__syncLog()` for debugging |
+| `src/home.js` | Home screen — `initHome()`, `showHome()`, `addHomeNotice()`, `saveHome()`; renders shared notices + per-user map poster when no campaign is open |
 | `src/campaigns.js` | Campaign picker modal — list, create, open worlds, manage members/invites/ruleset; shown after login |
 | `src/editor.js` | CodeMirror-based modal editor; snippet panel with "Snippets" and "Rules" tabs |
 | `src/snippets.js` | Personal snippet library in `localStorage` — defaults (treasure tables, magic items, stat blocks), CRUD |

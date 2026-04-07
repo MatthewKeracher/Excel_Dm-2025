@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Dwarf",
+    "allowedClasses": ["Cleric", "Fighter", "Thief"],
+    "hitDieCap": null,
+    "saveBonuses": {
+      "deathRay": 4,
+      "magicWands": 4,
+      "paralysisPetrify": 4,
+      "dragonBreath": 3,
+      "spells": 4
+    },
+    "notes": "Darkvision 60'. Detect new construction, shifting walls, traps (1-2 on d6). No two-handed swords, pole-arms, or longbows."
+  },
+  {
+    "name": "Elf",
+    "allowedClasses": ["Cleric", "Fighter", "Magic-User", "Thief"],
+    "hitDieCap": 6,
+    "saveBonuses": {
+      "deathRay": 0,
+      "magicWands": 2,
+      "paralysisPetrify": 1,
+      "dragonBreath": 0,
+      "spells": 2
+    },
+    "notes": "Darkvision 60'. Detect secret doors (1-2 on d6). Immune to ghoul paralysis. Reduced chance of being surprised."
+  },
+  {
+    "name": "Halfling",
+    "allowedClasses": ["Cleric", "Fighter", "Thief"],
+    "hitDieCap": 6,
+    "saveBonuses": {
+      "deathRay": 4,
+      "magicWands": 4,
+      "paralysisPetrify": 4,
+      "dragonBreath": 3,
+      "spells": 4
+    },
+    "notes": "+1 attack bonus with ranged weapons. +2 AC vs creatures larger than man-sized. +1 to initiative. Can hide outdoors (10% detection chance)."
+  },
+  {
+    "name": "Human",
+    "allowedClasses": null,
+    "hitDieCap": null,
+    "saveBonuses": {
+      "deathRay": 0,
+      "magicWands": 0,
+      "paralysisPetrify": 0,
+      "dragonBreath": 0,
+      "spells": 0
+    },
+    "notes": "+10% bonus to all earned XP."
+  }
+]

@@ -32,7 +32,21 @@
       "Bash(node:*)",
       "Bash(cp data/BFRPG/monsters-new.json data/BFRPG/monsters.json)",
       "Bash(rm data/BFRPG/monsters-new.json)",
-      "Bash(rm data/BFRPG/convert-monsters.js)"
+      "Bash(rm data/BFRPG/convert-monsters.js)",
+      "Bash(tailscale status:*)",
+      "Bash(curl:*)",
+      "Bash(python -c \"import fitz; doc=fitz.open\\(''data/BFRPG/Beginner-Essentials.pdf''\\); print\\(f''Pages: {len\\(doc\\)}''\\)\")",
+      "Bash(python:*)",
+      "Bash(ssh-keygen:*)",
+      "Bash(python3:*)",
+      "Bash(rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)",
+      "Skill(update-config)"
     ]
   }
 }

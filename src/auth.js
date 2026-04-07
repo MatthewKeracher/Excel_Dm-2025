@@ -47,7 +47,7 @@ async function submit(endpoint, email, password) {
 
 // Fetches the email from the server if not already cached (for existing sessions).
 export async function ensureEmail() {
-  if (getEmail()) {
+  if (getEmail() && getAvatar()) {
     updateAccountDisplay(getEmail());
     return getEmail();
   }
@@ -235,7 +235,7 @@ function buildAccountModal() {
   });
 }
 
-async function loadAvatarPreview() {
+export async function loadAvatarPreview() {
   try {
     const res = await fetch("/api/account", { headers: authHeaders() });
     if (!res.ok) return;
@@ -244,7 +244,7 @@ async function loadAvatarPreview() {
   } catch { /* silent */ }
 }
 
-function setAvatarPreview(dataUrl) {
+export function setAvatarPreview(dataUrl) {
   const img = document.getElementById("account-avatar-img");
   const placeholder = document.getElementById("account-avatar-placeholder");
   if (dataUrl) {
@@ -258,7 +258,7 @@ function setAvatarPreview(dataUrl) {
   }
 }
 
-async function saveAvatar(dataUrl) {
+export async function saveAvatar(dataUrl) {
   const msgEl = document.getElementById("account-avatar-msg");
   msgEl.textContent = "";
   try {
@@ -279,7 +279,7 @@ async function saveAvatar(dataUrl) {
   }
 }
 
-async function changeUsername() {
+export async function changeUsername() {
   const input = document.getElementById("account-username-input");
   const msgEl = document.getElementById("account-username-msg");
   const newUsername = input.value.trim();
@@ -313,7 +313,7 @@ async function changeUsername() {
   }
 }
 
-async function changePassword() {
+export async function changePassword() {
   const cur     = document.getElementById("account-cur-pwd").value;
   const next    = document.getElementById("account-new-pwd").value;
   const confirm = document.getElementById("account-confirm-pwd").value;

@@ -20,14 +20,25 @@ export const LOCKED_TABS = ["locations", "people", "quests"];
 
 
 export function reCurrent() {
+  if (Array.isArray(current)) {
+    import("./home.js").then(({ showHome }) => showHome());
+    return;
+  }
   draw(current);
   updateFilter();
   loadNoteCards(current);
   loadPopUp();
-  if (current && !Array.isArray(current) && !isSuppressSave()) {
+  if (!isSuppressSave()) {
     excelDM.dirtyEntries.add(current);
   }
   saveData();
+}
+
+export function resetCurrent() {
+  if (current && !Array.isArray(current) && current.current) {
+    current.current = false;
+  }
+  current = [];
 }
 
 export function newCurrent(entry = excelDM.entries.find(e => e.current === true)) {
@@ -38,6 +49,10 @@ export function newCurrent(entry = excelDM.entries.find(e => e.current === true)
   if(current?.current){
   current.current = false;
   }
+
+  // Restore tabs when entering a campaign
+  const tabsEl = document.querySelector(".tabs");
+  if (tabsEl) tabsEl.style.display = "";
 
   current = entry;
   current.current = true;
@@ -64,24 +79,31 @@ window.addEventListener("DOMContentLoaded", async () => {
     const token = inviteMatch[1];
     const { handleInviteFlow } = await import("./campaigns.js");
     initAuth(async () => {
+      const { initHome } = await import("./home.js");
+      await initHome();
       updateAccountDisplay(await ensureEmail());
       handleInviteFlow(token);
     });
     if (getToken()) {
+      const { initHome } = await import("./home.js");
+      await initHome();
       updateAccountDisplay(await ensureEmail());
       await handleInviteFlow(token);
     } else {
       showAuthModal();
     }
   } else {
-    const { showCampaignPicker } = await import("./campaigns.js");
     initAuth(async () => {
+      const { initHome, showHome } = await import("./home.js");
+      await initHome();
       updateAccountDisplay(await ensureEmail());
-      showCampaignPicker();
+      showHome();
     });
     if (getToken()) {
+      const { initHome, showHome } = await import("./home.js");
+      await initHome();
       updateAccountDisplay(await ensureEmail());
-      await showCampaignPicker();
+      showHome();
     } else {
       showAuthModal();
     }

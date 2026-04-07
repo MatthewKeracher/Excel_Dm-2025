@@ -11,6 +11,7 @@ export function loadEditor(
   editBtn,
   isEditing,
   marked,
+  onSave = null,
 ) {
   //Remove old Editors if any
   document.querySelectorAll(".editor").forEach((editor) => {
@@ -66,8 +67,12 @@ export function loadEditor(
 
     currentEditor.remove();
     snippetPanel.remove();
-    excelDM.dirtyEntries.add(entry);
-    reCurrent();
+    if (onSave) {
+      onSave(entry);
+    } else {
+      excelDM.dirtyEntries.add(entry);
+      reCurrent();
+    }
   });
 
   const exitBtn = document.createElement("button");
@@ -309,7 +314,7 @@ export function loadEditor(
       rulesList.innerHTML = '<p class="snippet-empty">Loading…</p>';
       [rulesetModule] = await Promise.all([loadRulesetModule()]);
       const keys = rulesetModule ? rulesetModule.sections.map(s => s.key) : [];
-      const uniqueKeys = [...new Set([...keys, "classes"])];
+      const uniqueKeys = [...new Set([...keys, "classes", "races"])];
       const results = await Promise.all(uniqueKeys.map(k => getRulesetData(k)));
       rulesCache = Object.fromEntries(uniqueKeys.map((k, i) => [k, results[i]]));
     }
@@ -499,7 +504,7 @@ export function loadEditor(
           genBtn.textContent = "+";
           genBtn.title = "Insert one-liner NPC";
           genBtn.addEventListener("click", () => {
-            const line = rulesetModule?.generateNPC?.(cls, levelData.level);
+            const line = rulesetModule?.generateNPC?.(cls, levelData.level, rulesCache);
             if (line) {
               codeArea.replaceRange(line, codeArea.getCursor());
               codeArea.focus();
@@ -511,7 +516,7 @@ export function loadEditor(
           blockBtn.textContent = "≡";
           blockBtn.title = "Insert full character sheet";
           blockBtn.addEventListener("click", () => {
-            const block = rulesetModule?.generateNPCBlock?.(cls, levelData.level);
+            const block = rulesetModule?.generateNPCBlock?.(cls, levelData.level, rulesCache);
             if (block) {
               codeArea.replaceRange(block, codeArea.getCursor());
               codeArea.focus();

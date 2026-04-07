@@ -1,5 +1,7 @@
-import { setApiUrl, loadData } from "./localStorage.js";
-import { authHeaders, clearToken, showAuthModal } from "./auth.js";
+import { setApiUrl, loadData, getApiUrl } from "./localStorage.js";
+import { authHeaders, clearToken, showAuthModal, getEmail, getUsername, getAvatar,
+         saveAvatar, changeUsername, changePassword, setAvatarPreview, loadAvatarPreview,
+         updateAccountDisplay } from "./auth.js";
 import { setCurrentRole } from "./userRole.js";
 import { initTabs, DEFAULT_TABS } from "./tabs.js";
 import { excelDM } from "./main.js";
@@ -9,8 +11,27 @@ let modalBuilt = false;
 let currentSettings = null; // { id, name } for the campaign being managed
 let openCampaignId = null;  // ID of the currently open campaign
 
+function populateAccountTab() {
+  document.getElementById("account-email-display").textContent    = getEmail();
+  document.getElementById("account-username-display").textContent = getUsername() || getEmail();
+  ["account-edit-form", "account-username-form", "account-password-form"].forEach(id => {
+    document.getElementById(id).style.display = "none";
+  });
+  ["account-cur-pwd", "account-new-pwd", "account-confirm-pwd"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("account-msg").textContent = "";
+  document.getElementById("account-username-msg").textContent = "";
+  document.getElementById("account-username-input").value = getUsername();
+  loadAvatarPreview();
+}
+
 export async function showCampaignPicker() {
   if (!modalBuilt) buildModal();
+  // Always start on the Worlds tab
+  document.querySelectorAll(".campaign-tab").forEach(b => b.classList.remove("active"));
+  document.querySelector(".campaign-tab[data-tab='worlds']").classList.add("active");
+  document.getElementById("campaign-account-view").style.display = "none";
   showListView();
   document.getElementById("campaign-modal").style.display = "flex";
   await refreshList();
@@ -18,6 +39,10 @@ export async function showCampaignPicker() {
 
 export function hideCampaignPicker() {
   document.getElementById("campaign-modal").style.display = "none";
+  // If no campaign was just opened, show the home view
+  if (!getApiUrl()) {
+    import("./home.js").then(({ showHome }) => showHome());
+  }
 }
 
 function buildModal() {
@@ -27,8 +52,12 @@ function buildModal() {
     <div id="campaign-box">
       <button id="campaign-close-btn" title="Close">✕</button>
 
+      <div id="campaign-tabs">
+        <button class="campaign-tab active" data-tab="worlds">Worlds</button>
+        <button class="campaign-tab" data-tab="account">Account</button>
+      </div>
+
       <div id="campaign-list-view">
-        <img src="assets/logo.gif" alt="Excel_DM" style="display:block;width:100%;height:auto;margin-bottom:0.75rem;">
         <div id="campaign-list"></div>
         <hr id="campaign-divider" />
         <div id="campaign-new-form">
@@ -36,6 +65,52 @@ function buildModal() {
           <button id="campaign-create-btn">+ Create</button>
         </div>
         <p id="campaign-error"></p>
+      </div>
+
+      <div id="campaign-account-view" style="display:none">
+        <div id="account-identity">
+          <div id="account-avatar-area">
+            <img id="account-avatar-img" alt="Avatar" />
+            <div id="account-avatar-placeholder">?</div>
+          </div>
+          <div id="account-identity-text">
+            <p id="account-username-display" class="account-username-display"></p>
+            <p id="account-email-display" class="account-email"></p>
+          </div>
+        </div>
+        <div class="account-section">
+          <button id="account-toggle-edit-btn" class="account-action-btn">Edit</button>
+          <div id="account-edit-form" style="display:none">
+            <div class="account-section">
+              <div class="account-thumbnail-row">
+                <button id="account-avatar-btn">Upload Thumbnail</button>
+                <button id="account-avatar-clear-btn">Remove</button>
+              </div>
+              <p id="account-avatar-msg" class="account-msg"></p>
+            </div>
+            <div class="account-section">
+              <button id="account-toggle-username-btn" class="account-action-btn">Change Username</button>
+              <div id="account-username-form" style="display:none">
+                <input id="account-username-input" type="text" placeholder="New username" autocomplete="username" />
+                <button id="account-username-btn">Save</button>
+                <p id="account-username-msg" class="account-msg"></p>
+              </div>
+            </div>
+            <div class="account-section">
+              <button id="account-toggle-pwd-btn" class="account-action-btn">Change Password</button>
+              <div id="account-password-form" style="display:none">
+                <input id="account-cur-pwd"     type="password" placeholder="Current password" autocomplete="current-password" />
+                <input id="account-new-pwd"     type="password" placeholder="New password"     autocomplete="new-password" />
+                <input id="account-confirm-pwd" type="password" placeholder="Confirm new password" autocomplete="new-password" />
+                <button id="account-save-btn">Save</button>
+                <p id="account-msg" class="account-msg"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="account-section">
+          <button id="account-logout-btn">Log out</button>
+        </div>
       </div>
 
       <div id="campaign-settings-view">
@@ -119,6 +194,56 @@ function buildModal() {
   document.getElementById("invite-generate-btn").addEventListener("click", generateInviteLink);
   document.getElementById("settings-ruleset-btn").addEventListener("click", saveRuleset);
   document.getElementById("settings-delete-btn").addEventListener("click", deleteCampaign);
+
+  // ── Tab switching ──
+  document.querySelectorAll(".campaign-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".campaign-tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const tab = btn.dataset.tab;
+      document.getElementById("campaign-list-view").style.display    = tab === "worlds"  ? "" : "none";
+      document.getElementById("campaign-settings-view").style.display = "none";
+      document.getElementById("campaign-account-view").style.display = tab === "account" ? "" : "none";
+      if (tab === "account") populateAccountTab();
+    });
+  });
+
+  // ── Account tab wiring ──
+  const avatarInput = document.createElement("input");
+  avatarInput.type = "file";
+  avatarInput.accept = "image/*";
+  avatarInput.style.display = "none";
+  document.body.appendChild(avatarInput);
+
+  avatarInput.addEventListener("change", async () => {
+    const file = avatarInput.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => { await saveAvatar(e.target.result); };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById("account-avatar-btn").addEventListener("click", () => {
+    avatarInput.value = ""; avatarInput.click();
+  });
+  document.getElementById("account-avatar-area").addEventListener("click", () => {
+    avatarInput.value = ""; avatarInput.click();
+  });
+  document.getElementById("account-avatar-clear-btn").addEventListener("click", () => saveAvatar(""));
+
+  function toggleForm(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === "none" ? "" : "none";
+  }
+  document.getElementById("account-toggle-edit-btn").addEventListener("click",     () => toggleForm("account-edit-form"));
+  document.getElementById("account-toggle-username-btn").addEventListener("click", () => toggleForm("account-username-form"));
+  document.getElementById("account-toggle-pwd-btn").addEventListener("click",      () => toggleForm("account-password-form"));
+  document.getElementById("account-username-btn").addEventListener("click", changeUsername);
+  document.getElementById("account-save-btn").addEventListener("click", changePassword);
+  document.getElementById("account-logout-btn").addEventListener("click", () => {
+    hideCampaignPicker();
+    document.getElementById("btn-logout").click();
+  });
 }
 
 function showListView() {
