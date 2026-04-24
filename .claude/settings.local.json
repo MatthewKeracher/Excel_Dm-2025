@@ -56,7 +56,8 @@
       "Read(//usr/lib/**)",
       "Bash(dpkg -l)",
       "Bash(pacman -Qs go)",
-      "Bash(sudo pacman *)"
+      "Bash(sudo pacman *)",
+      "Bash(bash /home/matthew/Excel_Dm-2025/deploy.sh --backend-only)"
     ]
   }
 }
