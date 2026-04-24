@@ -46,7 +46,13 @@
       "Bash(git checkout:*)",
       "Bash(git merge:*)",
       "Bash(git stash:*)",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "Bash(ssh matthew@heimvon.zubron-tuna.ts.net \"sudo incus exec exceldm -- sh -c 'cd /opt/exceldm/exceldm && find src css backend/*.go backend/db backend/handlers backend/middleware backend/models index.html data/BFRPG -type f 2>/dev/null | sort | xargs md5sum 2>/dev/null'\")",
+      "Read(//tmp/**)",
+      "Bash(find src *)",
+      "Bash(xargs md5sum *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git config *)"
     ]
   }
 }

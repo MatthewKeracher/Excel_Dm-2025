@@ -71,15 +71,16 @@ Go HTTP server using `net/http` and SQLite (`modernc.org/sqlite` — pure Go, no
 |------|------|
 | `backend/main.go` | Server entry point; registers routes; serves frontend |
 | `backend/db/db.go` | Opens `exceldm.db`; creates/migrates tables; seeds Hommlet; backfills owner |
-| `backend/models/` | Shared structs: `Campaign`, `RegisterRequest`, `LoginRequest`, `AuthResponse` |
-| `backend/handlers/auth.go` | `POST /api/register`, `POST /api/login`, `GET /api/account`, `PATCH /api/account/password` |
+| `backend/models/` | Shared structs: `Campaign`, `Entry`, `Coords`, `RegisterRequest`, `LoginRequest`, `AuthResponse` |
+| `backend/handlers/auth.go` | `POST /api/register`, `POST /api/login`, `GET /api/account`, `PATCH /api/account/password`, `PATCH /api/account/username`, `PATCH /api/account/avatar` |
 | `backend/handlers/campaign.go` | Campaign CRUD handlers (see API Routes below) |
-| `backend/handlers/helpers.go` | `serializeCampaign`, `saveEntries`, `patchEntries`, `campaignRole` |
+| `backend/handlers/helpers.go` | `serializeCampaign`, `serializePatchDelta`, `saveEntries`, `patchEntries`, `campaignRole` |
 | `backend/handlers/home.go` | `GetHome`, `SaveHome` — shared notice board notices + per-user map poster |
 | `backend/handlers/ruleset.go` | `ListRulesets`, `GetRulesetFile` — scans `data/` for ruleset directories |
 | `backend/handlers/invite.go` | Invite link creation (`CreateInvite`), lookup (`GetInvite`), acceptance (`AcceptInvite`) |
 | `backend/handlers/ws.go` | WebSocket upgrade; `ServeCampaignWS`; hub broadcast |
 | `backend/handlers/hub.go` | In-memory WebSocket hub; keyed by `campaign:{id}` |
+| `backend/handlers/public.go` | Package declaration placeholder (empty) |
 | `backend/middleware/auth.go` | JWT Bearer token validation; injects `userID` into request context |
 
 ### API Routes
@@ -88,8 +89,10 @@ Go HTTP server using `net/http` and SQLite (`modernc.org/sqlite` — pure Go, no
 POST /api/register                           — create account
 POST /api/login                              — get JWT
 
-GET  /api/account                            — get current user email
+GET  /api/account                            — get current user email, username, avatar
 PATCH /api/account/password                  — change password
+PATCH /api/account/username                  — update display username (must be unique)
+PATCH /api/account/avatar                    — update user avatar (image data URL or path)
 
 GET  /api/campaigns                          — list campaigns user owns, is member of, or that are public
 POST /api/campaigns                          — create a new named campaign (caller becomes admin/owner)
@@ -97,7 +100,7 @@ POST /api/campaigns                          — create a new named campaign (ca
 GET  /api/campaigns/{id}                     — load campaign (any role)
 PUT  /api/campaigns/{id}                     — replace all entries (editor or admin)
 PATCH /api/campaigns/{id}                    — delta update: upsert changed entries, delete removed (editor or admin)
-PATCH /api/campaigns/{id}/settings           — rename campaign (admin only)
+PATCH /api/campaigns/{id}/settings           — update campaign name and/or ruleset (admin only)
 DELETE /api/campaigns/{id}                   — delete campaign (admin only)
 GET  /api/campaigns/{id}/members             — list members and roles (admin only)
 POST /api/campaigns/{id}/members             — add a user by email with role editor|viewer (admin only)
@@ -123,7 +126,8 @@ GET  /invite/{token}                         — serves index.html so the SPA ca
 ### Database Schema
 
 ```sql
-users            (id, email, password_hash, created_at, home_poster TEXT)
+users            (id, email, password_hash, created_at,
+                  username TEXT, avatar TEXT, home_poster TEXT)
 
 campaigns        (id, owner_id→users, name, is_public, categories JSON, tabs JSON, ruleset TEXT, version INTEGER, updated_at)
 
@@ -131,7 +135,8 @@ campaign_members (campaign_id→campaigns, user_id→users, role CHECK IN ('admi
                  PRIMARY KEY (campaign_id, user_id)
 
 entries          (id, campaign_id→campaigns, title, type, category, body, color, image,
-                  x, y, coords JSON, pop_out, current_child, parent_id→entries, updated_at)
+                  x, y, coords JSON, pop_out, current_child, parent_id→entries,
+                  grid_type TEXT DEFAULT 'hex', sort_order INTEGER DEFAULT 0, updated_at)
 
 campaign_invites (id, campaign_id→campaigns, token TEXT UNIQUE, role, created_by→users, used_by→users)
 
@@ -151,7 +156,7 @@ home_notices     (id, user_id→users, title, body, color, sort_order)
 
 **Invite links:** a single-use token (hex-encoded random bytes) stored in `campaign_invites`. `GetInvite` is public; `AcceptInvite` requires auth and marks the token used. If the accepting user is already the admin, the member row is skipped.
 
-**Schema migration:** `db.Init()` calls `migrateIfNeeded()` which detects the old blob-based schema and migrates automatically. `createTables()` also adds `campaigns.version`, `campaigns.tabs`, `campaigns.ruleset`, and `campaign_invites` via `ALTER TABLE` / `CREATE TABLE IF NOT EXISTS` — safe to run repeatedly.
+**Schema migration:** `db.Init()` calls `migrateIfNeeded()` which detects the old blob-based schema and migrates automatically. `createTables()` also adds post-launch columns via `ALTER TABLE` — `campaigns.version`, `campaigns.tabs`, `campaigns.ruleset`, `users.username` (backfilled from email), `users.avatar`, `users.home_poster`, `entries.grid_type`, `entries.sort_order` — plus `campaign_invites` and `home_notices` via `CREATE TABLE IF NOT EXISTS`. Safe to run repeatedly.
 
 ### Frontend State
 
@@ -163,7 +168,7 @@ All runtime state lives in `src/main.js`:
 
 ### Data Model (`src/classes.js`)
 
-- **`Entry`** — represents one game object (location, NPC, quest, etc.). Has `title`, `type`, `body` (markdown), `category`, `parent`/`children` for hierarchy, canvas `x`/`y` for map positioning, `popOut`/`coords` for floating windows (per-user local state, not synced).
+- **`Entry`** — represents one game object (location, NPC, quest, etc.). Has `title`, `type`, `body` (markdown), `category`, `parent`/`children` for hierarchy, canvas `x`/`y` for map positioning, `gridType` (`hex`/`square`/`none`) for the map grid style, `popOut`/`coords` for floating windows (per-user local state, not synced).
 - **`EntryManager`** — holds all entries; exposes `add`, `n` (find by title), `prepareFromJSON`, `resetParentLinks`, and delta-save tracking (`dirtyEntries`, `deletedServerIds`).
 
 ### Frontend Module Responsibilities
@@ -178,12 +183,13 @@ All runtime state lives in `src/main.js`:
 | `src/ws.js` | WebSocket lifecycle — `connectWS()`, `disconnectWS()`, delta/full-replace handling, exponential backoff reconnection, version conflict detection |
 | `src/syncState.js` | Sync status indicator (`#sync-status` DOM element); manages `httpState` (idle/saving/retrying/saved/error) and `wsState` (disconnected/connecting/connected/reconnecting/updating) |
 | `src/syncLog.js` | In-memory ring buffer of last 50 sync events; exposed as `window.__syncLog()` for debugging |
-| `src/home.js` | Home screen — `initHome()`, `showHome()`, `addHomeNotice()`, `saveHome()`; renders shared notices + per-user map poster when no campaign is open |
+| `src/home.js` | Home screen — `initHome()`, `showHome()`, `addHomeNotice()`, `saveHome()`, `getHomePoster()`, `setHomePoster()`; renders shared notices + per-user map poster when no campaign is open |
 | `src/campaigns.js` | Campaign picker modal — list, create, open worlds, manage members/invites/ruleset; shown after login |
 | `src/editor.js` | CodeMirror-based modal editor; snippet panel with "Snippets" and "Rules" tabs |
 | `src/snippets.js` | Personal snippet library in `localStorage` — defaults (treasure tables, magic items, stat blocks), CRUD |
 | `src/macroEngine.js` | Safe `{{ }}` template renderer — `roll(XdY)`, `ran(min,max)`, `pick(...)`, `wtable(...)` |
-| `src/ruleset.js` | Ruleset client — `fetchRulesets()`, `getRulesetData(category)`, format helpers for monsters/spells/items |
+| `src/ruleset.js` | Ruleset client — `fetchRulesets()`, `getRulesetData(category)`; loads the ruleset's JS plugin module from `/src/rulesets/{Name}/index.js` |
+| `src/rulesets/{Name}/` | Per-ruleset plugin directory. For BFRPG: `index.js` exports `sections` (drives Rules pane) and `generators` (drives Treasure panel); `formatters.js` formats monsters/spells/items; `npc.js` generates NPC stat blocks; `treasure.js` rolls gems/jewelry/magic items/potions/scrolls |
 | `src/notecard.js` | Notecard factory — `makeNoteCard()`, `makePopOut()`, `loadPopUp()`; all button creation and card assembly |
 | `src/dragging.js` | `makeDraggable()` — mouse drag logic for pop-out windows; calls save callback on mouseup |
 | `src/popoutState.js` | Per-user pop-out window state persisted in browser `localStorage` (keyed by server entry ID); `setPopOut()`, `clearPopOut()`, `restorePopOuts()` — not synced to server |
@@ -238,13 +244,17 @@ After loading a campaign, `localStorage.js` opens a WebSocket via `ws.js` to `/a
 ### Data Files
 
 - `data/Excel_DM.json` — blank campaign template (unused now that campaigns are DB-backed)
-- `data/Hommlet.json` — large demo campaign (~8.7MB); seeded into DB once, not re-served as a file
-- `data/BFRPG/manifest.json` — ruleset manifest (`id`, `name`, `description`, `version`, `files`)
-- `data/BFRPG/monsters.json` — 189 monsters (structured: `name`, `ac`, `hd`, `attacks`, `damage`, `movement`, `xp`, `family`, `special`, `oneLiner`)
-- `data/BFRPG/spells.json` — 69 spells (structured: `name`, `class`, `level`, `range`, `duration`, `description`, `oneLiner`)
-- `data/BFRPG/items.json` — 30 items (structured: `name`, `category`, `cost`, `weight`, `damage`, `ac`, `size`, `description`, `oneLiner`)
+- `data/Hommlet.json` — large demo campaign (~8.9MB); seeded into DB once, not re-served as a file
+- `data/Hommlet.md`, `data/treasure.md` — source/authoring docs (not served to the app)
+- `data/BFRPG/manifest.json` — ruleset manifest (`id`, `name`, `description`, `version`, `module`, `files`). The `module` field points to the plugin entrypoint (e.g. `/src/rulesets/BFRPG/index.js`).
+- `data/BFRPG/monsters.json` — 353 monsters (structured: `name`, `ac`, `hd`, `attacks`, `damage`, `movement`, `xp`, `family`, `special`, `oneLiner`)
+- `data/BFRPG/spells.json` — 117 spells (structured: `name`, `class`, `level`, `range`, `duration`, `description`, `oneLiner`)
+- `data/BFRPG/items.json` — 435 items (structured: `name`, `category`, `cost`, `weight`, `damage`, `ac`, `size`, `description`, `oneLiner`)
+- `data/BFRPG/classes.json` — 6 character classes
+- `data/BFRPG/races.json` — 4 races
+- `data/BFRPG/BF-BeginnersEssentials-r18.odt`, `data/BFRPG/monsters.md` — source/authoring docs (not served)
 
-**Adding a new ruleset:** create `data/{Name}/manifest.json` + data JSON files. No backend code changes needed — `ListRulesets` discovers directories automatically.
+**Adding a new ruleset:** create `data/{Name}/manifest.json` + data JSON files, and (if the ruleset needs custom formatting or generators) a plugin at `src/rulesets/{Name}/index.js` exporting `sections` and `generators`. Set `manifest.module` to the plugin path. No backend code changes needed — `ListRulesets` discovers directories automatically.
 
 ### Entry Types
 
