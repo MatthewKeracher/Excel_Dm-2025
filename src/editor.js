@@ -198,6 +198,19 @@ export function loadEditor(
     codeArea.focus();
   });
 
+  // Inline editable field (renders as a small editable input in the notecard).
+  const fieldBtn = makeFormatBtn("# Field", "Insert Editable Field");
+  fieldBtn.addEventListener("click", () => {
+    const doc  = codeArea.getDoc();
+    const from = doc.getCursor("from");
+    const to   = doc.getCursor("to");
+    const isEmpty = from.line === to.line && from.ch === to.ch;
+    const name = isEmpty ? "quantity" : doc.getRange(from, to);
+    const snippet = `<span data-field="${name}">0</span>`;
+    doc.replaceRange(snippet, from, isEmpty ? from : to);
+    codeArea.focus();
+  });
+
   const sep = document.createElement("div");
   sep.className = "editor-toolbar-separator";
 
@@ -211,6 +224,7 @@ export function loadEditor(
   toolbarFormat.appendChild(tableBtn);
   toolbarFormat.appendChild(hrBtn);
   toolbarFormat.appendChild(linkBtn);
+  toolbarFormat.appendChild(fieldBtn);
 
   toolbar.appendChild(toolbarTop);
   toolbar.appendChild(toolbarFormat);

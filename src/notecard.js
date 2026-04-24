@@ -6,7 +6,9 @@ import { saveData } from "./localStorage.js";
 import { loadEditor } from "./editor.js";
 import { makeDraggable } from "./dragging.js";
 import { setPopOut, clearPopOut } from "./popoutState.js";
+import { isPinned, setPinned } from "./pinState.js";
 import { isViewer, isAdmin } from "./userRole.js";
+import { wireInlineFields } from "./inlineFields.js";
 
 // --- Card base ---
 
@@ -26,12 +28,24 @@ function createCardBase(entry) {
   body.innerHTML = marked.parse(entry.body);
   body.style.marginTop = "8px";
   body.style.backgroundColor = entry?.color || "";
+  if (isPinned(entry._serverId)) body.style.maxHeight = "100%";
+
+  wireInlineFields(body, entry, {
+    disabled: isViewer(),
+    onFocus: () => excelDM.dirtyEntries.add(entry),
+    onSave: () => saveData(),
+  });
 
   return { card, title, body };
 }
 
-function addCollapseToggle(card, body, editState) {
+function addCollapseToggle(card, body, editState, entry) {
   card.addEventListener("click", () => {
+    // Pinned cards stay fully expanded — clicks don't collapse them.
+    if (isPinned(entry?._serverId)) {
+      body.style.maxHeight = "100%";
+      return;
+    }
     if (body.style.maxHeight === "100%" && editState.isEditing === false) {
       body.style.maxHeight = "4.6em";
     } else {
@@ -259,32 +273,24 @@ function createObjectivesButton(entry, card) {
   return btn;
 }
 
-function createLockButton(entry) {
+function createLockButton(entry, body) {
   const lockbtn = document.createElement("button");
   lockbtn.className = "lock-btn";
-  lockbtn.title = "Pin";
+  lockbtn.title = "Pin (keep card expanded)";
 
-  if (entry.parent === current) {
-    lockbtn.innerHTML = "🔒";
-    lockbtn.style.backgroundColor = "red";
-  } else {
-    lockbtn.innerHTML = "🔓";
-    lockbtn.style.backgroundColor = "transparent";
-  }
+  const paint = () => {
+    const pinned = isPinned(entry._serverId);
+    lockbtn.innerHTML = pinned ? "🔒" : "🔓";
+    lockbtn.style.backgroundColor = pinned ? "red" : "transparent";
+  };
+  paint();
 
-  lockbtn.addEventListener("click", () => {
-    if (lockbtn.innerHTML === "🔓") {
-      lockbtn.innerHTML = "🔒";
-      lockbtn.style.backgroundColor = "red";
-      current.parentOf(entry);
-    } else {
-      lockbtn.innerHTML = "🔓";
-      entry.parent.children = entry.parent.children.filter((e) => e !== entry);
-      entry.parent = [];
-      lockbtn.style.backgroundColor = "transparent";
-    }
-    excelDM.dirtyEntries.add(entry);
-    reCurrent();
+  lockbtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const next = !isPinned(entry._serverId);
+    setPinned(entry._serverId, next);
+    paint();
+    if (body) body.style.maxHeight = next ? "100%" : "4.6em";
   });
 
   return lockbtn;
@@ -380,9 +386,10 @@ function assembleCard(card, title, body, buttonsContainer, category, buttons, en
     buttonsContainer.appendChild(prevbtn);
     buttonsContainer.appendChild(counterBtn);
     buttonsContainer.appendChild(nextBtn);
-  } else {
-    if (!viewer) buttonsContainer.appendChild(lockbtn);
   }
+
+  // Pin button available on every card type.
+  if (!viewer) buttonsContainer.appendChild(lockbtn);
 
   card.appendChild(category);
 
@@ -402,7 +409,7 @@ export function makeNoteCard(entry, isPopOut = false) {
   const { card, title, body } = createCardBase(entry);
   const editState = { isEditing: false };
 
-  if (!isPopOut) addCollapseToggle(card, body, editState);
+  if (!isPopOut) addCollapseToggle(card, body, editState, entry);
   addMapHighlight(card, entry);
 
   const buttonsContainer = document.createElement("div");
@@ -417,7 +424,7 @@ export function makeNoteCard(entry, isPopOut = false) {
   const nextBtn       = createNextButton(entry, card);
   const counterBtn    = createCounterButton(entry);
   const prevbtn       = createPrevButton(entry, card);
-  const lockbtn       = createLockButton(entry);
+  const lockbtn       = createLockButton(entry, body);
   const clrbtn        = createColorButton(entry, card);
   const popbtn        = createPopOutButton(entry);
   const objectivesBtn = createObjectivesButton(entry, card);

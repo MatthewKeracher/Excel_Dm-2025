@@ -115,7 +115,7 @@ export function generateNPC(classEntry, level, cache = {}) {
     if (slots.length > 0) extra = `, Spells ${slots.join("/")}`;
   }
 
-  return `**${classEntry.name} ${level}** — HP ${hp}, AC ${ac} (${gear.armorName}), AB +${ab}, ${gear.weaponName} ${dmgStr}${extra} | S ${str} D ${dex} I ${int_} W ${wis} C ${con} Ch ${cha}`;
+  return `**${classEntry.name} ${level}** — HP <span data-field="hp">${hp}</span>, AC ${ac} (${gear.armorName}), AB +${ab}, ${gear.weaponName} ${dmgStr}${extra} | S ${str} D ${dex} I ${int_} W ${wis} C ${con} Ch ${cha}`;
 }
 
 function pickRace(classEntry, races) {
@@ -162,7 +162,7 @@ export function generateNPCBlock(classEntry, level, cache = {}) {
   const coinStr = remaining > 0 ? ` (${remaining} gp remaining)` : "";
 
   const combatTable = `| | |\n|:---|:---|\n` +
-    `| HP | ${hp} |\n| AC | ${ac} |\n| Attack Bonus | +${ab} |\n` +
+    `| HP | <span data-field="hp">${hp}</span> |\n| AC | ${ac} |\n| Attack Bonus | +${ab} |\n` +
     `| Armour | ${gear.armorName}${coinStr} |\n| Weapon | ${gear.weaponName} (${dmgStr}) |`;
 
   const abilityRow = (name, score) => {

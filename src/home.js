@@ -2,6 +2,7 @@ import { authHeaders, getToken } from "./auth.js";
 import { loadEditor } from "./editor.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { setHttpState } from "./syncState.js";
+import { wireInlineFields } from "./inlineFields.js";
 
 let homeNotices = [];
 let homePoster = null;
@@ -93,6 +94,11 @@ function makeHomeNoticeCard(notice) {
   bodyEl.style.marginTop = "8px";
   bodyEl.style.backgroundColor = notice.color || "";
   bodyEl.style.maxHeight = "4.6em";
+
+  // Inline editable fields only for logged-in users. Anon sees plain text.
+  if (getToken()) {
+    wireInlineFields(bodyEl, notice, { onSave: () => saveHome() });
+  }
 
   card.addEventListener("click", () => {
     bodyEl.style.maxHeight = bodyEl.style.maxHeight === "100%" ? "4.6em" : "100%";

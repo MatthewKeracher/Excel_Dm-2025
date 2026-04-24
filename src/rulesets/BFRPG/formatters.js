@@ -6,7 +6,10 @@ import { buildTreasureRows, rollHP, rollIndividualTreasure } from './treasure.js
 // ── Monster formatters ────────────────────────────────────────────────────────
 
 export function formatMonsterBlock(m, monsters = null) {
+  // Roll HP once at generation; the span lets the DM track current HP in-play.
+  const hp = rollHP(m.hd);
   const statRows = [
+    ["HP", `<span data-field="hp">${hp}</span>`],
     ["AC", m.ac], ["HD", m.hd], ["Attacks", m.attacks],
     ["Damage", m.damage], ["Movement", m.movement],
     ["Appearing", m.appearing], ["Save As", m.saveAs],
@@ -36,7 +39,7 @@ export function formatMonsterOneLiner(m, spells = null, monsters = null) {
   }
 
   const treasure = rollIndividualTreasure(treasureCode, spells);
-  let line = `**${m.name}** (HP: ${hp}): AC ${m.ac}, Dmg ${m.damage}, MV ${m.movement}`;
+  let line = `**${m.name}** (HP: <span data-field="hp">${hp}</span>): AC ${m.ac}, Dmg ${m.damage}, MV ${m.movement}`;
   if (treasure) line += ` — ${treasure}`;
   return line;
 }

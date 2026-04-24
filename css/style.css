@@ -1027,6 +1027,31 @@ p {
   white-space: no-wrap;
 }
 
+.notecard-body input.inline-field {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px dashed rgba(0, 0, 0, 0.35);
+  border-radius: 3px;
+  padding: 0 3px;
+  margin: 0;
+  min-width: 2ch;
+  vertical-align: baseline;
+  box-sizing: content-box;
+}
+
+.notecard-body input.inline-field:focus {
+  outline: none;
+  border-color: #115926;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.notecard-body input.inline-field:disabled {
+  border-style: dotted;
+  opacity: 0.7;
+  cursor: default;
+}
+
 textarea.notecard-body {
   width: 100%;
   box-sizing: border-box; /* include padding/border in width */

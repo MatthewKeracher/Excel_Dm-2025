@@ -20,6 +20,17 @@ function isModalOpen() {
 function isEditing(event) {
   const activeElement = document.activeElement;
   if (activeElement?.closest(".snippet-panel")) return true;
+
+  // Any focused text input / textarea / contenteditable absorbs keypresses —
+  // don't let global hotkeys trigger while the user is typing in a field
+  // (inline quantity inputs, modal inputs, etc.). The search bar itself is
+  // exempt: the global handler still drives its Enter/Escape behaviour.
+  const tag = activeElement?.tagName;
+  const isSearchBar = activeElement?.id === "search-bar";
+  if (!isSearchBar && (tag === "INPUT" || tag === "TEXTAREA" || activeElement?.isContentEditable)) {
+    return true;
+  }
+
   if (!activeElement?.classList.contains("editing")) return false;
 
   if (event.key === "Escape") {
