@@ -1,7 +1,7 @@
 import { current, excelDM, reCurrent, newCurrent, masterEdit, resetCurrent } from "./main.js";
 import { Entry, EntryManager } from "./classes.js";
 import { saveData, saveDataNow, disconnectWS, setApiUrl } from "./localStorage.js";
-import { authHeaders, clearToken, showAuthModal } from "./auth.js";
+import { authHeaders, clearToken, getToken, showAuthModal, updateAccountDisplay } from "./auth.js";
 import { setGridType } from "./right.js";
 import { currentTab } from "./tabs.js";
 import { returnFiltered } from "./filter.js";
@@ -17,6 +17,10 @@ export function initButtons() {
 
   const accountBtn = document.getElementById("btn-account");
   if (accountBtn) accountBtn.addEventListener("click", () => {
+    if (!getToken()) {
+      showAuthModal();
+      return;
+    }
     import("./campaigns.js").then(({ showCampaignPicker }) => showCampaignPicker());
   });
 
@@ -225,10 +229,15 @@ export async function goHome() {
   showHome();
 }
 
-export function logout() {
+export async function logout() {
   disconnectWS();
+  setApiUrl(null);
   clearToken();
-  showAuthModal();
+  resetCurrent();
+  updateAccountDisplay("");
+  const { initHome, showHome } = await import("./home.js");
+  await initHome();
+  showHome();
 }
 
 export async function addEntry() {

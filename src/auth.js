@@ -66,9 +66,15 @@ export async function ensureEmail() {
 }
 
 // Renders the account button as a fixed circle — avatar image or username initial.
+// When no token is present, renders a "Log in" label instead.
 export function updateAccountDisplay(email) {
   const btn = document.getElementById("btn-account");
   if (!btn) return;
+  if (!getToken()) {
+    btn.title = "Log in";
+    btn.innerHTML = `<span class="account-login">Log in</span>`;
+    return;
+  }
   const avatar   = getAvatar();
   const username = getUsername() || email || "";
   btn.title      = username || email || "Account";

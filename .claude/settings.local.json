@@ -52,7 +52,11 @@
       "Bash(find src *)",
       "Bash(xargs md5sum *)",
       "Bash(git commit -m ' *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Read(//usr/lib/**)",
+      "Bash(dpkg -l)",
+      "Bash(pacman -Qs go)",
+      "Bash(sudo pacman *)"
     ]
   }
 }

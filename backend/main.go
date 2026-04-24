@@ -51,8 +51,9 @@ func main() {
 	mux.HandleFunc("GET /api/invites/{token}", handlers.GetInvite)
 	mux.Handle("POST /api/invites/{token}/accept", middleware.Auth(http.HandlerFunc(handlers.AcceptInvite)))
 
-	// Home notice board
-	mux.Handle("GET /api/home", middleware.Auth(http.HandlerFunc(handlers.GetHome)))
+	// Home notice board — GET is public (anon users see shared notices);
+	// PUT requires auth.
+	mux.Handle("GET /api/home", middleware.OptionalAuth(http.HandlerFunc(handlers.GetHome)))
 	mux.Handle("PUT /api/home", middleware.Auth(http.HandlerFunc(handlers.SaveHome)))
 
 	// Ruleset reference library

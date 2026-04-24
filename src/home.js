@@ -1,4 +1,4 @@
-import { authHeaders } from "./auth.js";
+import { authHeaders, getToken } from "./auth.js";
 import { loadEditor } from "./editor.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { setHttpState } from "./syncState.js";
@@ -39,6 +39,13 @@ export async function showHome() {
   // Hide tabs while on home screen
   const tabsEl = document.querySelector(".tabs");
   if (tabsEl) tabsEl.style.display = "none";
+
+  // Hide writeable actions for anon users.
+  const isAnon = !getToken();
+  ["btn-add", "btn-load", "btn-save"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = isAnon ? "none" : "";
+  });
 
   renderHomeNotices();
   const { HexToMap, setGridType } = await import("./right.js");
@@ -97,6 +104,14 @@ function makeHomeNoticeCard(notice) {
   const categoryEl = document.createElement("div");
   categoryEl.className = "notecard-category";
   categoryEl.textContent = "Notice";
+
+  // Anon users see read-only notices — skip edit controls.
+  if (!getToken()) {
+    card.appendChild(categoryEl);
+    card.appendChild(titleEl);
+    card.appendChild(bodyEl);
+    return card;
+  }
 
   // Color button
   const clrBtn = document.createElement("button");

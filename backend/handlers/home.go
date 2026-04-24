@@ -22,10 +22,10 @@ type homePayload struct {
 }
 
 func GetHome(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(middleware.UserIDKey).(int)
-
 	var poster string
-	db.Conn.QueryRow("SELECT COALESCE(home_poster, '') FROM users WHERE id = ?", userID).Scan(&poster)
+	if uid, ok := r.Context().Value(middleware.UserIDKey).(int); ok {
+		db.Conn.QueryRow("SELECT COALESCE(home_poster, '') FROM users WHERE id = ?", uid).Scan(&poster)
+	}
 
 	rows, err := db.Conn.Query(
 		"SELECT id, title, body, color, sort_order FROM home_notices ORDER BY sort_order ASC",

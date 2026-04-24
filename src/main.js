@@ -76,6 +76,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const inviteMatch = window.location.pathname.match(/^\/invite\/([0-9a-f]+)$/i);
 
   if (inviteMatch) {
+    // Invite links still require auth to accept.
     const token = inviteMatch[1];
     const { handleInviteFlow } = await import("./campaigns.js");
     initAuth(async () => {
@@ -93,20 +94,21 @@ window.addEventListener("DOMContentLoaded", async () => {
       showAuthModal();
     }
   } else {
+    // Default: show the home/notice board to everyone, logged in or not.
+    // The auth modal only opens when the user clicks the account button.
+    const { initHome, showHome } = await import("./home.js");
     initAuth(async () => {
-      const { initHome, showHome } = await import("./home.js");
       await initHome();
       updateAccountDisplay(await ensureEmail());
       showHome();
     });
+    await initHome();
     if (getToken()) {
-      const { initHome, showHome } = await import("./home.js");
-      await initHome();
       updateAccountDisplay(await ensureEmail());
-      showHome();
     } else {
-      showAuthModal();
+      updateAccountDisplay("");
     }
+    showHome();
   }
 
   

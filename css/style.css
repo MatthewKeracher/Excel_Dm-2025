@@ -723,6 +723,21 @@ header {
   line-height: 1;
 }
 
+#btn-account:has(.account-login) {
+  width: auto !important;
+  height: auto !important;
+  border-radius: 999px !important;
+  padding: 0.4rem 0.9rem !important;
+}
+
+#btn-account span.account-login {
+  font-family: "SoutaneBlack", serif;
+  font-size: 0.9em;
+  color: #115926;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .header-center {
   text-align: center;
   font-family: "SoutaneBlack", sans-serif;
