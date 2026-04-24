@@ -15,13 +15,13 @@ Excel_DM is a browser-based Dungeon Master planning tool. It is a **vanilla Java
    cd backend && go run .
    ```
 2. Open `http://localhost:8080` in a browser.
-3. Register an account via the login modal, then create or open a campaign world.
+3. The landing screen is the **home notice board** — any visitor (including anonymous) sees the shared notices. Click the "Log in" pill (top-right) to register or log in, then open/create a campaign world.
 
 The only npm dependency is `marked` (markdown parser), also loaded via CDN. CodeMirror is loaded from CDN as well.
 
 ### Production (heimvon)
 
-The app runs inside an Alpine Linux Incus container named `exceldm` on `heimvon`. The Go binary is compiled for `linux/amd64` and runs as an OpenRC service. It is exposed on the host at port `8081` via an Incus proxy device.
+The app runs inside an Alpine Linux Incus container named `exceldm` on `heimvon`. The Go binary is cross-compiled for `linux/amd64` as a **fully-static binary** (`CGO_ENABLED=0` in `deploy.sh`) so it runs on Alpine's musl libc without a dynamic loader. It runs as an OpenRC service, exposed on the host at port `8081` via an Incus proxy device.
 
 **Container layout:**
 ```
@@ -81,7 +81,7 @@ Go HTTP server using `net/http` and SQLite (`modernc.org/sqlite` — pure Go, no
 | `backend/handlers/ws.go` | WebSocket upgrade; `ServeCampaignWS`; hub broadcast |
 | `backend/handlers/hub.go` | In-memory WebSocket hub; keyed by `campaign:{id}` |
 | `backend/handlers/public.go` | Package declaration placeholder (empty) |
-| `backend/middleware/auth.go` | JWT Bearer token validation; injects `userID` into request context |
+| `backend/middleware/auth.go` | `Auth` — requires a valid JWT Bearer token, injects `userID` into context (401 otherwise). `OptionalAuth` — same, but passes through without userID if the token is missing/invalid (used for `GET /api/home` so anon visitors see shared notices). |
 
 ### API Routes
 
@@ -113,8 +113,8 @@ GET  /api/rulesets/{name}/{file}             — serve a ruleset data file (e.g.
 GET  /api/invites/{token}                    — look up invite info, no auth required
 POST /api/invites/{token}/accept             — accept invite, adds caller as member (auth required)
 
-GET  /api/home                               — get shared notice board notices + caller's map poster
-PUT  /api/home                               — replace all notices + update caller's map poster
+GET  /api/home                               — shared notice board notices (public, via OptionalAuth: anon users get notices with empty poster; logged-in users also get their personal map poster)
+PUT  /api/home                               — replace all notices + update caller's map poster (auth required)
 
 GET  /api/campaigns/{id}/ws?token=JWT&clientId=X  — WebSocket for real-time sync
 
@@ -150,7 +150,7 @@ home_notices     (id, user_id→users, title, body, color, sort_order)
 **Roles:**
 - `admin` — owner of the campaign (set in `campaigns.owner_id`); can add/remove members, create invites, rename/delete
 - `editor` — can save changes; also the implicit role for any logged-in user on a public campaign
-- `viewer` — read-only; edit/delete/color/lock buttons are hidden in the UI
+- `viewer` — read-only; edit/delete/color/pin buttons are hidden, and inline `data-field` inputs render as `disabled`
 
 **Public campaigns:** `is_public = TRUE` grants all logged-in users `editor` access. The Hommlet demo campaign is public. `backfillHommletOwner()` runs on every startup to assign ownership to `matthewkeracher94@gmail.com` once that account exists.
 
@@ -183,35 +183,38 @@ All runtime state lives in `src/main.js`:
 | `src/ws.js` | WebSocket lifecycle — `connectWS()`, `disconnectWS()`, delta/full-replace handling, exponential backoff reconnection, version conflict detection |
 | `src/syncState.js` | Sync status indicator (`#sync-status` DOM element); manages `httpState` (idle/saving/retrying/saved/error) and `wsState` (disconnected/connecting/connected/reconnecting/updating) |
 | `src/syncLog.js` | In-memory ring buffer of last 50 sync events; exposed as `window.__syncLog()` for debugging |
-| `src/home.js` | Home screen — `initHome()`, `showHome()`, `addHomeNotice()`, `saveHome()`, `getHomePoster()`, `setHomePoster()`; renders shared notices + per-user map poster when no campaign is open |
-| `src/campaigns.js` | Campaign picker modal — list, create, open worlds, manage members/invites/ruleset; shown after login |
-| `src/editor.js` | CodeMirror-based modal editor; snippet panel with "Snippets" and "Rules" tabs |
+| `src/home.js` | Home screen — `initHome()`, `showHome()`, `addHomeNotice()`, `saveHome()`, `getHomePoster()`, `setHomePoster()`; renders shared notices + per-user map poster. Shown to anon visitors too; for anon, write buttons (Add, Map, Save) are hidden and notice cards render read-only. |
+| `src/campaigns.js` | Campaign picker modal — list, create, open worlds, manage members/invites/ruleset; opens when a logged-in user clicks the account button |
+| `src/editor.js` | CodeMirror-based modal editor; snippet panel with "Snippets" and "Rules" tabs. Toolbar includes a "# Field" button that inserts a `<span data-field="NAME">0</span>` sentinel for the inline-fields feature. |
 | `src/snippets.js` | Personal snippet library in `localStorage` — defaults (treasure tables, magic items, stat blocks), CRUD |
 | `src/macroEngine.js` | Safe `{{ }}` template renderer — `roll(XdY)`, `ran(min,max)`, `pick(...)`, `wtable(...)` |
 | `src/ruleset.js` | Ruleset client — `fetchRulesets()`, `getRulesetData(category)`; loads the ruleset's JS plugin module from `/src/rulesets/{Name}/index.js` |
-| `src/rulesets/{Name}/` | Per-ruleset plugin directory. For BFRPG: `index.js` exports `sections` (drives Rules pane) and `generators` (drives Treasure panel); `formatters.js` formats monsters/spells/items; `npc.js` generates NPC stat blocks; `treasure.js` rolls gems/jewelry/magic items/potions/scrolls |
-| `src/notecard.js` | Notecard factory — `makeNoteCard()`, `makePopOut()`, `loadPopUp()`; all button creation and card assembly |
+| `src/rulesets/{Name}/` | Per-ruleset plugin directory. For BFRPG: `index.js` exports `sections` (drives Rules pane) and `generators` (drives Treasure panel); `formatters.js` formats monsters/spells/items (monster block + one-liner emit `<span data-field="hp">` so DMs can edit rolled HP in play); `npc.js` generates NPC stat blocks (same editable-HP treatment); `treasure.js` rolls gems/jewelry/magic items/potions/scrolls |
+| `src/notecard.js` | Notecard factory — `makeNoteCard()`, `makePopOut()`, `loadPopUp()`; all button creation and card assembly. Wires `inlineFields.js` into rendered bodies. The pin (🔒/🔓) button is available on every card type and toggles the per-browser pinned state. |
+| `src/inlineFields.js` | `wireInlineFields(bodyEl, entry, opts)` — walks `<span data-field="NAME">value</span>` sentinels in a rendered markdown body, swaps each for an editable `<input>`, and rewrites the matching span inside `entry.body` on change. HTML-escapes user input. Multiple fields per card are addressed by occurrence index. Used by both notecards (`notecard.js`) and home notices (`home.js`); skipped for anon users and disabled for viewer role. |
+| `src/pinState.js` | Per-user pinned-card state in browser `localStorage`, keyed by server entry ID. `isPinned()` / `setPinned()`. A pinned card renders at full height and ignores the click-to-collapse toggle. Not synced — each DM has their own pins. |
 | `src/dragging.js` | `makeDraggable()` — mouse drag logic for pop-out windows; calls save callback on mouseup |
 | `src/popoutState.js` | Per-user pop-out window state persisted in browser `localStorage` (keyed by server entry ID); `setPopOut()`, `clearPopOut()`, `restorePopOuts()` — not synced to server |
 | `src/userRole.js` | Role state — `setCurrentRole()`, `getCurrentRole()`, `isViewer()`, `isAdmin()` |
 | `src/left.js` | Renders note cards in the left sidebar using `notecard.js`; card click, delete, navigation |
 | `src/right.js` | Canvas map — draws grid and draggable location labels; `initMap()`, `draw()`, `HexToMap()` |
-| `src/buttons.js` | Header button handlers: Worlds, Save, Add Map, Add, Donate |
+| `src/buttons.js` | Header button handlers: Worlds, Save, Add Map, Add, Donate. The `#btn-account` button opens the campaign picker if logged in, otherwise shows the auth modal. `logout()` returns the user to the home screen (not the auth modal). |
 | `src/tabs.js` | Tab bar — switches `currentTab`, triggers re-render |
 | `src/filter.js` | Category filter UI and compiled filter state |
-| `src/hotkeys.js` | Keyboard shortcuts (arrows, Tab, Escape, search) |
+| `src/hotkeys.js` | Keyboard shortcuts (arrows, Tab, Escape, search). `isEditing()` guard suppresses global hotkeys whenever an `INPUT`/`TEXTAREA`/`contenteditable` is focused (inline-field inputs, modal fields, etc.) — the search bar itself is exempt so it can still be driven by Enter/Escape. |
 
 ### App Startup Flow
 
 1. `DOMContentLoaded` fires in `main.js`
 2. `initButtons()`, `addHotkeys()`, `initTabs()`, `initMap()` wire up UI
 3. Check for `/invite/{token}` URL path:
-   - If present: dynamically import `campaigns.js`, call `handleInviteFlow(token)` after auth
-   - Otherwise: dynamically import `campaigns.js`, call `showCampaignPicker()` after auth
-4. `initAuth(callback)` wires the login modal; on success → `callback()`
-5. If already logged in (JWT in `localStorage`), `ensureEmail()` fetches user email and `showCampaignPicker()` / `handleInviteFlow()` is called immediately
-6. User selects or creates a campaign → `openCampaign(id, name)` calls `setApiUrl('/api/campaigns/{id}')` then `loadData()`
-7. `loadData()` fetches `GET /api/campaigns/{id}`, populates `excelDM`, restores pop-out state, connects WebSocket
+   - If present: the invite flow still requires auth — show the auth modal first (unless already logged in), then call `handleInviteFlow(token)`.
+   - Otherwise: always show the **home screen** — for everyone, including anonymous visitors. The auth modal is not shown automatically.
+4. `initAuth(callback)` wires the login modal; on successful login/register it re-renders the home screen and `updateAccountDisplay` swaps the "Log in" pill for the user's avatar/initial.
+5. The auth modal only opens when the user clicks the account button (or on the invite route when logged out).
+6. From the home screen a logged-in user clicks the account button → opens `showCampaignPicker()`; selecting a campaign calls `openCampaign(id, name)` → `setApiUrl('/api/campaigns/{id}')` → `loadData()`.
+7. `loadData()` fetches `GET /api/campaigns/{id}`, populates `excelDM`, restores pop-out state, connects WebSocket.
+8. `logout()` disconnects the WS and returns to the home screen (not the auth modal).
 
 **Circular dependency note:** `main.js` ↔ `localStorage.js` ↔ various modules form cycles that are safe because `classes.js` evaluates first. `campaigns.js` must be loaded via dynamic `import()` (not a static import) to avoid breaking the ES module evaluation order.
 
@@ -259,3 +262,22 @@ After loading a campaign, `localStorage.js` opens a WebSocket via `ws.js` to `/a
 ### Entry Types
 
 The seven tabs/types: `locations`, `people`, `quests`, `monsters`, `spells`, `items`, `misc`
+
+### Inline Editable Fields
+
+Authors can embed editable values directly in a markdown body using a `<span data-field="NAME">value</span>` sentinel. Any span with a `data-field` attribute is swapped at render time for a small text input; editing the input rewrites the matching span's inner text inside `entry.body` and flows through the existing debounced PATCH pipeline (no schema change — the markdown is the storage).
+
+- **Authoring:** the editor toolbar's **# Field** button inserts a template sentinel (using the current CodeMirror selection as the field name if any).
+- **Multiple per card:** spans with the same `data-field` name are addressed by their occurrence index in the body source. Structural changes only happen via the editor modal (which fully replaces the body), so the index stays stable between inline edits.
+- **Save behaviour:** on `focus` the entry is marked dirty (so concurrent WS patches don't overwrite mid-type); on `change`/blur/Enter the body is rewritten and saved. Escape reverts and skips save. User input is HTML-escaped before being written into the body.
+- **Scope:** wired into notecards (including pop-outs) and home-notice cards (for logged-in users). The editor-modal live preview renders the spans as plain text, not editable inputs — the modal's CodeMirror is the source-of-truth authoring surface.
+- **BFRPG integration:** monster blocks, monster one-liners, NPC blocks, and NPC one-liners all emit `<span data-field="hp">...</span>` so the rolled HP is per-instance editable for live combat tracking.
+
+### Pinning Cards
+
+The pin button (🔓/🔒) on any notecard toggles a **per-browser** pinned state stored in `localStorage` via `src/pinState.js`. A pinned card:
+
+- Starts fully expanded on render and ignores the click-to-collapse toggle — useful for keeping combatants / active quest cards visible.
+- Is a personal workspace preference; nothing syncs to the server, so two DMs on the same campaign can pin different cards.
+
+Pinning is not the same as the old "attach to current location" behaviour (which reparented the entry). Changing the pinned state has no effect on `entry.parent`.
