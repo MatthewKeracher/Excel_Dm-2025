@@ -18,7 +18,9 @@ done
 if $DEPLOY_BACKEND; then
     echo "==> Building Linux binary..."
     cd backend
-    GOOS=linux GOARCH=amd64 go build -o exceldm-linux-amd64 .
+    # CGO_ENABLED=0 produces a fully static binary — required since the
+    # target is Alpine (musl) but builders are typically glibc.
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o exceldm-linux-amd64 .
     cd ..
 
     echo "==> Copying binary to host..."
