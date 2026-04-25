@@ -339,8 +339,20 @@ function createColorButton(entry, card) {
       colorBtn.title = color;
 
       colorBtn.addEventListener("click", () => {
-        entry.color = color;
-        excelDM.dirtyEntries.add(entry);
+        if (entry.type === "quests") {
+          // Recolour the whole questline (root + every descendant).
+          const root = entry.findRootNode();
+          const stack = [root];
+          while (stack.length) {
+            const node = stack.pop();
+            node.color = color;
+            excelDM.dirtyEntries.add(node);
+            (node.children ?? []).forEach((c) => stack.push(c));
+          }
+        } else {
+          entry.color = color;
+          excelDM.dirtyEntries.add(entry);
+        }
         colorGridContainer.style.display = "none";
         reCurrent();
       });
