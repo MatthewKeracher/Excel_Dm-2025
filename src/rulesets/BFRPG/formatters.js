@@ -94,9 +94,7 @@ function formatPackContentsTable(item, rulesCache) {
 
 export function formatItemBlock(item, rulesCache) {
   if (item.category === "packs" && item.contents?.length) {
-    const header = `# ${item.name}`;
-    const desc   = item.description ? `\n\n${item.description}` : "";
-    return `${header}${desc}\n\n---\n\n${formatPackContentsTable(item, rulesCache)}`;
+    return `# ${item.name}\n\n---\n\n${formatPackContentsTable(item, rulesCache)}`;
   }
   const rows = [
     ["Cost",   item.cost   ? `${item.cost} gp`   : ""],
