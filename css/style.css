@@ -1108,6 +1108,28 @@ p {
   vertical-align: middle;
 }
 
+.notecard-body .hp-tally-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6em;
+  margin: 0.3em 0;
+}
+
+.notecard-body .hp-tally-label {
+  font-weight: bold;
+}
+
+.notecard-body .hp-tally-clusters {
+  flex: 1;
+  column-count: 2;
+  column-gap: 1.5em;
+}
+
+.notecard-body .hp-tally-row {
+  break-inside: avoid;
+  white-space: nowrap;
+}
+
 .notecard-body .hp-tally-box {
   background: transparent;
   border: none;

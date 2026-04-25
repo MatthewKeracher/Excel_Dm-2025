@@ -61,16 +61,23 @@ export function formatMonsterEncounterTable(m, mode, spells = null, monsters = n
   ].filter(Boolean).join(", ");
   const header = `**${count} ${plural}** (${label} ${dice}): ${sharedBits}`;
 
-  const tallies = [];
+  const clusters = [];
   const treasures = [];
   for (let i = 0; i < count; i++) {
     const hp = rollHP(m.hd);
-    tallies.push(`${hp} <span data-field="hp-tally" data-max="${hp}">0</span>`);
+    clusters.push(`<div class="hp-tally-row">${hp} <span data-field="hp-tally" data-max="${hp}">0</span></div>`);
     const t = rollIndividualTreasure(treasureCode, spells);
     if (t) treasures.push(`#${i + 1} ${t}`);
   }
 
-  let out = `${header}\n\n${tallies.join("  ")}`;
+  // Single-line HTML block so marked treats it as raw HTML and doesn't try to
+  // interpret the inner newlines as paragraphs. CSS flows the clusters into
+  // two columns next to a leading "HP" label, matching the BFRPG module layout.
+  const tallyBlock =
+    `<div class="hp-tally-block"><span class="hp-tally-label">HP</span>` +
+    `<div class="hp-tally-clusters">${clusters.join("")}</div></div>`;
+
+  let out = `${header}\n\n${tallyBlock}`;
   if (treasures.length) out += `\n\n*Treasure:* ${treasures.join(" · ")}`;
   return out;
 }
