@@ -69,6 +69,49 @@ export function wireInlineFields(bodyEl, entry, opts = {}) {
     counters.set(field, idx + 1);
 
     const initial = span.textContent;
+
+    // hp-tally: clickable damage-tracker checkbox row.
+    // Source span: <span data-field="hp-tally" data-max="N">K</span>
+    //   data-max = total HP boxes
+    //   text content = current damage taken (0..N)
+    if (field === "hp-tally") {
+      const max = Math.max(0, Number(span.getAttribute("data-max")) || 0);
+      let count = Math.min(Math.max(0, parseInt(initial, 10) || 0), max);
+
+      const wrapper = document.createElement("span");
+      wrapper.className = "hp-tally";
+
+      function render() {
+        wrapper.innerHTML = "";
+        for (let i = 0; i < max; i++) {
+          const box = document.createElement("button");
+          box.type = "button";
+          box.className = "hp-tally-box" + (i < count ? " filled" : "");
+          box.textContent = i < count ? "☒" : "☐";
+          if (disabled) {
+            box.disabled = true;
+          } else {
+            box.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const newCount = i < count ? i : i + 1;
+              if (newCount === count) return;
+              count = newCount;
+              if (rewriteField(entry, field, idx, String(count))) {
+                const body = wrapper.closest(".notecard-body");
+                if (body) body.dataset.fullText = entry.body;
+                onSave();
+              }
+              render();
+            });
+          }
+          wrapper.appendChild(box);
+        }
+      }
+      render();
+      span.replaceWith(wrapper);
+      return;
+    }
+
     const input = document.createElement("input");
     input.type = "text";
     input.className = "inline-field";

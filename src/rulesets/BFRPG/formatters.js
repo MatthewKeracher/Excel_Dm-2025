@@ -43,27 +43,36 @@ export function formatMonsterEncounterTable(m, mode, spells = null, monsters = n
     if (ref) treasureCode = ref.treasureIndividual;
   }
 
-  const rows = [];
+  // Pluralise the monster name for the header — naive trailing-s.
+  const plural = count === 1 ? m.name : (m.name.endsWith("s") ? m.name : `${m.name}s`);
+
+  // BFRPG module style: shared stats inline, then a flat run of "<HP> ☐☐☐☐☐"
+  // tally widgets — one per individual. Each tally is a persistent inline
+  // field (data-field="hp-tally") so ticks survive reload.
+  const sharedBits = [
+    m.ac       ? `AC ${m.ac}`           : "",
+    m.hd       ? `HD ${m.hd}`           : "",
+    m.attacks  ? `#At ${m.attacks}`     : "",
+    m.damage   ? `Dam ${m.damage}`      : "",
+    m.movement ? `Mv ${m.movement}`     : "",
+    m.saveAs   ? `Sv ${m.saveAs}`       : "",
+    m.morale   ? `Ml ${m.morale}`       : "",
+    m.xp       ? `XP ${m.xp} ea`        : "",
+  ].filter(Boolean).join(", ");
+  const header = `**${count} ${plural}** (${label} ${dice}): ${sharedBits}`;
+
+  const tallies = [];
+  const treasures = [];
   for (let i = 0; i < count; i++) {
     const hp = rollHP(m.hd);
-    const treasure = rollIndividualTreasure(treasureCode, spells) || "";
-    rows.push(`| <span data-field="qty">1</span> | ${m.name} | <span data-field="hp">${hp}</span> | ${treasure} |`);
+    tallies.push(`${hp} <span data-field="hp-tally" data-max="${hp}">0</span>`);
+    const t = rollIndividualTreasure(treasureCode, spells);
+    if (t) treasures.push(`#${i + 1} ${t}`);
   }
 
-  const sharedBits = [
-    m.ac       ? `AC ${m.ac}`        : "",
-    m.attacks  ? `Att ${m.attacks}`  : "",
-    m.damage   ? `Dmg ${m.damage}`   : "",
-    m.movement ? `MV ${m.movement}`  : "",
-    m.xp       ? `XP ${m.xp}`        : "",
-  ].filter(Boolean).join(", ");
-  const header = `**${m.name} — ${label} encounter (${dice} = ${count})**: ${sharedBits}`;
-  const table = [
-    "| Qty | Name | HP | Treasure |",
-    "|:---|:---|:---|:---|",
-    ...rows,
-  ].join("\n");
-  return `${header}\n\n${table}`;
+  let out = `${header}\n\n${tallies.join("  ")}`;
+  if (treasures.length) out += `\n\n*Treasure:* ${treasures.join(" · ")}`;
+  return out;
 }
 
 // ── Monster formatters ────────────────────────────────────────────────────────
