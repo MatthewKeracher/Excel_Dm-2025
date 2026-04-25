@@ -35,7 +35,8 @@ export function loadNoteCards(data, search = "no") {
 
         entries = updatedEntries;
 
-        entries.sort((a, b) => a.order - b.order);
+        // Sort by progress depth (deepest = furthest along the questline first).
+        entries.sort((a, b) => b.countParentsUp() - a.countParentsUp());
 
         break;
 
