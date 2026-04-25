@@ -67,12 +67,17 @@ export function formatMonsterEncounterTable(m, mode, spells = null, monsters = n
     clusters.push(`<div class="hp-tally-row">${hp} <span data-field="hp-tally" data-max="${hp}">0</span></div>`);
   }
 
-  // Single-line HTML block so marked treats it as raw HTML and doesn't try to
-  // interpret the inner newlines as paragraphs. CSS flows the clusters into
-  // two columns next to a leading "HP" label, matching the BFRPG module layout.
-  const tallyBlock =
-    `<div class="hp-tally-block"><span class="hp-tally-label">HP</span>` +
-    `<div class="hp-tally-clusters">${clusters.join("")}</div></div>`;
+  // Multi-line HTML block — marked treats it as a raw HTML block (no blank
+  // lines inside) so it passes through verbatim. One cluster per line keeps
+  // the source readable in the CodeMirror editor.
+  const tallyBlock = [
+    `<div class="hp-tally-block">`,
+    `  <span class="hp-tally-label">HP</span>`,
+    `  <div class="hp-tally-clusters">`,
+    ...clusters.map(c => `    ${c}`),
+    `  </div>`,
+    `</div>`,
+  ].join("\n");
 
   const groupTreasure = rollGroupTreasure(treasureCode, count, spells);
   let out = `${header}\n\n${tallyBlock}`;
