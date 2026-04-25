@@ -396,7 +396,7 @@ export function loadEditor(
       actions.appendChild(fullBtn);
 
       if (extraButtons) {
-        for (const def of extraButtons(entry) ?? []) {
+        for (const def of extraButtons(entry, rulesCache) ?? []) {
           const btn = document.createElement("button");
           btn.className = "snippet-action-btn";
           btn.textContent = def.label;

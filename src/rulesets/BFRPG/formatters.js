@@ -28,21 +28,39 @@ function rollCount(dice) {
   return rollDice(dice) || 1;
 }
 
-export function formatMonsterEncounterTable(m, mode) {
+export function formatMonsterEncounterTable(m, mode, spells = null, monsters = null) {
   const { wild, lair } = parseAppearing(m.appearing);
   const dice = mode === "lair" ? lair : wild;
   if (!dice) return "";
   const label = mode === "lair" ? "Lair" : "Wild";
   const count = rollCount(dice);
+
+  // Resolve "See X" treasure cross-references once.
+  let treasureCode = m.treasureIndividual;
+  const seeMatch = treasureCode && treasureCode.match(/^see\s+(.+)$/i);
+  if (seeMatch && monsters?.length) {
+    const ref = monsters.find(x => x.name.toLowerCase() === seeMatch[1].toLowerCase());
+    if (ref) treasureCode = ref.treasureIndividual;
+  }
+
   const rows = [];
   for (let i = 0; i < count; i++) {
     const hp = rollHP(m.hd);
-    rows.push(`| <span data-field="qty">1</span> | ${m.name} | <span data-field="hp">${hp}</span> | ${m.ac ?? ""} | ${m.attacks ?? ""} | ${m.damage ?? ""} | ${m.movement ?? ""} | ${m.xp ?? ""} |`);
+    const treasure = rollIndividualTreasure(treasureCode, spells) || "";
+    rows.push(`| <span data-field="qty">1</span> | ${m.name} | <span data-field="hp">${hp}</span> | ${treasure} |`);
   }
-  const header = `**${m.name} — ${label} encounter (${dice} = ${count})**`;
+
+  const sharedBits = [
+    m.ac       ? `AC ${m.ac}`        : "",
+    m.attacks  ? `Att ${m.attacks}`  : "",
+    m.damage   ? `Dmg ${m.damage}`   : "",
+    m.movement ? `MV ${m.movement}`  : "",
+    m.xp       ? `XP ${m.xp}`        : "",
+  ].filter(Boolean).join(", ");
+  const header = `**${m.name} — ${label} encounter (${dice} = ${count})**: ${sharedBits}`;
   const table = [
-    "| Qty | Name | HP | AC | Att | Dmg | MV | XP |",
-    "|:---|:---|:---|:---|:---|:---|:---|:---|",
+    "| Qty | Name | HP | Treasure |",
+    "|:---|:---|:---|:---|",
     ...rows,
   ].join("\n");
   return `${header}\n\n${table}`;

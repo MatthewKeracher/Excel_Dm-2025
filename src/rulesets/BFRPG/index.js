@@ -29,11 +29,11 @@ export const sections = [
     formatBlock: (m, cache) => formatMonsterBlock(m, cache.monsters),
     formatLine:  (m, cache) => formatMonsterOneLiner(m, cache.spells, cache.monsters),
     formatTable: formatMonsterTable,
-    extraButtons: (m) => {
+    extraButtons: (m, cache) => {
       const { wild, lair } = parseAppearing(m.appearing);
       const buttons = [];
-      if (wild) buttons.push({ label: "W", title: `Wild encounter table (${wild})`,  format: () => formatMonsterEncounterTable(m, "wild") });
-      if (lair) buttons.push({ label: "L", title: `Lair encounter table (${lair})`,  format: () => formatMonsterEncounterTable(m, "lair") });
+      if (wild) buttons.push({ label: "W", title: `Wild encounter table (${wild})`, format: () => formatMonsterEncounterTable(m, "wild", cache?.spells, cache?.monsters) });
+      if (lair) buttons.push({ label: "L", title: `Lair encounter table (${lair})`, format: () => formatMonsterEncounterTable(m, "lair", cache?.spells, cache?.monsters) });
       return buttons;
     },
   },
