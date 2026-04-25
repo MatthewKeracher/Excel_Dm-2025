@@ -3,6 +3,7 @@ import { loadEditor } from "./editor.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { setHttpState } from "./syncState.js";
 import { wireInlineFields } from "./inlineFields.js";
+import { confirmDialog } from "./dialog.js";
 
 let homeNotices = [];
 let homePoster = null;
@@ -183,9 +184,9 @@ function makeHomeNoticeCard(notice) {
   deleteBtn.className = "delete-btn";
   deleteBtn.title = "Delete notice";
   deleteBtn.innerHTML = "❌";
-  deleteBtn.addEventListener("click", (e) => {
+  deleteBtn.addEventListener("click", async (e) => {
     e.stopPropagation();
-    if (confirm("Delete this notice?")) {
+    if (await confirmDialog("Delete this notice?")) {
       homeNotices = homeNotices.filter((n) => n !== notice);
       renderHomeNotices();
       saveHome();

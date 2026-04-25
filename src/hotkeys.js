@@ -2,6 +2,7 @@ import { current, excelDM, reCurrent } from "./main.js";
 import { loadNoteCards } from "./left.js";
 import { currentTab } from "./tabs.js";
 import { addEntry, saveFile } from "./buttons.js";
+import { confirmDialog } from "./dialog.js";
 
 let currentIndex = -1;
 let tabTracker = currentTab;
@@ -39,8 +40,10 @@ function isEditing(event) {
       const saveBtn = currentEditor.querySelector(".save-btn");
       if (saveBtn) {
         saveBtn.click();
-      } else if (confirm("Close Editor without Saving?")) {
-        currentEditor.remove();
+      } else {
+        confirmDialog("Close Editor without Saving?").then((ok) => {
+          if (ok) currentEditor.remove();
+        });
       }
     }
   }

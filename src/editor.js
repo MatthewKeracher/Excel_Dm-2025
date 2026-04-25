@@ -2,6 +2,7 @@ import { reCurrent, excelDM } from "./main.js";
 import { loadSnippets, addSnippet, updateSnippet, deleteSnippet } from "./snippets.js";
 import { render as renderMacro } from "./macroEngine.js";
 import { getCurrentRuleset, getRulesetData, loadRulesetModule } from "./ruleset.js";
+import { confirmDialog } from "./dialog.js";
 
 export function loadEditor(
   entry,
@@ -79,8 +80,8 @@ export function loadEditor(
   exitBtn.title = "Close Editor";
   exitBtn.textContent = "✕";
 
-  exitBtn.addEventListener("click", (event) => {
-    if (event.shiftKey || confirm("Close Editor without Saving?")) {
+  exitBtn.addEventListener("click", async (event) => {
+    if (event.shiftKey || await confirmDialog("Close Editor without Saving?")) {
       isEditing = false;
       currentEditor.remove();
       snippetPanel.remove();
@@ -663,8 +664,8 @@ export function loadEditor(
       delBtn.className = "snippet-action-btn";
       delBtn.textContent = "✕";
       delBtn.title = "Delete snippet";
-      delBtn.addEventListener("click", () => {
-        if (confirm(`Delete snippet "${snippet.name}"?`)) {
+      delBtn.addEventListener("click", async () => {
+        if (await confirmDialog(`Delete snippet "${snippet.name}"?`)) {
           deleteSnippet(snippet.id);
           renderSnippetList();
         }

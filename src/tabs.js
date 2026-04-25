@@ -2,6 +2,7 @@ import { excelDM, current, LOCKED_TABS } from "./main.js";
 import { loadNoteCards } from "./left.js";
 import { saveData } from "./localStorage.js";
 import { isAdmin } from "./userRole.js";
+import { promptDialog, alertDialog } from "./dialog.js";
 
 export const DEFAULT_TABS = ["locations", "people", "quests", "monsters", "spells", "items", "misc"];
 
@@ -81,10 +82,11 @@ function _activateTab(name) {
   loadNoteCards(current);
 }
 
-function _addTab() {
-  const raw = prompt("New tab name:")?.trim().toLowerCase().replace(/\s+/g, "-");
+async function _addTab() {
+  const input = await promptDialog("New tab name:");
+  const raw = input?.trim().toLowerCase().replace(/\s+/g, "-");
   if (!raw) return;
-  if (_tabs.includes(raw)) { alert(`Tab "${raw}" already exists.`); return; }
+  if (_tabs.includes(raw)) { await alertDialog(`Tab "${raw}" already exists.`); return; }
   excelDM.tabs = [..._tabs, raw];
   excelDM.dirtyMeta = true;
   initTabs(excelDM.tabs);

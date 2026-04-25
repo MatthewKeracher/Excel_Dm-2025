@@ -9,6 +9,7 @@ import { setPopOut, clearPopOut } from "./popoutState.js";
 import { isPinned, setPinned } from "./pinState.js";
 import { isViewer, isAdmin } from "./userRole.js";
 import { wireInlineFields } from "./inlineFields.js";
+import { confirmDialog } from "./dialog.js";
 
 // --- Card base ---
 
@@ -82,8 +83,8 @@ function createDeleteButton(entry) {
   deleteBtn.title = "Delete note";
   deleteBtn.innerHTML = "❌";
 
-  deleteBtn.addEventListener("click", (event) => {
-    if (event.shiftKey || confirm(`Delete this ${currentTab} and any children?`)) {
+  deleteBtn.addEventListener("click", async (event) => {
+    if (event.shiftKey || await confirmDialog(`Delete this ${currentTab} and any children?`)) {
       clearPopOut(entry._serverId);
       excelDM.deleteEntry(entry);
     }
@@ -167,10 +168,10 @@ function createPrevButton(entry, card) {
   prevbtn.title = entry.type === "locations" ? "Go Outside" : "Previous Objective";
   prevbtn.innerHTML = "<";
 
-  prevbtn.addEventListener("click", () => {
+  prevbtn.addEventListener("click", async () => {
     if (entry.type === "locations") {
       if (!entry.parent.parent) {
-        const userConfirmed = confirm("Do you want to make a new, outer layer?");
+        const userConfirmed = await confirmDialog("Do you want to make a new, outer layer?");
         if (userConfirmed) {
           let newEntry = new Entry({
             title: `Outside ${entry.parent.title}`,
@@ -183,7 +184,7 @@ function createPrevButton(entry, card) {
       newCurrent(entry.parent.parent);
     } else if (entry.type === "quests") {
       if (!entry.parent) {
-        const userConfirmed = confirm("Do you want to make a new, previous objective?");
+        const userConfirmed = await confirmDialog("Do you want to make a new, previous objective?");
         if (userConfirmed) {
           let newEntry = new Entry({
             title: `Before ${entry.title}`,

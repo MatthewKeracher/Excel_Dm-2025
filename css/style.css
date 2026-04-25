@@ -1,3 +1,80 @@
+/* In-app dialog (confirm/alert/prompt) */
+.app-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-dialog-box {
+  background: #000;
+  border: 1px solid #115926;
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 280px;
+  max-width: 480px;
+  color: #eee;
+  font-family: "SoutaneBlack", serif;
+}
+
+.app-dialog-title {
+  font-size: 1.05rem;
+  color: #c8a64b;
+}
+
+.app-dialog-message {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.app-dialog-input {
+  padding: 0.5rem;
+  background: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #eee;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.app-dialog-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.app-dialog-btn {
+  padding: 0.5rem 1rem;
+  background: #000;
+  color: #888;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-family: "SoutaneBlack", serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s ease;
+}
+
+.app-dialog-btn:hover {
+  background: #1a1a1a;
+  transform: translateY(-1px);
+}
+
+.app-dialog-btn-primary {
+  color: #115926;
+  border-color: #115926;
+}
+
+.app-dialog-btn-primary:hover {
+  background: #0d1f17;
+}
+
 /* Campaign Picker Modal */
 #campaign-modal {
   display: none;

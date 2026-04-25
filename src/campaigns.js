@@ -6,6 +6,7 @@ import { setCurrentRole } from "./userRole.js";
 import { initTabs, DEFAULT_TABS } from "./tabs.js";
 import { excelDM } from "./main.js";
 import { fetchRulesets, setCurrentRuleset } from "./ruleset.js";
+import { confirmDialog, alertDialog } from "./dialog.js";
 
 let modalBuilt = false;
 let currentSettings = null; // { id, name } for the campaign being managed
@@ -495,7 +496,7 @@ async function generateInviteLink() {
 }
 
 async function deleteCampaign() {
-  if (!confirm(`Delete "${currentSettings.name}" and all its entries? This cannot be undone.`)) return;
+  if (!await confirmDialog(`Delete "${currentSettings.name}" and all its entries? This cannot be undone.`)) return;
   const errorEl = document.getElementById("settings-error");
   errorEl.textContent = "";
   errorEl.style.color = "";
@@ -570,11 +571,11 @@ export async function handleInviteFlow(token) {
         headers: authHeaders(),
       });
       if (acceptRes.status === 410) {
-        alert("This invite link has already been used.");
+        await alertDialog("This invite link has already been used.");
         return;
       }
       if (!acceptRes.ok) {
-        alert("Failed to accept invite.");
+        await alertDialog("Failed to accept invite.");
         return;
       }
       const accepted = await acceptRes.json();

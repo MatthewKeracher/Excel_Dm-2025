@@ -45,10 +45,10 @@ export function formatMonsterOneLiner(m, spells = null, monsters = null) {
 }
 
 export function formatMonsterTable(monsters) {
-  const header = "| Name | AC | HD | Attacks | Damage | Movement | XP |";
-  const sep    = "|:---|:---|:---|:---|:---|:---|:---|";
+  const header = "| Qty | Name | AC | HD | Attacks | Damage | Movement | XP |";
+  const sep    = "|:---|:---|:---|:---|:---|:---|:---|:---|";
   const rows   = monsters.map(m =>
-    `| ${m.name} | ${m.ac ?? ""} | ${m.hd ?? ""} | ${m.attacks ?? ""} | ${m.damage ?? ""} | ${m.movement ?? ""} | ${m.xp ?? ""} |`
+    `| <span data-field="qty">1</span> | ${m.name} | ${m.ac ?? ""} | ${m.hd ?? ""} | ${m.attacks ?? ""} | ${m.damage ?? ""} | ${m.movement ?? ""} | ${m.xp ?? ""} |`
   );
   return [header, sep, ...rows].join("\n");
 }
@@ -68,9 +68,9 @@ export function formatSpellOneLiner(s) {
 }
 
 export function formatSpellTable(spells) {
-  const header = "| Name | Range | Duration |";
-  const sep    = "|:---|:---|:---|";
-  const rows   = spells.map(s => `| ${s.name} | ${s.range ?? ""} | ${s.duration ?? ""} |`);
+  const header = "| Qty | Name | Range | Duration |";
+  const sep    = "|:---|:---|:---|:---|";
+  const rows   = spells.map(s => `| <span data-field="qty">1</span> | ${s.name} | ${s.range ?? ""} | ${s.duration ?? ""} |`);
   return [header, sep, ...rows].join("\n");
 }
 
@@ -92,13 +92,14 @@ export function formatItemOneLiner(item) {
 
 export function formatItemTable(items) {
   const cols = [
+    { key: "qty",    label: "Qty",    get: () => `<span data-field="qty">1</span>` },
     { key: "name",   label: "Name",   get: i => i.name   ?? "" },
     { key: "cost",   label: "Cost",   get: i => i.cost   ? `${i.cost} gp`  : "" },
     { key: "damage", label: "Damage", get: i => i.damage ?? "" },
     { key: "ac",     label: "AC",     get: i => i.ac     ?? "" },
     { key: "weight", label: "Weight", get: i => i.weight ? `${i.weight} lb` : "" },
     { key: "size",   label: "Size",   get: i => i.size   ?? "" },
-  ].filter(c => items.some(i => c.get(i)));
+  ].filter(c => c.key === "qty" || items.some(i => c.get(i)));
 
   const header = "| " + cols.map(c => c.label).join(" | ") + " |";
   const sep    = "| " + cols.map(() => ":---").join(" | ") + " |";
