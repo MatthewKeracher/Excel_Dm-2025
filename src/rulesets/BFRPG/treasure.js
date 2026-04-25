@@ -178,6 +178,44 @@ export function rollIndividualTreasure(code, spells = null) {
   return parts.join(', ');
 }
 
+// Roll individual-treasure for a group of `count` monsters and sum the
+// results into a single one-line string. Cash totals are summed; gems,
+// jewelry, and magic items are listed individually.
+export function rollGroupTreasure(code, count, spells = null) {
+  if (!code || count <= 0) return '';
+  const trimmed = code.trim();
+  if (/^none$/i.test(trimmed)) return '';
+  if (/^special$/i.test(trimmed) || /^see\b/i.test(trimmed)) return trimmed;
+
+  const letters = [...trimmed.matchAll(/\b([A-V])\b/gi)].map(m => m[1].toUpperCase());
+  if (letters.length === 0) return trimmed;
+
+  const totals = { Copper: 0, Silver: 0, Electrum: 0, Gold: 0, Platinum: 0, Gems: 0, Jewelry: 0, 'Magic Items': 0 };
+  for (let i = 0; i < count; i++) {
+    for (const letter of letters) {
+      const table = TREASURE_TABLE[letter];
+      if (!table) continue;
+      for (const [type, { pct, dice }] of Object.entries(table)) {
+        if (!dice) continue;
+        if (pct === '*' || Math.random() * 100 < pct) totals[type] += rollDice(dice);
+      }
+    }
+  }
+
+  const parts = [];
+  if (totals.Copper)   parts.push(`${totals.Copper.toLocaleString()}cp`);
+  if (totals.Silver)   parts.push(`${totals.Silver.toLocaleString()}sp`);
+  if (totals.Electrum) parts.push(`${totals.Electrum.toLocaleString()}ep`);
+  if (totals.Gold)     parts.push(`${totals.Gold.toLocaleString()}gp`);
+  if (totals.Platinum) parts.push(`${totals.Platinum.toLocaleString()}pp`);
+  if (totals.Gems)     parts.push(...Array.from({ length: totals.Gems },    () => generateGem()));
+  if (totals.Jewelry)  parts.push(...Array.from({ length: totals.Jewelry }, () => generateJewelry()));
+  if (totals['Magic Items']) {
+    parts.push(...Array.from({ length: totals['Magic Items'] }, () => generateMagicItem('any', spells)));
+  }
+  return parts.join(', ');
+}
+
 // ── Gem generation ───────────────────────────────────────────────────────────
 
 const GEMS_VALUE_TABLE = [

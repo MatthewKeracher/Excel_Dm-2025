@@ -1,7 +1,7 @@
 // BFRPG Format Helpers
 // Converts structured BFRPG data objects into display strings and HTML blocks.
 
-import { buildTreasureRows, rollHP, rollIndividualTreasure, rollDice } from './treasure.js';
+import { buildTreasureRows, rollHP, rollIndividualTreasure, rollGroupTreasure, rollDice } from './treasure.js';
 
 // Parse a monster.appearing string into { wild, lair } dice notations.
 // Handles: "Wild/Lair X" (same), "Wild X Lair Y", "Wild X" only, "Lair Y" only,
@@ -62,12 +62,9 @@ export function formatMonsterEncounterTable(m, mode, spells = null, monsters = n
   const header = `**${count} ${plural}** (${label} ${dice}): ${sharedBits}`;
 
   const clusters = [];
-  const treasures = [];
   for (let i = 0; i < count; i++) {
     const hp = rollHP(m.hd);
     clusters.push(`<div class="hp-tally-row">${hp} <span data-field="hp-tally" data-max="${hp}">0</span></div>`);
-    const t = rollIndividualTreasure(treasureCode, spells);
-    if (t) treasures.push(`#${i + 1} ${t}`);
   }
 
   // Single-line HTML block so marked treats it as raw HTML and doesn't try to
@@ -77,8 +74,9 @@ export function formatMonsterEncounterTable(m, mode, spells = null, monsters = n
     `<div class="hp-tally-block"><span class="hp-tally-label">HP</span>` +
     `<div class="hp-tally-clusters">${clusters.join("")}</div></div>`;
 
+  const groupTreasure = rollGroupTreasure(treasureCode, count, spells);
   let out = `${header}\n\n${tallyBlock}`;
-  if (treasures.length) out += `\n\n*Treasure:* ${treasures.join(" · ")}`;
+  if (groupTreasure) out += `\n\n*Treasure:* ${groupTreasure}`;
   return out;
 }
 
