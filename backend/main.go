@@ -4,11 +4,26 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"exceldm/db"
 	"exceldm/handlers"
 	"exceldm/middleware"
 )
+
+// noCacheStatic wraps http.FileServer so that frequently-changing frontend
+// assets force browser + Cloudflare revalidation on every request. Without
+// this, deploys silently serve stale JS/CSS until the edge cache TTL elapses.
+func noCacheStatic(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		p := r.URL.Path
+		if strings.HasSuffix(p, ".js") || strings.HasSuffix(p, ".css") ||
+			strings.HasSuffix(p, ".html") || strings.HasSuffix(p, ".json") || p == "/" {
+			w.Header().Set("Cache-Control", "no-cache")
+		}
+		h.ServeHTTP(w, r)
+	})
+}
 
 func main() {
 	if err := db.Connect(); err != nil {
@@ -70,7 +85,7 @@ func main() {
 	})
 
 	// Serve frontend
-	mux.Handle("/", http.FileServer(http.Dir("../")))
+	mux.Handle("/", noCacheStatic(http.FileServer(http.Dir("../"))))
 
 	fmt.Println("Server running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
