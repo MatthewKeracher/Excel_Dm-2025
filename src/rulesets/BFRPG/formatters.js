@@ -39,7 +39,7 @@ export function formatMonsterOneLiner(m, spells = null, monsters = null) {
   }
 
   const treasure = rollIndividualTreasure(treasureCode, spells);
-  let line = `**${m.name}** (HP: <span data-field="hp">${hp}</span>): AC ${m.ac}, Dmg ${m.damage}, MV ${m.movement}`;
+  let line = `**${m.name}** (HP: <span data-field="hp">${hp}</span>): AC ${m.ac}, Att ${m.attacks}, Dmg ${m.damage}, MV ${m.movement}, XP ${m.xp}`;
   if (treasure) line += ` — ${treasure}`;
   return line;
 }
