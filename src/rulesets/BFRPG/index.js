@@ -4,12 +4,12 @@
 
 export { generateNPC, generateNPCBlock } from './npc.js';
 export { generateGem, generateJewelry, generateMagicItem, generatePotion, generateSpellScroll } from './treasure.js';
-export { formatMonsterBlock, formatMonsterOneLiner, formatMonsterTable } from './formatters.js';
+export { formatMonsterBlock, formatMonsterOneLiner, formatMonsterTable, formatMonsterEncounterTable, parseAppearing } from './formatters.js';
 export { formatSpellBlock, formatSpellOneLiner, formatSpellTable } from './formatters.js';
 export { formatItemBlock, formatItemOneLiner, formatItemTable } from './formatters.js';
 
 import {
-  formatMonsterBlock, formatMonsterOneLiner, formatMonsterTable,
+  formatMonsterBlock, formatMonsterOneLiner, formatMonsterTable, formatMonsterEncounterTable, parseAppearing,
   formatSpellBlock, formatSpellOneLiner, formatSpellTable,
   formatItemBlock, formatItemOneLiner, formatItemTable,
 } from './formatters.js';
@@ -29,6 +29,13 @@ export const sections = [
     formatBlock: (m, cache) => formatMonsterBlock(m, cache.monsters),
     formatLine:  (m, cache) => formatMonsterOneLiner(m, cache.spells, cache.monsters),
     formatTable: formatMonsterTable,
+    extraButtons: (m) => {
+      const { wild, lair } = parseAppearing(m.appearing);
+      const buttons = [];
+      if (wild) buttons.push({ label: "W", title: `Wild encounter table (${wild})`,  format: () => formatMonsterEncounterTable(m, "wild") });
+      if (lair) buttons.push({ label: "L", title: `Lair encounter table (${lair})`,  format: () => formatMonsterEncounterTable(m, "lair") });
+      return buttons;
+    },
   },
   {
     label: "Spells",

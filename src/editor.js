@@ -361,7 +361,7 @@ export function loadEditor(
       return el;
     }
 
-    function makeEntryRow(entry, formatBlock, formatLine) {
+    function makeEntryRow(entry, formatBlock, formatLine, extraButtons) {
       const name = entry.name || entry.title || "";
       const row = document.createElement("div");
       row.className = "snippet-item";
@@ -394,6 +394,24 @@ export function loadEditor(
 
       actions.appendChild(lineBtn);
       actions.appendChild(fullBtn);
+
+      if (extraButtons) {
+        for (const def of extraButtons(entry) ?? []) {
+          const btn = document.createElement("button");
+          btn.className = "snippet-action-btn";
+          btn.textContent = def.label;
+          btn.title = def.title;
+          btn.addEventListener("click", () => {
+            const out = def.format();
+            if (out) {
+              codeArea.replaceRange(out, codeArea.getCursor());
+              codeArea.focus();
+            }
+          });
+          actions.appendChild(btn);
+        }
+      }
+
       row.appendChild(nameEl);
       row.appendChild(actions);
       return row;
@@ -401,7 +419,7 @@ export function loadEditor(
 
     const hasQuery = !!query;
 
-    sections.forEach(({ label, key, groupBy, formatBlock: rawFormatBlock, formatLine: rawFormatLine, formatTable }) => {
+    sections.forEach(({ label, key, groupBy, formatBlock: rawFormatBlock, formatLine: rawFormatLine, formatTable, extraButtons }) => {
       const formatBlock = e => rawFormatBlock(e, rulesCache);
       const formatLine  = e => rawFormatLine(e, rulesCache);
       let entries = rulesCache[key] ?? [];
@@ -466,7 +484,7 @@ export function loadEditor(
         });
 
         groupEntries.forEach(entry => {
-          subBody.appendChild(makeEntryRow(entry, formatBlock, formatLine));
+          subBody.appendChild(makeEntryRow(entry, formatBlock, formatLine, extraButtons));
         });
 
         sectionBody.appendChild(subHeading);

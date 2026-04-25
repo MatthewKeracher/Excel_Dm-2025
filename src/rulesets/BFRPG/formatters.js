@@ -1,7 +1,52 @@
 // BFRPG Format Helpers
 // Converts structured BFRPG data objects into display strings and HTML blocks.
 
-import { buildTreasureRows, rollHP, rollIndividualTreasure } from './treasure.js';
+import { buildTreasureRows, rollHP, rollIndividualTreasure, rollDice } from './treasure.js';
+
+// Parse a monster.appearing string into { wild, lair } dice notations.
+// Handles: "Wild/Lair X" (same), "Wild X Lair Y", "Wild X" only, "Lair Y" only,
+// or a bare leading number/dice when no Wild/Lair qualifiers are present.
+const DICE_RE = /\d+(?:d\d+(?:[+-]\d+)?(?:x\d+)?)?/i;
+export function parseAppearing(str) {
+  if (!str) return { wild: null, lair: null };
+  const both = str.match(new RegExp(`Wild\\/Lair\\s+(${DICE_RE.source})`, 'i'));
+  if (both) return { wild: both[1], lair: both[1] };
+  const w = str.match(new RegExp(`Wild\\s+(${DICE_RE.source})`, 'i'));
+  const l = str.match(new RegExp(`Lair\\s+(${DICE_RE.source})`, 'i'));
+  let wild = w ? w[1] : null;
+  let lair = l ? l[1] : null;
+  if (!wild && !lair) {
+    const lead = str.match(new RegExp(`^(${DICE_RE.source})`));
+    if (lead) wild = lead[1];
+  }
+  return { wild, lair };
+}
+
+function rollCount(dice) {
+  if (!dice) return 0;
+  if (/^\d+$/.test(dice)) return Number(dice);
+  return rollDice(dice) || 1;
+}
+
+export function formatMonsterEncounterTable(m, mode) {
+  const { wild, lair } = parseAppearing(m.appearing);
+  const dice = mode === "lair" ? lair : wild;
+  if (!dice) return "";
+  const label = mode === "lair" ? "Lair" : "Wild";
+  const count = rollCount(dice);
+  const rows = [];
+  for (let i = 0; i < count; i++) {
+    const hp = rollHP(m.hd);
+    rows.push(`| <span data-field="qty">1</span> | ${m.name} | <span data-field="hp">${hp}</span> | ${m.ac ?? ""} | ${m.attacks ?? ""} | ${m.damage ?? ""} | ${m.movement ?? ""} | ${m.xp ?? ""} |`);
+  }
+  const header = `**${m.name} — ${label} encounter (${dice} = ${count})**`;
+  const table = [
+    "| Qty | Name | HP | AC | Att | Dmg | MV | XP |",
+    "|:---|:---|:---|:---|:---|:---|:---|:---|",
+    ...rows,
+  ].join("\n");
+  return `${header}\n\n${table}`;
+}
 
 // ── Monster formatters ────────────────────────────────────────────────────────
 
