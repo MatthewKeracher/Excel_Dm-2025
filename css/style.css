@@ -1095,6 +1095,13 @@ p {
   color: #000;
 }
 
+.notecard-body mark {
+  background: #fff066;
+  color: #000;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
 .notecard-body {
   max-height: 4.6em;
   overflow-y: hidden;

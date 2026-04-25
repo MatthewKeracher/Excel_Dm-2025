@@ -138,6 +138,12 @@ export function loadEditor(
   boldBtn.style.fontWeight = "bold";
   boldBtn.addEventListener("click", () => wrapInline("<b>", "</b>"));
 
+  // Highlight
+  const highlightBtn = makeFormatBtn("H", "Highlight (yellow)");
+  highlightBtn.style.background = "#d8d83c";
+  highlightBtn.style.color = "#000";
+  highlightBtn.addEventListener("click", () => wrapInline("<mark>", "</mark>"));
+
   // Italic
   const italicBtn = makeFormatBtn("I", "Italic");
   italicBtn.style.fontStyle = "italic";
@@ -216,6 +222,7 @@ export function loadEditor(
   sep.className = "editor-toolbar-separator";
 
   toolbarFormat.appendChild(boldBtn);
+  toolbarFormat.appendChild(highlightBtn);
   toolbarFormat.appendChild(italicBtn);
   toolbarFormat.appendChild(headingBtn);
   toolbarFormat.appendChild(codeBtn);
