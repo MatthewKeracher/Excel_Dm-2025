@@ -42,8 +42,8 @@ export const sections = [
     label: "Items",
     key: "items",
     groupBy: i => i.category ? i.category.charAt(0).toUpperCase() + i.category.slice(1) : "Other",
-    formatBlock: (i, _cache) => formatItemBlock(i),
-    formatLine:  (i, _cache) => formatItemOneLiner(i),
+    formatBlock: (i, cache) => formatItemBlock(i, cache),
+    formatLine:  (i, cache) => formatItemOneLiner(i, cache),
     formatTable: formatItemTable,
   },
 ];
