@@ -76,7 +76,28 @@ export function formatSpellTable(spells) {
 
 // ── Item formatters ───────────────────────────────────────────────────────────
 
-export function formatItemBlock(item) {
+function formatPackContentsTable(item, rulesCache) {
+  const allItems = rulesCache?.items ?? [];
+  const lookup = new Map(allItems.map(i => [i.name.toLowerCase(), i]));
+  const rows = (item.contents ?? []).map(c => {
+    const found  = lookup.get((c.name || "").toLowerCase());
+    const cost   = found?.cost   ? `${found.cost} gp`  : "";
+    const weight = found?.weight ? `${found.weight} lb` : "";
+    return `| <span data-field="qty">${c.qty ?? 1}</span> | ${c.name} | ${cost} | ${weight} |`;
+  });
+  return [
+    "| Qty | Name | Cost | Weight |",
+    "|:---|:---|:---|:---|",
+    ...rows,
+  ].join("\n");
+}
+
+export function formatItemBlock(item, rulesCache) {
+  if (item.category === "packs" && item.contents?.length) {
+    const header = `# ${item.name}`;
+    const desc   = item.description ? `\n\n${item.description}` : "";
+    return `${header}${desc}\n\n---\n\n${formatPackContentsTable(item, rulesCache)}`;
+  }
   const rows = [
     ["Cost",   item.cost   ? `${item.cost} gp`   : ""],
     ["Weight", item.weight ? `${item.weight} lb`  : ""],
@@ -86,7 +107,10 @@ export function formatItemBlock(item) {
   return item.description ? `${block}\n\n${item.description}` : block;
 }
 
-export function formatItemOneLiner(item) {
+export function formatItemOneLiner(item, rulesCache) {
+  if (item.category === "packs" && item.contents?.length) {
+    return `**${item.name}**\n\n${formatPackContentsTable(item, rulesCache)}`;
+  }
   return item.oneLiner || item.name;
 }
 

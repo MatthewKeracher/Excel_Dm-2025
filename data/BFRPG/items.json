@@ -2505,7 +2505,14 @@
     "ac": "",
     "size": "",
     "description": "Glass bottle; Iron Spikes, 12; Pole, 10 ft wooden; Map or scroll case; Mirror, small metal. Ready for anything.",
-    "oneLiner": "Adventurer Pack 2, 10gp, 12lb"
+    "oneLiner": "Adventurer Pack 2, 10gp, 12lb",
+    "contents": [
+      { "name": "Glass bottle or vial", "qty": 1 },
+      { "name": "Iron Spikes, 12", "qty": 1 },
+      { "name": "Pole, 10 ft wooden", "qty": 1 },
+      { "name": "Map or scroll case", "qty": 1 },
+      { "name": "Mirror, small metal", "qty": 1 }
+    ]
   },
   {
     "name": "Bag Option 1",
@@ -2516,7 +2523,12 @@
     "ac": "",
     "size": "",
     "description": "Backpack (normal or Halfling), Weapon Belt, Large Pouch. Capacity: 45 lb (35 lb for Halflings.",
-    "oneLiner": "Bag Option 1, 7gp, 2.2lb"
+    "oneLiner": "Bag Option 1, 7gp, 2.2lb",
+    "contents": [
+      { "name": "Backpack (Standard or Halfling)", "qty": 1 },
+      { "name": "Belt, Weapon Belt", "qty": 1 },
+      { "name": "Large Pouch or Purse", "qty": 1 }
+    ]
   },
   {
     "name": "Bag Option 2",
@@ -2527,18 +2539,14 @@
     "ac": "",
     "size": "",
     "description": "Oilskin Satchel, Baldric, Weapon Belt, Large Pouch, Belt Pouch(2). Capacity: 24 lb.",
-    "oneLiner": "Bag Option 2, 11.8gp, 3.4lb"
-  },
-  {
-    "name": "Bag Option 2",
-    "category": "packs",
-    "cost": "11.8",
-    "weight": "3.4",
-    "damage": "",
-    "ac": "",
-    "size": "",
-    "description": "Oilskin Satchel, Baldric, Weapon Belt, Large Pouch, Belt Pouch(2). Capacity: 24 lb.",
-    "oneLiner": "Bag Option 2, 11.8gp, 3.4lb"
+    "oneLiner": "Bag Option 2, 11.8gp, 3.4lb",
+    "contents": [
+      { "name": "Satchel, Oilskin", "qty": 1 },
+      { "name": "Baldric, Belt Sash", "qty": 1 },
+      { "name": "Belt, Weapon Belt", "qty": 1 },
+      { "name": "Large Pouch or Purse", "qty": 1 },
+      { "name": "Belt Pouch", "qty": 2 }
+    ]
   },
   {
     "name": "Camp Cook Kit",
@@ -2549,7 +2557,17 @@
     "ac": "",
     "size": "",
     "description": "Iron pan, iron pot, Fire grate, mess kit, common spices, dried meat (2lb), standard rations (5 days), teapot.",
-    "oneLiner": "Camp Cook Kit, 24gp, 23lb"
+    "oneLiner": "Camp Cook Kit, 24gp, 23lb",
+    "contents": [
+      { "name": "Iron pan", "qty": 1 },
+      { "name": "Iron pot", "qty": 1 },
+      { "name": "Fire grate", "qty": 1 },
+      { "name": "Mess kit", "qty": 1 },
+      { "name": "Herbs / Spices, common", "qty": 1 },
+      { "name": "Dried meat (2 lb)", "qty": 1 },
+      { "name": "Rations, Dry, one week", "qty": 1 },
+      { "name": "Teapot", "qty": 1 }
+    ]
   },
   {
     "name": "Cleric Pack",
@@ -2560,7 +2578,18 @@
     "ac": "",
     "size": "",
     "description": "Bandages (10), Holy symbol, holy water (1), parchment (2), ink and quill, 1 week rations, tinderbox, waterskin. Protect and spread the faith.",
-    "oneLiner": "Cleric Pack, 60gp, 18.3lb"
+    "oneLiner": "Cleric Pack, 60gp, 18.3lb",
+    "contents": [
+      { "name": "Bandages", "qty": 10 },
+      { "name": "Holy Symbol", "qty": 1 },
+      { "name": "Holy Water, per vial", "qty": 1 },
+      { "name": "Paper or Parchment", "qty": 2 },
+      { "name": "Ink, per jar", "qty": 1 },
+      { "name": "Quill", "qty": 1 },
+      { "name": "Rations, Dry, one week", "qty": 1 },
+      { "name": "Tinderbox, flint and steel", "qty": 1 },
+      { "name": "Wineskin/Waterskin", "qty": 1 }
+    ]
   },
   {
     "name": "Dungeon Mapper",
@@ -2571,7 +2600,15 @@
     "ac": "",
     "size": "",
     "description": "10 sheets paper, ink, quill & quill knife, writing board, bag of chalk pieces.",
-    "oneLiner": "Dungeon Mapper, 17gp, 1.2lb"
+    "oneLiner": "Dungeon Mapper, 17gp, 1.2lb",
+    "contents": [
+      { "name": "Paper (per sheet)", "qty": 10 },
+      { "name": "Ink, per jar", "qty": 1 },
+      { "name": "Quill", "qty": 1 },
+      { "name": "Quill Knife", "qty": 1 },
+      { "name": "Writing board", "qty": 1 },
+      { "name": "Chalk, small bag of pieces", "qty": 1 }
+    ]
   },
   {
     "name": "Fighter Pack",
@@ -2582,7 +2619,18 @@
     "ac": "",
     "size": "",
     "description": "Bandages (5), Oil, cooking pot, 1 week rations, 3 large sacks, tinderbox, torches (6), waterskin, whetstone. Camp and battle basics.",
-    "oneLiner": "Fighter Pack, 21gp, 22.8lb"
+    "oneLiner": "Fighter Pack, 21gp, 22.8lb",
+    "contents": [
+      { "name": "Bandages", "qty": 5 },
+      { "name": "Oil (per flask)", "qty": 1 },
+      { "name": "Cooking pot", "qty": 1 },
+      { "name": "Rations, Dry, one week", "qty": 1 },
+      { "name": "Sack, Large", "qty": 3 },
+      { "name": "Tinderbox, flint and steel", "qty": 1 },
+      { "name": "Torches, 6", "qty": 1 },
+      { "name": "Wineskin/Waterskin", "qty": 1 },
+      { "name": "Whetstone", "qty": 1 }
+    ]
   },
   {
     "name": "Magic-User Pack",
@@ -2593,7 +2641,19 @@
     "ac": "",
     "size": "",
     "description": "Writing ink and quill, parchment (5), scroll case(2), spellbook*, hand mirror, 1 week rations, Torches (6), Tinderbox, glass vial. Scholar & Spellcaster. *The spell book is free for beginning Magic-Users; weight figure assumes a travel spellbook (½ lb).",
-    "oneLiner": "Magic-User Pack, 37gp, 18.7lb"
+    "oneLiner": "Magic-User Pack, 37gp, 18.7lb",
+    "contents": [
+      { "name": "Ink, per jar", "qty": 1 },
+      { "name": "Quill", "qty": 1 },
+      { "name": "Paper or Parchment", "qty": 5 },
+      { "name": "Map or scroll case", "qty": 2 },
+      { "name": "Spellbook (128 pages)", "qty": 1 },
+      { "name": "Mirror, small metal", "qty": 1 },
+      { "name": "Rations, Dry, one week", "qty": 1 },
+      { "name": "Torches, 6", "qty": 1 },
+      { "name": "Tinderbox, flint and steel", "qty": 1 },
+      { "name": "Glass bottle or vial", "qty": 1 }
+    ]
   },
   {
     "name": "Thief Pack",
@@ -2604,7 +2664,21 @@
     "ac": "",
     "size": "",
     "description": "Candles (12), crowbar, grappling hook, mallet, iron spikes (12), 1 wk rations, large sack, small lens, Thieves' tools, tinderbox, waterskin, whetstone. Tools of the trade.",
-    "oneLiner": "Thief Pack, 58gp, 31.2lb"
+    "oneLiner": "Thief Pack, 58gp, 31.2lb",
+    "contents": [
+      { "name": "Candles, 12", "qty": 1 },
+      { "name": "Crowbar", "qty": 1 },
+      { "name": "Grappling Hook", "qty": 1 },
+      { "name": "Hammer or Mallet", "qty": 1 },
+      { "name": "Iron Spikes, 12", "qty": 1 },
+      { "name": "Rations, Dry, one week", "qty": 1 },
+      { "name": "Sack, Large", "qty": 1 },
+      { "name": "Magnifying glass", "qty": 1 },
+      { "name": "Thieves' picks and tools", "qty": 1 },
+      { "name": "Tinderbox, flint and steel", "qty": 1 },
+      { "name": "Wineskin/Waterskin", "qty": 1 },
+      { "name": "Whetstone", "qty": 1 }
+    ]
   },
   {
     "name": "Candied fruit/herbs (oz)",
